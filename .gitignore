@@ -1,0 +1,60 @@
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# Asset meta data should be included, but not the asset itself
+*.pidb.meta
+*.pidb
+
+# Visual Studio / MonoDevelop generated files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Rider generated files
+.idea/
+*.sln.iml
+
+# Unity3D generated file on crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+
+# Crashlytics generated files
+crashlytics-build.properties
+
+# Exclude specific Unity files
+*.swp
+*.tmp
+*.bak
+*.log
+*.orig
+*.old
+*.mdmp
+*.dmp
+
+# Ignore auto-generated files by Unity
+/Assets/StreamingAssets/UnityGenerated/
+
+# Exclude specific folders
+/Assets/Plugins/Editor/JetBrains*
+/Assets/Plugins/Editor/VisualStudio*
+
+# Ignore local environment settings
+.vscode/
+*.code-workspace
