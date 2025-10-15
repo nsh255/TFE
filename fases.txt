@@ -1,0 +1,82 @@
+🔧 Fase 1 – Base del juego (Semana 1-2)
+Objetivo: Tener un esqueleto jugable.
+
+Movimiento del jugador
+
+Colisiones básicas
+
+Sistema de input
+
+Cámara que siga al jugador
+
+Carga de mapas básicos (puede ser uno estático para pruebas)
+
+Sistema de entidades y componentes (jugador, enemigos, objetos)
+
+✅ Hito 1: Mapa fijo, jugador se mueve y colisiona bien.
+
+🧱 Fase 2 – Núcleo roguelike (Semana 3-4)
+Objetivo: Ya es un roguelike básico jugable.
+
+Generación procedural de niveles (habitaciones, pasillos)
+
+Enemigos simples que te siguen (IA básica)
+
+Ataques y sistema de vida / daño
+
+Items que puedes recoger (vida, armas, buffs simples)
+
+Sistema de muerte y reinicio de partida
+
+✅ Hito 2: Puedes jugar un nivel generado, luchar, morir y volver a empezar.
+
+🧠 Fase 3 – Profundidad y rejugabilidad (Semana 5-6)
+Objetivo: Darle sabor y mecánicas que enganchen.
+
+Sistema de mejoras permanentes o aleatorias (power-ups)
+
+Enemigos con distintos comportamientos (rango, melee, etc)
+
+Jefe final o miniboss (con ataques especiales)
+
+UI básica (vida, armas, log de acciones)
+
+✅ Hito 3: Puedes completar una "partida" con progresión y desafío.
+
+🎨 Fase 4 – Pulido visual y técnico (Semana 7-8)
+Objetivo: Que se vea y sienta más profesional.
+
+Mejora visual: tiles, sprites (usa assets gratuitos o IA para generarlos)
+
+Sonidos básicos (pasos, ataques, daño, música)
+
+Animaciones simples
+
+Mejoras de rendimiento y limpieza de código
+
+✅ Hito 4: El juego luce y suena como un prototipo serio.
+
+📄 Fase 5 – Memoria y entrega (Semana 9-10)
+Objetivo: Documentación y defensa.
+
+Estructura de la memoria:
+
+Introducción y objetivo del TFG
+
+Estado del arte (otros roguelikes, tecnologías)
+
+Arquitectura del juego
+
+Mecánicas implementadas
+
+Generación procedural explicada
+
+IA enemiga explicada
+
+Conclusiones y mejoras futuras
+
+Haz pruebas de uso (voluntarios que jueguen y den feedback)
+
+Graba un vídeo corto de gameplay para defensa
+
+✅ Entrega final: Juego funcional + memoria clara + demo grabada.

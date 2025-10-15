@@ -1,47 +1,48 @@
 # Fase 1 – Base del juego
 
 **Periodo:** Semana 1-3 (20 de abril - 12 de mayo)  
-**Objetivo:** Sentar las bases del sistema de juego y establecer una escena interactiva funcional, con control básico del jugador y elementos estáticos para pruebas.
+**Objetivo:** Sentar las bases del sistema de juego en Unity, con una escena funcional donde el jugador pueda moverse, detectar colisiones y preparar el terreno para sistemas más complejos.
 
 ## 1. Movimiento del jugador
-Se implementa un sistema de control de movimiento en dos dimensiones (top-down), utilizando el sistema de entradas de Unity (Input System). Se permite el desplazamiento en los ejes X e Y, con suavidad y coherencia en la velocidad.
+Se implementa un sistema de movimiento en 8 direcciones para un personaje con sprite pixel art (12x16), usando un controlador personalizado de inputs.
 
 - **Tecnología:** Unity (C#)
-- **Detalle técnico:** Movimiento basado en Rigidbody2D y vectores normalizados para evitar velocidades mayores en movimientos diagonales.
-- **Validación:** El jugador puede desplazarse libremente dentro del mapa sin errores de física.
+- **Detalle técnico:** Movimiento top-down con Rigidbody2D y normalización de vectores para mantener velocidad uniforme.
+- **Validación:** Se probó en una sala de test, asegurando fluidez y control adecuado.
 
-## 2. Colisiones básicas
-Se integran colisionadores (BoxCollider2D) para el entorno y el jugador, evitando el traspaso de paredes u obstáculos.
+## 2. Colisiones con el entorno
+El entorno se compone de tilemaps con colliders automáticos. El jugador tiene un BoxCollider2D que impide atravesar paredes u obstáculos.
 
-- **Comprobación:** Se testean distintas áreas cerradas y objetos para asegurar que el jugador no pueda atravesarlos.
-- **Herramientas:** Layers de colisión y Rigidbody2D en modo cinemático para enemigos/objetos estáticos.
+- **Comprobación:** Se testea que el jugador no puede salir de los límites de la sala.
+- **Herramientas usadas:** TilemapCollider2D + Rigidbody2D (dinámico para el jugador).
 
-## 3. Sistema de input personalizable
-Se utiliza el nuevo Input System de Unity para permitir mapeo de teclas y control más flexible, facilitando futuras ampliaciones (gamepad, remapeo, etc.).
+## 3. Sistema de input básico
+Aunque se contempló el uso del nuevo Input System, se optó por un sistema propio más simple, con Input.GetAxis y Input.GetKey, suficiente para los controles actuales.
 
-- **Acciones definidas:** Movimiento, dash (preparado), ataque (placeholder).
-- **Ventajas:** Separación entre acciones y teclas permite escalar el sistema sin refactorizar entradas directas.
+- **Acciones activas:** Movimiento.
+- **Acciones pendientes:** Dash, ataque (planificados para Fase 2).
 
-## 4. Cámara que sigue al jugador
-Se configura una cámara con sistema de seguimiento suave usando Cinemachine, centrada en el jugador pero con suavizado de movimiento para una mejor experiencia visual.
+## 4. Cámara fija en grid
+La cámara estática está posicionada manualmente para mostrar solo la sala actual sin seguir al jugador. Esto permite emular el sistema de salas separadas y prepara la base para una cámara por sala.
 
-## 5. Carga de mapas básicos
-Durante esta fase se trabaja con mapas estáticos, cargados como escenas o grids en Unity. Se usan tilemaps para el entorno (suelo, paredes).
+- **Beneficio:** Cada sala puede tener su propia composición visual y límites sin necesidad de recálculo dinámico.
 
-- **Objetivo futuro:** Preparar la estructura para que en Fase 2 se reemplacen por generación procedural.
+## 5. Carga de mapas como escenas
+Se diseñaron múltiples salas (ej. Sala1, Sala2…) como escenas independientes. Se implementó un sistema de cambio de sala mediante triggers (puertas) que cargan otra escena.
 
-## 6. Sistema de entidades y componentes
-Se establece la arquitectura básica del juego:
+- **Sistema:** Script `Door.cs` que llama a `GameManager` para cargar otra escena.
+- **Organización:** Cada sala se trata como una "habitación" de la torre.
 
-- **Jugador:** Controlado por input, con collider, sprite y sistema de salud inicial (placeholder).
-- **Enemigos y objetos:** Representados por prefabs base sin funcionalidad aún, pero integrados en la jerarquía y con etiquetas para detección posterior.
-- **Patrón de diseño:** Se adopta un enfoque orientado a componentes para facilitar la escalabilidad.
+## 6. Primer enemigo básico (placeholder)
+Se creó un prefab de enemigo con sprite, colisionador y tag, pero sin lógica de comportamiento. Sirve para posicionar y testear colisiones o detecciones futuras.
+
+- **Objetivo:** Tener una entidad en el mapa que represente un enemigo sin funcionalidad.
 
 ---
 
 ### Hito alcanzado
-- El juego carga un mapa estático.
-- El jugador se puede mover en las cuatro direcciones.
-- Las colisiones con el entorno están activas y funcionales.
-- La cámara sigue al jugador correctamente.
-- Se sientan las bases para expandir el sistema a enemigos y objetos en la siguiente fase.
+- El jugador se mueve con fluidez y tiene colisiones funcionales.
+- El entorno está representado por tilemaps y colliders.
+- Las salas se cargan como escenas separadas, conectadas mediante puertas.
+- Se sienta la estructura para una torre modular por salas.
+- El proyecto queda preparado para implementar enemigos, combate y progresión en la Fase 2.
