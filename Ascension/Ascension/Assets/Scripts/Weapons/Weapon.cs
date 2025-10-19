@@ -13,7 +13,7 @@ public class Weapon : MonoBehaviour
 
     private bool isInitialized = false;
 
-    void Start()
+    protected virtual void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         
@@ -54,11 +54,12 @@ public class Weapon : MonoBehaviour
         Debug.Log($"Arma inicializada: {weaponData?.weaponName ?? "Sin nombre"}");
     }
 
-    void Update()
+    protected virtual void Update()
     {
         if (camera != null)
         {
-            RotateTowardsMouse();
+            OrbitAroundPlayer(); // PRIMERO orbita (posición)
+            RotateTowardsMouse(); // DESPUÉS rota (orientación)
         }
 
         // Detectar clic izquierdo para atacar
@@ -76,23 +77,53 @@ public class Weapon : MonoBehaviour
         Debug.Log("Ataque base - Este método debe ser sobrescrito en las clases hijas");
     }
 
-    private void RotateTowardsMouse()
+    private void OrbitAroundPlayer()
     {
-        float angle = GetAngleTowardsMouse();
+        // El arma orbita alrededor del jugador siguiendo el mouse (estilo Tiny Rogues)
+        PlayerController player = transform.parent?.GetComponent<PlayerController>();
+        if (player == null) return;
 
-        transform.rotation = Quaternion.Euler(0, 0, angle);
-        spriteRenderer.flipY = angle >= 90 && angle <= 270;
+        Vector3 mouseWorldPosition = camera.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPosition.z = 0;
+
+        // Centro de órbita: posición del jugador + offset vertical hacia arriba
+        float orbitCenterYOffset = 7f; // Ajusta este valor para subir/bajar el centro de órbita
+        Vector3 orbitCenter = transform.parent.position + new Vector3(0, orbitCenterYOffset, 0);
+
+        // Calcular dirección desde el centro de órbita hacia el mouse
+        Vector2 direction = (mouseWorldPosition - orbitCenter).normalized;
+        
+        // Obtener la distancia de órbita (magnitud del offset) y ampliarla ligeramente
+        float orbitDistance = player.weaponOffset.magnitude * 1.15f; // Radio un 15% más amplio
+        
+        // Posicionar el arma en la dirección del mouse a la distancia del offset
+        // Usamos localPosition pero sumamos el offset vertical
+        Vector3 targetPosition = (Vector3)direction * orbitDistance + new Vector3(0, orbitCenterYOffset, 0);
+        transform.localPosition = targetPosition;
     }
 
-    private float GetAngleTowardsMouse()
+    private void RotateTowardsMouse()
     {
         Vector3 mouseWorldPosition = camera.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPosition.z = 0;
 
-        Vector3 mouseDirection = mouseWorldPosition - transform.position;
-        mouseDirection.z = 0;
+        // Calcular dirección desde el arma hacia el mouse
+        Vector2 direction = (mouseWorldPosition - transform.position).normalized;
+        
+        // Calcular ángulo en grados
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        float angle = (Vector3.SignedAngle(Vector3.right, mouseDirection, Vector3.forward) + 360) % 360;
-
-        return angle;
+        // AJUSTE: Si el sprite apunta hacia arriba en vez de a la derecha, resta 90°
+        // Cambia este valor según la orientación de tu sprite:
+        // - Sprite apunta DERECHA → offset = 0
+        // - Sprite apunta ARRIBA → offset = -90
+        // - Sprite apunta IZQUIERDA → offset = 180
+        // - Sprite apunta ABAJO → offset = 90
+        float spriteOrientationOffset = -90f; // Ajusta según tu sprite
+        
+        // Aplicar rotación para que la punta apunte al mouse
+        transform.rotation = Quaternion.Euler(0, 0, angle + spriteOrientationOffset);
+        
+        // NO usar flip con sistema de órbita - la rotación maneja todo
     }
 }

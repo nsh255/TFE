@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 490685dfe28362c47affe55ef87116e3, type: 3}
   m_Name: Staff
   m_EditorClassIdentifier: 
-  name: "Bast\xF3n"
+  weaponName: "Bast\xF3n"
   damage: 3
-  atackSpeed: 2
+  atackSpeed: 0.8
   sprite: {fileID: 8573549099317436776, guid: 0a7a22071f60ea74d9ce12ca7a51000c, type: 3}
+  bulletPrefab: {fileID: 6970964068841379142, guid: 2f4f0aa2a6a199049809ddd4d3e53225, type: 3}
+  weaponPrefab: {fileID: 4090548791827468746, guid: 45f8598be6693c84faa7e96996da191d, type: 3}

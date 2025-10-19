@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 490685dfe28362c47affe55ef87116e3, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
-  name: Espada
+  weaponName: Espada
   damage: 2
-  atackSpeed: 1
+  atackSpeed: 0.5
   sprite: {fileID: -3753825769889500098, guid: 10d12d583d73ec64dabc880b9471d35c, type: 3}
+  bulletPrefab: {fileID: 0}
+  weaponPrefab: {fileID: 8415272668440444127, guid: db6dcdc3947885146a0e251f50e21f77, type: 3}

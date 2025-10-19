@@ -12,10 +12,30 @@ public class Projectile : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         
+        // Hacer el proyectil más visible
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = Color.yellow; // Amarillo brillante
+            Debug.Log($"Projectile SpriteRenderer encontrado, color: {sr.color}, sprite: {sr.sprite?.name ?? "NULL"}");
+        }
+        else
+        {
+            Debug.LogWarning("Projectile no tiene SpriteRenderer!");
+        }
+        
+        Debug.Log($"Projectile.Start() - Posición: {transform.position}, Speed: {speed}, Damage: {damage}, Escala: {transform.localScale}");
+        
         if (rb != null)
         {
             // Mover el proyectil en la dirección que apunta
-            rb.linearVelocity = transform.right * speed;
+            // Usamos transform.up porque el sprite apunta hacia arriba (ajustado con offset -90°)
+            rb.linearVelocity = transform.up * speed;
+            Debug.Log($"Velocidad aplicada: {rb.linearVelocity}, Dirección: {transform.up}");
+        }
+        else
+        {
+            Debug.LogError("Projectile no tiene Rigidbody2D!");
         }
 
         // Destruir después del tiempo de vida

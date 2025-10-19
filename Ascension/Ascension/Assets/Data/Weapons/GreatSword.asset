@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 490685dfe28362c47affe55ef87116e3, type: 3}
   m_Name: GreatSword
   m_EditorClassIdentifier: 
-  name: "Espad\xF3n"
+  weaponName: "Espad\xF3n"
   damage: 4
-  atackSpeed: 3
+  atackSpeed: 1.2
   sprite: {fileID: -9150576205834671035, guid: be2473d78ed29c34fb294813fb586227, type: 3}
+  bulletPrefab: {fileID: 0}
+  weaponPrefab: {fileID: 8415272668440444127, guid: db6dcdc3947885146a0e251f50e21f77, type: 3}

@@ -15,6 +15,10 @@ public class PlayerController : MonoBehaviour
     [Header("Movimiento")]
     private float speed;
 
+    [Header("Weapon")]
+    [Tooltip("Offset del arma respecto al jugador. Se aplica automáticamente (5, 0, 0) si está en (0,0,0)")]
+    public Vector3 weaponOffset = Vector3.zero; // Se inicializa en Awake
+
     [Header("Roll")]
     public float rollSpeedMultiplier = 2f;
     public float rollCooldown = 0.6f;
@@ -24,9 +28,23 @@ public class PlayerController : MonoBehaviour
     private bool isRolling = false;
     private bool canRoll = true;
     private Vector2 lastInputDirection = Vector2.up;
+    
+    // Propiedad pública para que las armas puedan verificar si estamos en roll
+    public bool IsRolling => isRolling;
 
     private PlayerHealth playerHealth;
     private bool isInitialized = false;
+
+    void Awake()
+    {
+        // SIEMPRE aplicar valores si está en (0,0,0)
+        if (weaponOffset == Vector3.zero)
+        {
+            // Radio ~5.0 con altura moderada para órbita tipo Tiny Rogues
+            weaponOffset = new Vector3(4.5f, 2.5f, 0f); // Radio ≈ 5.15 unidades
+            Debug.Log($"WeaponOffset inicializado a (4.5, 2.5, 0) - Radio: {weaponOffset.magnitude}");
+        }
+    }
 
     void Start()
     {
@@ -66,6 +84,9 @@ public class PlayerController : MonoBehaviour
                     Quaternion.identity,
                     transform // parent al jugador
                 );
+
+                // Aplicar el offset del arma
+                weaponInstance.transform.localPosition = weaponOffset;
 
                 Weapon weaponScript = weaponInstance.GetComponent<Weapon>();
                 if (weaponScript != null)
