@@ -5,11 +5,21 @@ public class PlayerHealth : MonoBehaviour
 {
     public int maxHealth;
     public int currentHealth;
+    
+    [Header("UI (Sistema Antiguo - Obsoleto)")]
+    [Tooltip("Sistema antiguo de corazones - usar HeartDisplay en su lugar")]
     public Image[] hearts;
     public Sprite fullHeart;
     public Sprite emptyHeart;
+    
+    [Header("UI (Sistema Nuevo - Recomendado)")]
+    [Tooltip("Referencia al HeartDisplay en el Canvas")]
+    public HeartDisplay heartDisplay;
+    
+    [Header("Invulnerabilidad")]
     public float invulnerableTime = 1f;
     private bool isInvulnerable = false;
+    
     private PlayerController playerController;
     private bool isInitialized = false;
 
@@ -22,7 +32,13 @@ public class PlayerHealth : MonoBehaviour
     // Método público para inicializar después de que playerClass esté asignado
     public void Initialize()
     {
-        if (isInitialized) return;
+        Debug.Log("[PlayerHealth] Initialize() llamado");
+        
+        if (isInitialized) 
+        {
+            Debug.Log("[PlayerHealth] Ya estaba inicializado, saliendo...");
+            return;
+        }
         
         if (playerController == null)
         {
@@ -37,7 +53,22 @@ public class PlayerHealth : MonoBehaviour
 
         maxHealth = playerController.playerClass.maxHealth;
         currentHealth = maxHealth;
-        UpdateHearts();
+        
+        Debug.Log($"[PlayerHealth] maxHealth={maxHealth}, heartDisplay={(heartDisplay != null ? "ASIGNADO" : "NULL")}");
+        
+        // Inicializar el nuevo sistema de HeartDisplay
+        if (heartDisplay != null)
+        {
+            Debug.Log($"[PlayerHealth] Llamando a heartDisplay.InitializeHearts({maxHealth})");
+            heartDisplay.InitializeHearts(maxHealth);
+            heartDisplay.UpdateHearts(currentHealth);
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerHealth] No hay HeartDisplay asignado. Usando sistema antiguo.");
+            UpdateHeartsOldSystem(); // Fallback al sistema antiguo
+        }
+        
         isInitialized = true;
         Debug.Log($"PlayerHealth inicializado: {currentHealth}/{maxHealth} HP");
     }
@@ -46,9 +77,13 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isInvulnerable || (playerController != null && playerController.IsInvulnerable()))
             return;
+            
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Actualizar UI
         UpdateHearts();
+        
         if (currentHealth <= 0)
         {
             Die();
@@ -75,6 +110,23 @@ public class PlayerHealth : MonoBehaviour
 
     void UpdateHearts()
     {
+        // Sistema nuevo (preferido)
+        if (heartDisplay != null)
+        {
+            heartDisplay.UpdateHearts(currentHealth);
+        }
+        else
+        {
+            // Fallback al sistema antiguo
+            UpdateHeartsOldSystem();
+        }
+    }
+
+    void UpdateHeartsOldSystem()
+    {
+        // Sistema antiguo compatible con el array de Image[]
+        if (hearts == null || hearts.Length == 0) return;
+        
         for (int i = 0; i < hearts.Length; i++)
         {
             if (i < currentHealth)

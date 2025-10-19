@@ -104,5 +104,81 @@ public static class PixelArtSettings
             "Configura la Reference Resolution en el Inspector.", 
             "OK");
     }
+
+    [MenuItem("Tools/Pixel Art/Setup All Canvas (UI)")]
+    static void SetupAllCanvas()
+    {
+        Canvas[] allCanvas = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        int configuredCount = 0;
+
+        foreach (Canvas canvas in allCanvas)
+        {
+            // Solo configurar Canvas de Screen Space
+            if (canvas.renderMode != RenderMode.WorldSpace)
+            {
+                // Añadir UIScalerSetup si no existe
+                if (canvas.GetComponent<UIScalerSetup>() == null)
+                {
+                    UIScalerSetup scaler = canvas.gameObject.AddComponent<UIScalerSetup>();
+                    scaler.referenceResolution = new Vector2(480, 270);
+                    scaler.matchWidthOrHeight = 0f; // Match width para 16:9
+                    scaler.pixelPerfect = false;
+                    configuredCount++;
+                    Debug.Log($"✅ Canvas '{canvas.gameObject.name}' configurado");
+                }
+            }
+        }
+
+        EditorUtility.DisplayDialog("Canvas Setup", 
+            $"✅ {configuredCount} Canvas configurados para pixel art.\n\n" +
+            "Configuración aplicada:\n" +
+            "- Reference Resolution: 480x270\n" +
+            "- Scale Mode: Scale With Screen Size\n" +
+            "- Match: Width (0.0)\n\n" +
+            "Ahora tu UI se verá correcta en fullscreen.", 
+            "OK");
+    }
+
+    [MenuItem("Tools/Pixel Art/Setup Complete Project (Camera + Canvas + Sprites)")]
+    static void SetupCompleteProject()
+    {
+        // Configurar sprites
+        ConfigureAllSprites();
+        
+        // Configurar cámara
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            mainCam.orthographic = true;
+            if (mainCam.GetComponent<PixelPerfectSetup>() == null)
+            {
+                mainCam.gameObject.AddComponent<PixelPerfectSetup>();
+            }
+        }
+
+        // Configurar todos los Canvas
+        Canvas[] allCanvas = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        foreach (Canvas canvas in allCanvas)
+        {
+            if (canvas.renderMode != RenderMode.WorldSpace)
+            {
+                if (canvas.GetComponent<UIScalerSetup>() == null)
+                {
+                    UIScalerSetup scaler = canvas.gameObject.AddComponent<UIScalerSetup>();
+                    scaler.referenceResolution = new Vector2(480, 270);
+                    scaler.matchWidthOrHeight = 0f;
+                    scaler.pixelPerfect = false;
+                }
+            }
+        }
+
+        EditorUtility.DisplayDialog("Complete Setup", 
+            "✅ Proyecto completamente configurado para Pixel Art.\n\n" +
+            "✓ Sprites: Point filter\n" +
+            "✓ Cámara: PixelPerfectSetup\n" +
+            "✓ Canvas: UIScalerSetup (480x270)\n\n" +
+            "¡Listo para fullscreen!", 
+            "OK");
+    }
 #endif
 }

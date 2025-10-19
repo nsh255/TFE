@@ -44,15 +44,15 @@ public class PlayerController : MonoBehaviour
             weaponOffset = new Vector3(4.5f, 2.5f, 0f); // Radio ≈ 5.15 unidades
             Debug.Log($"WeaponOffset inicializado a (4.5, 2.5, 0) - Radio: {weaponOffset.magnitude}");
         }
+        
+        // Inicializar referencias de componentes en Awake para que estén listas antes de Initialize()
+        animator = GetComponent<Animator>();
+        rigidbody = GetComponent<Rigidbody2D>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     void Start()
     {
-        // Solo inicializar componentes básicos
-        animator = GetComponent<Animator>();
-        rigidbody = GetComponent<Rigidbody2D>();
-        playerHealth = GetComponent<PlayerHealth>();
-        
         // Si playerClass ya está asignado (para testing directo), inicializar
         if (playerClass != null && !isInitialized)
         {
@@ -112,7 +112,22 @@ public class PlayerController : MonoBehaviour
         // Inicializar PlayerHealth después de que playerClass esté asignado
         if (playerHealth != null)
         {
+            Debug.Log("[PlayerController] Inicializando PlayerHealth...");
             playerHealth.Initialize();
+        }
+        else
+        {
+            Debug.LogError("[PlayerController] playerHealth es NULL! No se puede inicializar. Buscando componente...");
+            playerHealth = GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                Debug.Log("[PlayerController] PlayerHealth encontrado, inicializando...");
+                playerHealth.Initialize();
+            }
+            else
+            {
+                Debug.LogError("[PlayerController] PlayerHealth NO existe en el prefab del jugador!");
+            }
         }
 
         isInitialized = true;
