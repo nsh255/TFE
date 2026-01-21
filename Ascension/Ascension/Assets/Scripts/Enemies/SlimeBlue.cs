@@ -26,8 +26,6 @@ public class SlimeBlue : Enemy
     private float dashTimer = 0f;
     private float lastDashTime = -999f;
     private Vector2 dashDirection;
-    private Rigidbody2D rb;
-    private Animator animator;
 
     protected override void Start()
     {
@@ -51,6 +49,13 @@ public class SlimeBlue : Enemy
         base.Update();
         
         if (isDead || player == null) return;
+
+        // Cooldown al spawnear: evita dash instantáneo.
+        if (!IsAIEnabled)
+        {
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
         if (isDashing)
         {
@@ -83,7 +88,7 @@ public class SlimeBlue : Enemy
         if (isDashing)
         {
             // Movimiento rápido durante el dash (en 8 direcciones para top-down)
-            rb.linearVelocity = dashDirection * dashSpeed;
+            rb.linearVelocity = dashDirection * (dashSpeed * TileSpeedMultiplier);
         }
         else if (!isDead)
         {

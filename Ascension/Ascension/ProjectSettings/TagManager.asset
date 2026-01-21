@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Enemy
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -13,11 +15,11 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Enemy
+  - Wall
+  - Floor
+  - Entities
   - 
   - 
   - 
@@ -41,8 +43,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Enemies
+  - name: Floor
+    uniqueID: 1977158815
+    locked: 0
+  - name: Entities
     uniqueID: 365404321
+    locked: 0
+  - name: Walls
+    uniqueID: 383476537
+    locked: 0
+  - name: UI
+    uniqueID: 2000415195
     locked: 0
   m_RenderingLayers:
   - Default

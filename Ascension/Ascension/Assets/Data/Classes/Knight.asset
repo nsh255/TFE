@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   className: Caballero
   maxHealth: 6
-  speed: 16
+  speed: 2.5
   startingWeaponData: {fileID: 11400000, guid: 089528f34db9af749a5d16380417cfb8, type: 2}

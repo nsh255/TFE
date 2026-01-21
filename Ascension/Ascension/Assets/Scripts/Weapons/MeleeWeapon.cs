@@ -21,6 +21,8 @@ public class MeleeWeapon : Weapon
     
     private WeaponTrail weaponTrail;
 
+    public bool IsSwinging => isSwinging;
+
     void Awake()
     {
         // Aplicar valores por defecto si no están configurados en el prefab
@@ -62,6 +64,19 @@ public class MeleeWeapon : Weapon
     {
         // Llamar al Update de la clase base (rotación y input)
         base.Update();
+
+        // Si el jugador NO está haciendo click, el arma no debe poder hacer daño.
+        // Cancelamos el swing activo al soltar el botón para evitar hitbox persistente.
+        if (!Input.GetMouseButton(0) && isSwinging)
+        {
+            isSwinging = false;
+            DisableHitbox();
+
+            if (weaponTrail != null)
+            {
+                weaponTrail.DisableTrail();
+            }
+        }
         
         // Manejar la animación del swing
         if (isSwinging)
@@ -93,6 +108,11 @@ public class MeleeWeapon : Weapon
                 currentRotation.z = swingStartAngle + currentSwingOffset;
                 transform.localRotation = Quaternion.Euler(currentRotation);
             }
+        }
+        else
+        {
+            // Capa extra de seguridad: si no estamos swingueando, hitbox siempre off.
+            DisableHitbox();
         }
     }
 
@@ -153,6 +173,11 @@ public class MeleeWeapon : Weapon
     // Método que se activa cuando la hitbox colisiona con algo.
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Seguridad: si no estamos atacando (y click presionado), NO hacer daño.
+        if (!isSwinging) return;
+        if (!Input.GetMouseButton(0)) return;
+        if (hitbox == null || !hitbox.enabled) return;
+
         // Aplicar daño al enemigo
         if (other.CompareTag("Enemy") && weaponData != null)
         {

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c352ffa9008d1534b87ba8a4bedf9888, type: 3}
+  m_Name: FloorVariantTile
+  m_EditorClassIdentifier: Assembly-CSharp::VariantTile
+  variants:
+  - {fileID: 21300000, guid: e659043d26fe06848b9e29f432ad2ffa, type: 3}
+  - {fileID: 21300000, guid: 36631d3bd78a02f40a350cdc897b2e1e, type: 3}
+  - {fileID: 21300000, guid: 8f6721c17acaaa741b7aec1a79e188d0, type: 3}
+  deterministic: 1
+  seed: 1776456860
+  tileEffect: {fileID: 11400000, guid: f2da934b20be7a64096eff34cec366d3, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}

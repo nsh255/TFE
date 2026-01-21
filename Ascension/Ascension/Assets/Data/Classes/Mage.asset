@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   className: Mago
   maxHealth: 3
-  speed: 40
+  speed: 3.2
   startingWeaponData: {fileID: 11400000, guid: d73b0b92b417c4a458feea27ce6eca1f, type: 2}

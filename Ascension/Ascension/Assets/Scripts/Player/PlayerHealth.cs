@@ -19,9 +19,18 @@ public class PlayerHealth : MonoBehaviour
     [Header("Invulnerabilidad")]
     public float invulnerableTime = 1f;
     private bool isInvulnerable = false;
+
+    [Header("Feedback de Daño")]
+    [Tooltip("Parpadeo blanco mientras es invulnerable")]
+    [SerializeField] private bool flashWhiteOnDamage = true;
+    [SerializeField, Min(1f)] private float blinkFrequencyHz = 12f;
     
     private PlayerController playerController;
     private bool isInitialized = false;
+
+    private SpriteRenderer[] spriteRenderers;
+    private Color[] originalColors;
+    private Coroutine damageCoroutine;
 
     void Start()
     {
@@ -71,6 +80,18 @@ public class PlayerHealth : MonoBehaviour
         
         isInitialized = true;
         Debug.Log($"PlayerHealth inicializado: {currentHealth}/{maxHealth} HP");
+
+        CacheSpriteRenderers();
+    }
+
+    private void CacheSpriteRenderers()
+    {
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        originalColors = new Color[spriteRenderers.Length];
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            originalColors[i] = spriteRenderers[i] != null ? spriteRenderers[i].color : Color.white;
+        }
     }
 
     public void TakeDamage(int amount)
@@ -90,15 +111,75 @@ public class PlayerHealth : MonoBehaviour
         }
         else
         {
-            StartCoroutine(InvulnerabilityCoroutine());
+            if (damageCoroutine != null)
+            {
+                StopCoroutine(damageCoroutine);
+            }
+            damageCoroutine = StartCoroutine(DamageInvulnerabilityCoroutine());
         }
     }
 
-    private System.Collections.IEnumerator InvulnerabilityCoroutine()
+    private System.Collections.IEnumerator DamageInvulnerabilityCoroutine()
     {
         isInvulnerable = true;
-        yield return new WaitForSeconds(invulnerableTime);
+
+        if (spriteRenderers == null || spriteRenderers.Length == 0)
+        {
+            CacheSpriteRenderers();
+        }
+
+        float start = Time.time;
+        float end = start + Mathf.Max(0f, invulnerableTime);
+        float blinkPeriod = blinkFrequencyHz > 0f ? (1f / blinkFrequencyHz) : 0.1f;
+        float nextToggle = 0f;
+        bool white = true;
+
+        while (Time.time < end)
+        {
+            if (flashWhiteOnDamage && spriteRenderers != null)
+            {
+                if (Time.time >= nextToggle)
+                {
+                    nextToggle = Time.time + blinkPeriod;
+                    white = !white;
+                }
+
+                for (int i = 0; i < spriteRenderers.Length; i++)
+                {
+                    var sr = spriteRenderers[i];
+                    if (sr == null) continue;
+                    var baseColor = (originalColors != null && i < originalColors.Length) ? originalColors[i] : sr.color;
+
+                    if (white)
+                    {
+                        sr.color = new Color(1f, 1f, 1f, baseColor.a);
+                    }
+                    else
+                    {
+                        sr.color = baseColor;
+                    }
+                }
+            }
+
+            yield return null;
+        }
+
+        // Restaurar colores
+        if (spriteRenderers != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                var sr = spriteRenderers[i];
+                if (sr == null) continue;
+                if (originalColors != null && i < originalColors.Length)
+                {
+                    sr.color = originalColors[i];
+                }
+            }
+        }
+
         isInvulnerable = false;
+        damageCoroutine = null;
     }
 
     public void Heal(int amount)
@@ -106,6 +187,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth += amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         UpdateHearts();
+        Debug.Log($"[PlayerHealth] Curado {amount} HP. HP actual: {currentHealth}/{maxHealth}");
     }
 
     void UpdateHearts()
@@ -139,8 +221,20 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        // Aquí puedes poner la lógica de muerte del jugador
-        Debug.Log("Player Dead");
-        // Por ejemplo: SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        Debug.Log("[PlayerHealth] Player Dead - Notificando a GameManager");
+        
+        // Notificar al GameManager
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameOver();
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerHealth] GameManager no encontrado. Recargando escena como fallback.");
+            // Fallback: recargar escena si no hay GameManager
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+            );
+        }
     }
 }

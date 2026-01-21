@@ -12,8 +12,8 @@ public class PixelPerfectSetup : MonoBehaviour
     public Vector2Int referenceResolution = new Vector2Int(480, 270);
     
     [Tooltip("Factor de escala de píxeles (2 = cada pixel x2, 3 = cada pixel x3, etc.)")]
-    [Range(1, 6)]
-    public int pixelScale = 2;
+    [Range(1, 350)]
+    public int pixelScale = 17;
     
     [Tooltip("Si está activo, ajusta automáticamente al cambiar la ventana")]
     public bool dynamicResolution = true;
@@ -50,9 +50,12 @@ public class PixelPerfectSetup : MonoBehaviour
 
     void ApplyPixelPerfectSettings()
     {
-        // Calcular el tamaño ortográfico correcto
-        // La altura de la cámara en unidades de Unity debe ser la mitad de la resolución de referencia
-        float targetHeight = referenceResolution.y / 2f;
+        // Calcular el tamaño ortográfico correcto APLICANDO el pixelScale
+        // Cuanto mayor sea pixelScale, menor debe ser orthographicSize (más zoom)
+        // orthographicSize = altura visible en unidades del mundo / 2
+        // Si pixelScale = 1 → se ve toda la referenceResolution
+        // Si pixelScale = 4 → se ve 1/4 de la referenceResolution (sprites x4 más grandes)
+        float targetHeight = referenceResolution.y / (2f * pixelScale);
         cam.orthographicSize = targetHeight;
 
         Debug.Log($"[PixelPerfect] Configuración aplicada:");
@@ -68,7 +71,7 @@ public class PixelPerfectSetup : MonoBehaviour
     /// </summary>
     public void SetPixelScale(int scale)
     {
-        pixelScale = Mathf.Clamp(scale, 1, 6);
+        pixelScale = Mathf.Clamp(scale, 1, 350);
         ApplyPixelPerfectSettings();
     }
 

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   className: "Espadach\xEDn"
   maxHealth: 4
-  speed: 32
+  speed: 3.0
   startingWeaponData: {fileID: 11400000, guid: db3afa1dae570f748b5969347e1759b9, type: 2}

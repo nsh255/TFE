@@ -26,6 +26,14 @@ public class SlimeRed : Enemy
         
         if (isDead || player == null) return;
 
+        // Cooldown al spawnear: evita persecución/daño instantáneo.
+        if (!IsAIEnabled)
+        {
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+            if (animator != null) animator.SetBool("IsMoving", false);
+            return;
+        }
+
         // Calcular distancia al jugador
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
@@ -47,14 +55,14 @@ public class SlimeRed : Enemy
         // Mover hacia el jugador
         if (rb != null)
         {
-            rb.linearVelocity = direction * moveSpeed;
+            rb.linearVelocity = direction * (moveSpeed * TileSpeedMultiplier);
         }
         else
         {
             transform.position = Vector2.MoveTowards(
                 transform.position, 
                 player.position, 
-                moveSpeed * Time.deltaTime
+                (moveSpeed * TileSpeedMultiplier) * Time.deltaTime
             );
         }
         

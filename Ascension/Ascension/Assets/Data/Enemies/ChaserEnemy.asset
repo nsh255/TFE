@@ -15,6 +15,6 @@ MonoBehaviour:
   enemyName: Slime que sigue
   maxHealth: 3
   damage: 1
-  speed: 6
-  sprite: {fileID: 0}
+  speed: 2.25
+  sprite: {fileID: -3503411515486987911, guid: 689bd3f54dcaf7546a261bd7f0c48ea3, type: 3}
   enemyCost: 1

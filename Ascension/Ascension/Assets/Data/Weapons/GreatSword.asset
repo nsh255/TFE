@@ -18,3 +18,4 @@ MonoBehaviour:
   sprite: {fileID: -9150576205834671035, guid: be2473d78ed29c34fb294813fb586227, type: 3}
   bulletPrefab: {fileID: 0}
   weaponPrefab: {fileID: 8415272668440444127, guid: db6dcdc3947885146a0e251f50e21f77, type: 3}
+  verticalOffset: 0.3

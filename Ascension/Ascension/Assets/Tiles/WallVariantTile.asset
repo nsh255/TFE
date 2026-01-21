@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c352ffa9008d1534b87ba8a4bedf9888, type: 3}
+  m_Name: WallVariantTile
+  m_EditorClassIdentifier: Assembly-CSharp::VariantTile
+  variants:
+  - {fileID: 21300000, guid: 56041f1890feacd40ae37e554ca819c7, type: 3}
+  deterministic: 1
+  seed: 405904966
+  tileEffect: {fileID: 11400000, guid: a2ac588fdd7023d4aa86619468ca2d74, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}

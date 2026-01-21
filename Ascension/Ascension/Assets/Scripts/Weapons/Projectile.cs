@@ -5,12 +5,23 @@ public class Projectile : MonoBehaviour
     public int damage = 1;
     public float speed = 10f;
     public float lifetime = 3f;
+    [Header("Escala Pixel Consistente")]
+    [Tooltip("Tamaño objetivo en píxeles que debe ocupar el proyectil (ancho) sobre su sprite base de 16x16")] public int desiredPixelSize = 8;
 
     private Rigidbody2D rb;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        
+        // Aplicar boost de daño si existe
+        if (DamageBoostManager.Instance != null)
+        {
+            damage = DamageBoostManager.Instance.GetBoostedDamage(damage);
+        }
+        
+        // Ajustar escala del proyectil según el pixelScale de la cámara
+        AdjustProjectileScale();
         
         // Hacer el proyectil más visible
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -65,6 +76,36 @@ public class Projectile : MonoBehaviour
         if (other.CompareTag("Wall") || other.CompareTag("Enemy"))
         {
             Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// Ajusta la escala del proyectil según el pixelScale de la cámara principal
+    /// para que se mantenga proporcional al zoom del juego
+    /// </summary>
+    private void AdjustProjectileScale()
+    {
+        // Queremos que el proyectil ocupe desiredPixelSize píxeles sobre un sprite (normalmente 16x16).
+        // WorldScale = desiredPixelSize / pixelsPerUnitSprite
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null || sr.sprite == null) return;
+        float ppu = sr.sprite.pixelsPerUnit; // debería ser 16
+        if (ppu > 64f) ppu = 16f; // Fallback para sprites importados con PPU gigante
+        float targetScale = desiredPixelSize / ppu; // p.ej. 8 / 16 = 0.5
+        // Clamp para evitar invisibilidad
+        targetScale = Mathf.Max(targetScale, 0.0625f);
+        transform.localScale = new Vector3(targetScale, targetScale, 1f);
+        Debug.Log($"[Projectile] Escala fijada por pixels → {targetScale} (desiredPixelSize={desiredPixelSize}, ppu={ppu})");
+
+        // Calcular tamaño aproximado en pantalla
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            float worldVisibleHeight = cam.orthographicSize * 2f;
+            float pixelsPerWorldUnit = Screen.height / worldVisibleHeight;
+            float worldHeightUnits = (sr.sprite.rect.height / ppu) * targetScale; // normalmente (16/16)*scale = scale
+            float onScreenPixelHeight = worldHeightUnits * pixelsPerWorldUnit;
+            Debug.Log($"[ProjectileSizeDebug] sprite={sr.sprite.name}, targetScale={targetScale:F4}, screenPixels≈{onScreenPixelHeight:F1}");
         }
     }
 }

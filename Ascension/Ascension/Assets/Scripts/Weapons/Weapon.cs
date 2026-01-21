@@ -13,6 +13,10 @@ public class Weapon : MonoBehaviour
 
     private bool isInitialized = false;
 
+    [Header("Attack Input")]
+    [Tooltip("Si está activo, ataca mientras mantienes el click. Si no, ataca solo al hacer click.")]
+    [SerializeField] private bool attackWhileHeld = false;
+
     protected virtual void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -62,11 +66,10 @@ public class Weapon : MonoBehaviour
             RotateTowardsMouse(); // DESPUÉS rota (orientación)
         }
 
-        // Detectar clic izquierdo para atacar
-        if (Input.GetMouseButtonDown(0))
-        {
-            Attack();
-        }
+        // Input de ataque: por defecto solo al click (evita "hitbox al apuntar").
+        // Las armas concretas gestionan cooldown/animación/hitbox.
+        bool wantsAttack = attackWhileHeld ? Input.GetMouseButton(0) : Input.GetMouseButtonDown(0);
+        if (wantsAttack) Attack();
     }
 
     // La lógica de ataque se manejará en scripts separados.
@@ -86,19 +89,18 @@ public class Weapon : MonoBehaviour
         Vector3 mouseWorldPosition = camera.ScreenToWorldPoint(Input.mousePosition);
         mouseWorldPosition.z = 0;
 
-        // Centro de órbita: posición del jugador + offset vertical hacia arriba
-        float orbitCenterYOffset = 7f; // Ajusta este valor para subir/bajar el centro de órbita
-        Vector3 orbitCenter = transform.parent.position + new Vector3(0, orbitCenterYOffset, 0);
+        // Centro de órbita: posición del jugador + ligero offset hacia arriba (cabeza)
+        float headOffset = 0.5f; // Ajusta este valor para subir/bajar el centro de órbita
+        Vector3 orbitCenter = transform.parent.position + new Vector3(0, headOffset, 0);
 
-        // Calcular dirección desde el centro de órbita hacia el mouse
+        // Calcular dirección desde el centro de órbita (cabeza del player) hacia el mouse
         Vector2 direction = (mouseWorldPosition - orbitCenter).normalized;
         
-        // Obtener la distancia de órbita (magnitud del offset) y ampliarla ligeramente
-        float orbitDistance = player.weaponOffset.magnitude * 1.15f; // Radio un 15% más amplio
+        // Reducir la distancia de órbita para que el arma esté más cerca del player
+        float orbitDistance = player.weaponOffset.magnitude * 0.5f; // Reducido a la mitad
         
-        // Posicionar el arma en la dirección del mouse a la distancia del offset
-        // Usamos localPosition pero sumamos el offset vertical
-        Vector3 targetPosition = (Vector3)direction * orbitDistance + new Vector3(0, orbitCenterYOffset, 0);
+        // Posicionar el arma en la dirección del mouse a la distancia de órbita (en localPosition)
+        Vector3 targetPosition = (Vector3)direction * orbitDistance + new Vector3(0, headOffset, 0);
         transform.localPosition = targetPosition;
     }
 

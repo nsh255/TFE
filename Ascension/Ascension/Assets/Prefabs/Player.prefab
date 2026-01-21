@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4833793471649820127}
   - component: {fileID: 8842628682370832530}
   - component: {fileID: 5413857733722753006}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 365404321
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 4334783836991956000, guid: d44963ba44b42a840bff82eb6f188b9b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -131,6 +131,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerClass: {fileID: 0}
   weaponOffset: {x: 0, y: 0, z: 0}
+  scaleWeaponOffsetWithPlayer: 1
+  weaponOffsetScale: 1
   rollSpeedMultiplier: 2
   rollCooldown: 0.6
   rollKey: 32
@@ -196,8 +198,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 2}
-  m_Radius: 2
+  m_Offset: {x: 0, y: 0.2}
+  m_Radius: 0.2
 --- !u!114 &5413857733722753006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,4 +217,5 @@ MonoBehaviour:
   hearts: []
   fullHeart: {fileID: 0}
   emptyHeart: {fileID: 0}
+  heartDisplay: {fileID: 0}
   invulnerableTime: 1

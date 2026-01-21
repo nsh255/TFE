@@ -13,9 +13,20 @@ public class EnemyProjectile : MonoBehaviour
     
     [Tooltip("Capa del jugador para detectar colisiones")]
     public LayerMask playerLayer;
+    [Header("Escala Pixel Consistente")]
+    [Tooltip("Tamaño objetivo en píxeles para proyectil enemigo (ancho)")] public int desiredPixelSize = 6;
 
     private void Start()
     {
+        // Aplicar boost de daño si existe
+        if (DamageBoostManager.Instance != null)
+        {
+            damage = DamageBoostManager.Instance.GetBoostedDamage(damage);
+        }
+        
+        // Ajustar escala del proyectil según el pixelScale de la cámara
+        AdjustProjectileScale();
+        
         // Autodestrucción después de lifetime
         Destroy(gameObject, lifetime);
     }
@@ -63,6 +74,31 @@ public class EnemyProjectile : MonoBehaviour
         else if (!collision.gameObject.CompareTag("Enemy"))
         {
             Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// Ajusta la escala del proyectil enemigo según el pixelScale de la cámara principal
+    /// </summary>
+    private void AdjustProjectileScale()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null || sr.sprite == null) return;
+        float ppu = sr.sprite.pixelsPerUnit; // esperado 16
+        if (ppu > 64f) ppu = 16f; // Fallback para PPU anómalos
+        float targetScale = desiredPixelSize / ppu; // p.ej. 6 / 16 = 0.375
+        targetScale = Mathf.Max(targetScale, 0.0625f);
+        transform.localScale = new Vector3(targetScale, targetScale, 1f);
+        Debug.Log($"[EnemyProjectile] Escala fijada por pixels → {targetScale} (desiredPixelSize={desiredPixelSize}, ppu={ppu})");
+
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            float worldVisibleHeight = cam.orthographicSize * 2f;
+            float pixelsPerWorldUnit = Screen.height / worldVisibleHeight;
+            float worldHeightUnits = (sr.sprite.rect.height / ppu) * targetScale;
+            float onScreenPixelHeight = worldHeightUnits * pixelsPerWorldUnit;
+            Debug.Log($"[EnemyProjectileSizeDebug] sprite={sr.sprite.name}, targetScale={targetScale:F4}, screenPixels≈{onScreenPixelHeight:F1}");
         }
     }
 }
