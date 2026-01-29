@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Instancia al jugador en el punto de spawn de la escena con la clase seleccionada previamente.
+/// Conecta las dependencias necesarias del jugador con la interfaz de usuario.
+/// </summary>
 public class PlayerSpawner : MonoBehaviour
 {
     public GameObject playerPrefab;
@@ -9,9 +13,11 @@ public class PlayerSpawner : MonoBehaviour
     [Tooltip("Referencia al HeartDisplay en el Canvas de la escena")]
     public HeartDisplay heartDisplay;
 
+    /// <summary>
+    /// Instancia al jugador con la clase seleccionada y conecta las referencias de UI.
+    /// </summary>
     void Start()
     {
-        // Verificar que se haya seleccionado una clase
         if (ClassSelectionManager.SelectedClass == null)
         {
             Debug.LogError("No se ha seleccionado ninguna clase. Volviendo al menú...");
@@ -19,27 +25,22 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
-        // Instanciar el jugador
         GameObject player = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
         
-        // Conectar el HeartDisplay PRIMERO (antes de inicializar)
         var playerHealth = player.GetComponent<PlayerHealth>();
         if (playerHealth != null && heartDisplay != null)
         {
             playerHealth.heartDisplay = heartDisplay;
-            Debug.Log("[PlayerSpawner] HeartDisplay conectado automáticamente");
         }
         else if (heartDisplay == null)
         {
-            Debug.LogWarning("[PlayerSpawner] No hay HeartDisplay asignado en PlayerSpawner. Asígnalo en el Inspector.");
+            Debug.LogWarning("[PlayerSpawner] No hay HeartDisplay asignado en PlayerSpawner.");
         }
         
-        // IMPORTANTE: Asignar la clase ANTES de que se ejecuten los componentes
         var controller = player.GetComponent<PlayerController>();
         if (controller != null)
         {
             controller.playerClass = ClassSelectionManager.SelectedClass;
-            // Inicializar manualmente después de asignar la clase (Y DESPUÉS de conectar HeartDisplay)
             controller.Initialize();
         }
         else

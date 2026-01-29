@@ -27,6 +27,9 @@ public class SlimeBlue : Enemy
     private float lastDashTime = -999f;
     private Vector2 dashDirection;
 
+    /// <summary>
+    /// Inicializa el slime azul y establece valores por defecto.
+    /// </summary>
     protected override void Start()
     {
         base.Start();
@@ -34,23 +37,22 @@ public class SlimeBlue : Enemy
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         
-        // Valores por defecto
         if (dashSpeed == 0) dashSpeed = 12f;
         if (dashDuration == 0) dashDuration = 0.4f;
         if (dashCooldown == 0) dashCooldown = 2f;
         if (minDashDistance == 0) minDashDistance = 3f;
         if (maxDashDistance == 0) maxDashDistance = 10f;
-        
-        Debug.Log($"[SlimeBlue] Inicializado en {name} - DashSpeed: {dashSpeed}, Cooldown: {dashCooldown}s");
     }
 
+    /// <summary>
+    /// Actualiza el comportamiento de dash cada frame.
+    /// </summary>
     protected override void Update()
     {
         base.Update();
         
         if (isDead || player == null) return;
 
-        // Cooldown al spawnear: evita dash instantáneo.
         if (!IsAIEnabled)
         {
             if (rb != null) rb.linearVelocity = Vector2.zero;
@@ -59,7 +61,6 @@ public class SlimeBlue : Enemy
 
         if (isDashing)
         {
-            // Continuar el dash
             dashTimer -= Time.deltaTime;
             if (dashTimer <= 0f)
             {
@@ -68,7 +69,6 @@ public class SlimeBlue : Enemy
         }
         else
         {
-            // Comportamiento normal: verificar si debe hacer dash
             float distanceToPlayer = Vector2.Distance(transform.position, player.position);
             
             if (distanceToPlayer >= minDashDistance && 
@@ -79,24 +79,27 @@ public class SlimeBlue : Enemy
             }
         }
         
-        // Flip sprite según dirección
         FlipSprite();
     }
 
+    /// <summary>
+    /// Aplica movimiento durante el dash en FixedUpdate.
+    /// </summary>
     private void FixedUpdate()
     {
         if (isDashing)
         {
-            // Movimiento rápido durante el dash (en 8 direcciones para top-down)
             rb.linearVelocity = dashDirection * (dashSpeed * TileSpeedMultiplier);
         }
         else if (!isDead)
         {
-            // Sin movimiento cuando no está dasheando
             rb.linearVelocity = Vector2.zero;
         }
     }
 
+    /// <summary>
+    /// Inicia un dash hacia la posición del jugador.
+    /// </summary>
     private void StartDash()
     {
         if (player == null) return;
@@ -105,39 +108,34 @@ public class SlimeBlue : Enemy
         dashTimer = dashDuration;
         lastDashTime = Time.time;
         
-        // Calcular dirección hacia el jugador (normalizada para movimiento en 8 direcciones)
         dashDirection = (player.position - transform.position).normalized;
         
-        // Trigger animator si existe (usaremos el trigger "Jump" para la animación de dash/salto)
         if (animator != null)
         {
             animator.SetTrigger("Jump");
         }
-        
-        Debug.Log($"[SlimeBlue] Dash iniciado hacia {dashDirection} desde {transform.position}");
     }
 
+    /// <summary>
+    /// Finaliza el dash y detiene el movimiento.
+    /// </summary>
     private void EndDash()
     {
         isDashing = false;
         rb.linearVelocity = Vector2.zero;
-        
-        Debug.Log($"[SlimeBlue] Dash finalizado en {transform.position}");
     }
 
+    /// <summary>
+    /// Voltea el sprite según la dirección del dash.
+    /// </summary>
     protected void FlipSprite()
     {
-        // Flip horizontal basado en la dirección del dash
-        if (spriteRenderer != null)
+        if (spriteRenderer != null && isDashing)
         {
-            if (isDashing)
-            {
-                // Durante el dash, usar la dirección del dash
-                if (dashDirection.x > 0.1f)
-                    spriteRenderer.flipX = false;
-                else if (dashDirection.x < -0.1f)
-                    spriteRenderer.flipX = true;
-            }
+            if (dashDirection.x > 0.1f)
+                spriteRenderer.flipX = false;
+            else if (dashDirection.x < -0.1f)
+                spriteRenderer.flipX = true;
         }
     }
 

@@ -274,12 +274,6 @@ public class BossController : Enemy
 
         rb.linearVelocity = Vector2.zero;
 
-        // Notificar victoria al GameManager
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.Victory();
-        }
-
         // Animación de muerte
         if (animator != null)
         {

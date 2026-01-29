@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
-/// GameManager central que controla el flujo del juego completo.
-/// Singleton persistente que maneja estados, pausas, victoria y derrota.
+/// Gestor central del flujo de juego que controla estados, progresión y transiciones de escena.
+/// Implementa el patrón singleton persistente entre cambios de escena.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -29,10 +31,15 @@ public class GameManager : MonoBehaviour
     public string classSelectionScene = "ClassSelection";
     public string gameScene = "GameScene";
     
-    [Header("Estado de Pausa")]
+    [Header("Fin de Partida")]
+    [SerializeField] private bool returnToMainMenuOnGameOver = true;
+    [SerializeField, Min(0f)] private float returnToMainMenuDelaySeconds = 0.75f;
+
     private bool isPaused = false;
-    
-    // Eventos para que otros sistemas reaccionen
+    private bool runResultRecorded;
+    private Coroutine returnToMenuCoroutine;
+    private GameObject deathOverlayInstance;
+
     public delegate void GameStateChanged(GameState newState);
     public static event GameStateChanged OnGameStateChanged;
     
@@ -42,26 +49,53 @@ public class GameManager : MonoBehaviour
     public delegate void EnemyKilled(int totalKills);
     public static event EnemyKilled OnEnemyKilled;
 
+    /// <summary>
+    /// Inicializa el singleton y asegura su persistencia entre escenas.
+    /// </summary>
     void Awake()
     {
-        // Patrón Singleton
         if (Instance == null)
         {
             Instance = this;
+
+            if (ScoreManager.Instance == null)
+            {
+                new GameObject("ScoreManager").AddComponent<ScoreManager>();
+            }
             DontDestroyOnLoad(gameObject);
-            Debug.Log("[GameManager] Inicializado como singleton persistente");
         }
         else
         {
-            Debug.LogWarning("[GameManager] Ya existe una instancia. Destruyendo duplicado.");
             Destroy(gameObject);
             return;
         }
     }
 
+    /// <summary>
+    /// Retorna al menú principal tras un retraso en tiempo real.
+    /// Utiliza tiempo real para funcionar correctamente con timeScale = 0.
+    /// </summary>
+    private System.Collections.IEnumerator ReturnToMenuAfterDelayRealtime()
+    {
+        float delay = Mathf.Max(0f, returnToMainMenuDelaySeconds);
+        if (delay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+        }
+        LoadMainMenu();
+        returnToMenuCoroutine = null;
+    }
+    
+    /// <summary>
+    /// Detecta la escena inicial y establece el estado apropiado del juego.
+    /// </summary>
     void Start()
     {
-        // Detectar escena inicial
+        if (currentState == GameState.GameOver || currentState == GameState.Victory)
+        {
+            return;
+        }
+
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName == mainMenuScene)
         {
@@ -77,16 +111,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Procesa la entrada del jugador para pausar/reanudar el juego.
+    /// </summary>
     void Update()
     {
-        // Input de pausa (ESC)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (currentState == GameState.Playing)
-            {
-                TogglePause();
-            }
-            else if (currentState == GameState.Paused)
+            if (currentState == GameState.Playing || currentState == GameState.Paused)
             {
                 TogglePause();
             }
@@ -96,8 +128,9 @@ public class GameManager : MonoBehaviour
     #region Estado del Juego
 
     /// <summary>
-    /// Cambia el estado del juego y notifica a todos los listeners
+    /// Cambia el estado del juego y notifica a los observadores registrados.
     /// </summary>
+    /// <param name="newState">Nuevo estado del juego.</param>
     public void ChangeState(GameState newState)
     {
         if (currentState == newState) return;
@@ -105,9 +138,6 @@ public class GameManager : MonoBehaviour
         GameState previousState = currentState;
         currentState = newState;
 
-        Debug.Log($"[GameManager] Estado cambiado: {previousState} → {newState}");
-
-        // Aplicar efectos del estado
         switch (newState)
         {
             case GameState.Playing:
@@ -121,20 +151,16 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.GameOver:
-                Time.timeScale = 0f;
-                break;
-
             case GameState.Victory:
                 Time.timeScale = 0f;
                 break;
         }
 
-        // Notificar evento
         OnGameStateChanged?.Invoke(newState);
     }
 
     /// <summary>
-    /// Alterna entre pausa y jugando
+    /// Alterna entre el estado de pausa y el estado de juego activo.
     /// </summary>
     public void TogglePause()
     {
@@ -149,7 +175,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Pausa el juego
+    /// Pausa el juego si está en ejecución.
     /// </summary>
     public void Pause()
     {
@@ -160,7 +186,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Reanuda el juego
+    /// Reanuda el juego si está pausado.
     /// </summary>
     public void Resume()
     {
@@ -175,7 +201,7 @@ public class GameManager : MonoBehaviour
     #region Progresión del Juego
 
     /// <summary>
-    /// Inicia una nueva run desde cero
+    /// Inicia una nueva partida reiniciando todos los contadores y sistemas relevantes.
     /// </summary>
     public void StartNewRun()
     {
@@ -183,7 +209,11 @@ public class GameManager : MonoBehaviour
         roomsCleared = 0;
         enemiesKilled = 0;
 
-        // Resetear sistemas
+        if (RoomFlowController.Instance != null)
+        {
+            RoomFlowController.Instance.ResetRunProgress();
+        }
+
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.ResetScore();
@@ -195,41 +225,36 @@ public class GameManager : MonoBehaviour
         }
 
         ChangeState(GameState.Playing);
-        Debug.Log("[GameManager] Nueva run iniciada");
     }
 
     /// <summary>
-    /// Notifica que se ha limpiado una sala
+    /// Registra la limpieza de una sala y otorga puntos correspondientes.
     /// </summary>
     public void NotifyRoomCleared()
     {
         roomsCleared++;
-        Debug.Log($"[GameManager] Sala {roomsCleared} limpiada");
 
-        // Sumar puntos
         if (ScoreManager.Instance != null)
         {
-            ScoreManager.Instance.Add(100); // 100 puntos por sala
+            ScoreManager.Instance.Add(100);
         }
 
         OnRoomCleared?.Invoke(roomsCleared);
 
-        // Verificar si es hora del boss
         if (roomsCleared >= roomsBeforeBoss)
         {
             Debug.Log("[GameManager] ¡Preparando sala del BOSS!");
-            // Aquí se podría cargar sala especial de boss
         }
     }
 
     /// <summary>
-    /// Notifica que se ha matado un enemigo
+    /// Registra la eliminación de un enemigo y otorga puntos.
     /// </summary>
+    /// <param name="scoreValue">Puntos otorgados por el enemigo eliminado.</param>
     public void NotifyEnemyKilled(int scoreValue = 10)
     {
         enemiesKilled++;
 
-        // Sumar puntos
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.Add(scoreValue);
@@ -239,33 +264,110 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// El jugador ha derrotado al boss final
+    /// Procesa la victoria del jugador otorgando bonificación y registrando el resultado.
     /// </summary>
     public void Victory()
     {
-        Debug.Log("[GameManager] ¡VICTORIA! El jugador ha completado la run");
         ChangeState(GameState.Victory);
 
-        // Bonus de puntos por victoria
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.Add(1000);
         }
 
-        // TODO: Mostrar pantalla de victoria
-        // VictoryScreen.Show();
+        if (!runResultRecorded && ScoreManager.Instance != null)
+        {
+            runResultRecorded = true;
+            ScoreManager.Instance.RecordRunAndSave(
+                result: "Victory",
+                roomsCleared: roomsCleared,
+                enemiesKilled: enemiesKilled,
+                playerClass: TryGetPlayerClassName()
+            );
+        }
     }
 
     /// <summary>
-    /// El jugador ha muerto (HP = 0)
+    /// Procesa la muerte del jugador registrando el resultado y retornando al menú principal.
     /// </summary>
     public void GameOver()
     {
-        Debug.Log("[GameManager] GAME OVER - El jugador ha muerto");
         ChangeState(GameState.GameOver);
 
-        // TODO: Mostrar pantalla de game over
-        // GameOverScreen.Show();
+        ShowDeathOverlay("Has muerto");
+
+        if (!runResultRecorded && ScoreManager.Instance != null)
+        {
+            runResultRecorded = true;
+            ScoreManager.Instance.RecordRunAndSave(
+                result: "GameOver",
+                roomsCleared: roomsCleared,
+                enemiesKilled: enemiesKilled,
+                playerClass: TryGetPlayerClassName()
+            );
+        }
+
+        if (returnToMenuCoroutine != null)
+        {
+            StopCoroutine(returnToMenuCoroutine);
+            returnToMenuCoroutine = null;
+        }
+
+        if (!returnToMainMenuOnGameOver)
+        {
+            Debug.LogWarning("[GameManager] returnToMainMenuOnGameOver está desactivado, pero se volverá al menú igualmente para evitar bloqueo.");
+        }
+
+        returnToMenuCoroutine = StartCoroutine(ReturnToMenuAfterDelayRealtime());
+    }
+
+    /// <summary>
+    /// Muestra un overlay oscuro con mensaje de muerte en pantalla.
+    /// </summary>
+    /// <param name="message">Mensaje a mostrar al jugador.</param>
+    private void ShowDeathOverlay(string message)
+    {
+        if (deathOverlayInstance != null) return;
+
+        deathOverlayInstance = new GameObject("DeathOverlay");
+
+        var canvas = deathOverlayInstance.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 30000;
+
+        var scaler = deathOverlayInstance.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+
+        deathOverlayInstance.AddComponent<GraphicRaycaster>();
+
+        var dimGo = new GameObject("Dim");
+        dimGo.transform.SetParent(deathOverlayInstance.transform, false);
+        var dim = dimGo.AddComponent<Image>();
+        dim.color = new Color(0f, 0f, 0f, 0.78f);
+        dim.raycastTarget = false;
+        var dimRt = dimGo.GetComponent<RectTransform>();
+        dimRt.anchorMin = Vector2.zero;
+        dimRt.anchorMax = Vector2.one;
+        dimRt.offsetMin = Vector2.zero;
+        dimRt.offsetMax = Vector2.zero;
+
+        var textGo = new GameObject("Message");
+        textGo.transform.SetParent(deathOverlayInstance.transform, false);
+        var tmp = textGo.AddComponent<TextMeshProUGUI>();
+        tmp.text = string.IsNullOrWhiteSpace(message) ? "Has muerto" : message;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = new Color(1f, 0.1f, 0.1f, 1f);
+        tmp.fontSize = 72;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
+        tmp.raycastTarget = false;
+
+        var textRt = textGo.GetComponent<RectTransform>();
+        textRt.anchorMin = new Vector2(0.5f, 0.5f);
+        textRt.anchorMax = new Vector2(0.5f, 0.5f);
+        textRt.pivot = new Vector2(0.5f, 0.5f);
+        textRt.sizeDelta = new Vector2(1400f, 320f);
+        textRt.anchoredPosition = Vector2.zero;
     }
 
     #endregion
@@ -273,17 +375,24 @@ public class GameManager : MonoBehaviour
     #region Navegación de Escenas
 
     /// <summary>
-    /// Carga el menú principal
+    /// Carga la escena del menú principal.
     /// </summary>
     public void LoadMainMenu()
     {
-        Time.timeScale = 1f; // Resetear timeScale
+        Time.timeScale = 1f;
         ChangeState(GameState.Menu);
+
+        if (deathOverlayInstance != null)
+        {
+            Destroy(deathOverlayInstance);
+            deathOverlayInstance = null;
+        }
+
         SceneManager.LoadScene(mainMenuScene);
     }
 
     /// <summary>
-    /// Carga la selección de personaje
+    /// Carga la escena de selección de clase.
     /// </summary>
     public void LoadClassSelection()
     {
@@ -293,7 +402,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Carga la escena de juego
+    /// Carga la escena de juego e inicia una nueva partida.
     /// </summary>
     public void LoadGameScene()
     {
@@ -303,7 +412,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Reinicia la run actual (recarga la escena de juego)
+    /// Reinicia la partida actual recargando la escena de juego.
     /// </summary>
     public void RestartRun()
     {
@@ -327,12 +436,10 @@ public class GameManager : MonoBehaviour
     #region Métodos de Utilidad
 
     /// <summary>
-    /// Cierra el juego (funciona en build, no en editor)
+    /// Cierra la aplicación o detiene el modo de juego en el editor.
     /// </summary>
     public void QuitGame()
     {
-        Debug.Log("[GameManager] Cerrando juego...");
-        
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -340,18 +447,36 @@ public class GameManager : MonoBehaviour
 #endif
     }
 
+    /// <summary>
+    /// Obtiene el nombre de la clase del jugador actual.
+    /// </summary>
+    /// <returns>Nombre de la clase o "Unknown" si no se encuentra.</returns>
+    private string TryGetPlayerClassName()
+    {
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null) return "Unknown";
+
+        var pc = playerObj.GetComponent<PlayerController>();
+        if (pc != null && pc.playerClass != null)
+        {
+            return pc.playerClass.className;
+        }
+
+        return "Unknown";
+    }
+
     #endregion
 }
 
 /// <summary>
-/// Estados posibles del juego
+/// Estados posibles del juego.
 /// </summary>
 public enum GameState
 {
-    Menu,                   // En el menú principal
-    CharacterSelection,     // Seleccionando personaje
-    Playing,                // Jugando activamente
-    Paused,                 // Juego pausado
-    GameOver,               // Jugador muerto
-    Victory                 // Run completada con éxito
+    Menu,
+    CharacterSelection,
+    Playing,
+    Paused,
+    GameOver,
+    Victory
 }

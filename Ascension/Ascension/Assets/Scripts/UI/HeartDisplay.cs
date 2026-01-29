@@ -35,30 +35,24 @@ public class HeartDisplay : MonoBehaviour
     }
 
     /// <summary>
-    /// Inicializa el display de corazones según la vida máxima del jugador
+    /// Inicializa el display de corazones según la vida máxima del jugador.
     /// </summary>
+    /// <param name="maxHealth">Vida máxima del jugador (número de corazones a mostrar)</param>
     public void InitializeHearts(int maxHealth)
     {
-        Debug.Log($"[HeartDisplay] InitializeHearts llamado con maxHealth={maxHealth}");
-        Debug.Log($"[HeartDisplay] heartFull={heartFull?.name ?? "NULL"}, heartEmpty={heartEmpty?.name ?? "NULL"}");
-        
-        // Limpiar corazones existentes
         ClearHearts();
-
         maxHearts = maxHealth;
 
-        // Crear corazones
         for (int i = 0; i < maxHearts; i++)
         {
             CreateHeart(i);
         }
-
-        Debug.Log($"[HeartDisplay] {maxHearts} corazones inicializados. Total images creadas: {heartImages.Count}");
     }
 
     /// <summary>
-    /// Actualiza el display según la vida actual
+    /// Actualiza el display según la vida actual.
     /// </summary>
+    /// <param name="currentHealth">Vida actual del jugador (corazones llenos)</param>
     public void UpdateHearts(int currentHealth)
     {
         if (heartImages.Count == 0)
@@ -67,48 +61,40 @@ public class HeartDisplay : MonoBehaviour
             return;
         }
 
-        // Actualizar cada corazón
         for (int i = 0; i < heartImages.Count; i++)
         {
             if (i < currentHealth)
             {
-                // Corazón lleno
                 heartImages[i].sprite = heartFull;
                 heartImages[i].enabled = true;
             }
             else
             {
-                // Corazón vacío
                 heartImages[i].sprite = heartEmpty;
                 heartImages[i].enabled = true;
             }
         }
-
-        Debug.Log($"[HeartDisplay] Corazones actualizados: {currentHealth}/{maxHearts}");
     }
 
+    /// <summary>
+    /// Crea un corazón individual en la posición especificada.
+    /// </summary>
+    /// <param name="index">Índice del corazón (determina su posición horizontal)</param>
     private void CreateHeart(int index)
     {
-        Debug.Log($"[HeartDisplay] CreateHeart({index}) iniciando...");
-        
         GameObject heartObj;
 
-        // Crear corazón desde prefab o generar uno nuevo
         if (heartPrefab != null)
         {
             heartObj = Instantiate(heartPrefab, transform);
-            Debug.Log($"[HeartDisplay] Corazón creado desde prefab");
         }
         else
         {
-            // Crear corazón básico si no hay prefab
             heartObj = new GameObject($"Heart_{index}");
             heartObj.transform.SetParent(transform);
             heartObj.AddComponent<Image>();
-            Debug.Log($"[HeartDisplay] Corazón creado proceduralmente (no hay prefab)");
         }
 
-        // Configurar el Image component
         Image heartImage = heartObj.GetComponent<Image>();
         if (heartImage == null)
         {
@@ -122,18 +108,13 @@ public class HeartDisplay : MonoBehaviour
         
         heartImage.sprite = heartFull;
         heartImage.preserveAspect = true;
-        heartImage.raycastTarget = false; // Optimización
-        
-        // IMPORTANTE: Para pixel art nítido en UI
+        heartImage.raycastTarget = false;
         heartImage.type = Image.Type.Simple;
         heartImage.useSpriteMesh = false;
 
-        // Configurar RectTransform
         RectTransform heartRect = heartObj.GetComponent<RectTransform>();
         heartRect.localScale = Vector3.one * heartScale;
         
-        // Posicionamiento horizontal (de izquierda a derecha)
-        // IMPORTANTE: Redondear a píxeles para evitar distorsión
         float xPos = Mathf.Round(index * spacing);
         heartRect.anchoredPosition = new Vector2(xPos, 0);
         
@@ -141,10 +122,7 @@ public class HeartDisplay : MonoBehaviour
         heartRect.anchorMax = new Vector2(0, 0.5f);
         heartRect.pivot = new Vector2(0, 0.5f);
 
-        // Añadir a la lista
         heartImages.Add(heartImage);
-        
-        Debug.Log($"[HeartDisplay] Corazón {index} creado en posición ({xPos}, 0)");
     }
 
     private void ClearHearts()
@@ -158,16 +136,25 @@ public class HeartDisplay : MonoBehaviour
             }
         }
 
+    /// <summary>
+    /// Destruye todos los corazones existentes y limpia la lista.
+    /// </summary>
+    private void ClearHearts()
+    {
+        foreach (Image heart in heartImages)
+        {
+            if (heart != null)
+            {
+                Destroy(heart.gameObject);
+            }
+        }
+
         heartImages.Clear();
         maxHearts = 0;
     }
 
     /// <summary>
-    /// Cambia el número máximo de corazones (útil para power-ups)
+    /// Cambia el número máximo de corazones (útil para power-ups de vida).
     /// </summary>
-    public void SetMaxHearts(int newMaxHealth, int currentHealth)
-    {
-        InitializeHearts(newMaxHealth);
-        UpdateHearts(currentHealth);
-    }
-}
+    /// <param name="newMaxHealth">Nueva vida máxima</param>
+    /// <param name="currentHealth">Vida actual</param

@@ -34,9 +34,11 @@ public class RoomController : MonoBehaviour
     [SerializeField] private bool enemiesSpawned = false;
     private List<Enemy> spawnedEnemies = new List<Enemy>();
 
+    /// <summary>
+    /// Inicializa referencias y cierra puertas al inicio.
+    /// </summary>
     void Start()
     {
-        // Auto-buscar EnemyManager si no está asignado
         if (enemyManager == null)
         {
             enemyManager = FindFirstObjectByType<EnemyManager>();
@@ -46,27 +48,25 @@ public class RoomController : MonoBehaviour
             }
         }
 
-        // Auto-buscar puertas si la lista está vacía
         if (doors.Count == 0)
         {
             Door[] foundDoors = GetComponentsInChildren<Door>();
             doors.AddRange(foundDoors);
-            Debug.Log($"[RoomController] {foundDoors.Length} puertas encontradas automáticamente");
         }
 
-        // Cerrar todas las puertas al inicio
         CloseAllDoors();
     }
 
+    /// <summary>
+    /// Controla el spawn de enemigos y verificación de limpieza cada frame.
+    /// </summary>
     void Update()
     {
-        // Si el jugador está dentro y no se han spawneado enemigos, spawnear
         if (playerInside && !enemiesSpawned && !isCleared)
         {
             SpawnEnemies();
         }
 
-        // Si hay enemigos spawneados, verificar si todos están muertos
         if (enemiesSpawned && !isCleared)
         {
             CheckIfRoomCleared();
@@ -74,16 +74,14 @@ public class RoomController : MonoBehaviour
     }
 
     /// <summary>
-    /// Detecta cuando el jugador entra en la sala
+    /// Detecta cuando el jugador entra en la sala y cierra puertas.
     /// </summary>
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("[RoomController] Jugador entró en la sala");
             playerInside = true;
 
-            // Cerrar puertas al entrar (si no está limpia)
             if (!isCleared)
             {
                 CloseAllDoors();
@@ -92,32 +90,28 @@ public class RoomController : MonoBehaviour
     }
 
     /// <summary>
-    /// Detecta cuando el jugador sale de la sala
+    /// Detecta cuando el jugador sale de la sala.
     /// </summary>
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("[RoomController] Jugador salió de la sala");
             playerInside = false;
         }
     }
 
     /// <summary>
-    /// Spawnea enemigos en la sala
+    /// Spawnea enemigos en la sala según la configuración establecida.
     /// </summary>
     private void SpawnEnemies()
     {
         if (enemyManager == null)
         {
             Debug.LogError("[RoomController] No hay EnemyManager asignado. No se pueden spawnear enemigos.");
-            enemiesSpawned = true; // Marcar como spawneados para no intentar de nuevo
+            enemiesSpawned = true;
             return;
         }
 
-        Debug.Log($"[RoomController] Spawneando enemigos en sala tipo {roomType}");
-
-        // Calcular área de spawn centrada en esta sala
         Rect spawnArea = new Rect(
             transform.position.x - spawnAreaSize.x / 2f,
             transform.position.y - spawnAreaSize.y / 2f,
@@ -125,35 +119,28 @@ public class RoomController : MonoBehaviour
             spawnAreaSize.y
         );
 
-        // Spawnear según configuración
+        int depth = GameManager.Instance != null ? GameManager.Instance.CurrentLevel : 1;
+        
         if (useEnemyCost)
         {
-            // Sistema de costo
-            int depth = GameManager.Instance != null ? GameManager.Instance.CurrentLevel : 1;
             enemyManager.SpawnByCost(spawnArea, enemyCostBudget, depth);
         }
         else
         {
-            // Sistema de cantidad fija
-            int depth = GameManager.Instance != null ? GameManager.Instance.CurrentLevel : 1;
             enemyManager.SpawnWave(spawnArea, depth);
         }
 
-        // Encontrar todos los enemigos spawneados
         StartCoroutine(FindSpawnedEnemiesDelayed());
-
         enemiesSpawned = true;
     }
 
     /// <summary>
-    /// Encuentra enemigos spawneados después de un pequeño delay
-    /// (necesario porque Instantiate no es inmediato)
+    /// Encuentra enemigos spawneados tras un delay necesario para Instantiate.
     /// </summary>
     private System.Collections.IEnumerator FindSpawnedEnemiesDelayed()
     {
         yield return new WaitForSeconds(0.1f);
 
-        // Buscar todos los enemigos en el área de spawn
         Enemy[] allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
         spawnedEnemies.Clear();
 
@@ -171,8 +158,6 @@ public class RoomController : MonoBehaviour
                 spawnedEnemies.Add(enemy);
             }
         }
-
-        Debug.Log($"[RoomController] {spawnedEnemies.Count} enemigos encontrados en la sala");
     }
 
     /// <summary>
@@ -191,19 +176,15 @@ public class RoomController : MonoBehaviour
     }
 
     /// <summary>
-    /// Se llama cuando la sala ha sido limpiada de enemigos
+    /// Se invoca cuando todos los enemigos han sido eliminados.
     /// </summary>
     private void OnRoomCleared()
     {
-        if (isCleared) return; // Ya estaba limpia
+        if (isCleared) return;
 
         isCleared = true;
-        Debug.Log("[RoomController] ¡Sala limpiada! Abriendo puertas...");
-
-        // Abrir todas las puertas
         OpenAllDoors();
 
-        // Notificar al GameManager
         if (GameManager.Instance != null)
         {
             GameManager.Instance.NotifyRoomCleared();

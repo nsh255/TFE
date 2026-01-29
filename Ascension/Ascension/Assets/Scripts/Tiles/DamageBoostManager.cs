@@ -13,6 +13,9 @@ public class DamageBoostManager : MonoBehaviour
     [Tooltip("Daño adicional que se suma a todos los ataques")]
     public int globalDamageBoost = 0;
     
+    /// <summary>
+    /// Configura el singleton en Awake.
+    /// </summary>
     void Awake()
     {
         if (Instance == null)
@@ -27,17 +30,19 @@ public class DamageBoostManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Incrementa el boost de daño global
+    /// Incrementa el boost de daño global de forma permanente.
     /// </summary>
+    /// <param name="amount">Cantidad de daño adicional</param>
     public void AddDamageBoost(int amount)
     {
         globalDamageBoost += amount;
-        Debug.Log($"[DamageBoostManager] Boost de daño aumentado a +{globalDamageBoost}");
     }
 
     /// <summary>
-    /// Añade un boost de daño temporal por un periodo de tiempo específico.
+    /// Añade un boost de daño temporal que expira tras la duración especificada.
     /// </summary>
+    /// <param name="amount">Cantidad de daño adicional</param>
+    /// <param name="duration">Duración en segundos (0 = permanente)</param>
     public void AddDamageBoostTimed(int amount, float duration)
     {
         if (duration <= 0f)
@@ -50,6 +55,9 @@ public class DamageBoostManager : MonoBehaviour
         StartCoroutine(RemoveDamageBoostAfterDelay(amount, duration));
     }
 
+    /// <summary>
+    /// Remueve el boost tras el delay especificado.
+    /// </summary>
     private IEnumerator RemoveDamageBoostAfterDelay(int amount, float duration)
     {
         yield return new WaitForSeconds(duration);
@@ -58,17 +66,18 @@ public class DamageBoostManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Resetea el boost (útil al cambiar de nivel o morir)
+    /// Resetea el boost a cero (útil al cambiar de nivel o morir).
     /// </summary>
     public void ResetBoost()
     {
         globalDamageBoost = 0;
-        Debug.Log("[DamageBoostManager] Boost de daño reseteado");
     }
     
     /// <summary>
-    /// Obtiene el daño final sumando el boost
+    /// Calcula el daño final sumando el boost global.
     /// </summary>
+    /// <param name="baseDamage">Daño base del ataque</param>
+    /// <returns>Daño total con boost aplicado</returns>
     public int GetBoostedDamage(int baseDamage)
     {
         return baseDamage + globalDamageBoost;

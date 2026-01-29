@@ -1,16 +1,21 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
+/// <summary>
+/// Gestiona la selección de clase del jugador antes de iniciar la partida.
+/// </summary>
 public class ClassSelectionManager : MonoBehaviour
 {
     public PlayerClass[] availableClasses;
     public string gameSceneName = "GameScene";
     public static PlayerClass SelectedClass;
 
+    /// <summary>
+    /// Selecciona una clase del array y carga la escena de juego.
+    /// </summary>
+    /// <param name="index">Índice de la clase en el array availableClasses.</param>
     public void SelectClassAndStartGame(int index)
     {
-        Debug.Log($"Intentando seleccionar clase en índice: {index}");
         if (availableClasses == null || availableClasses.Length == 0)
         {
             Debug.LogError("No hay clases disponibles en availableClasses.");
@@ -22,13 +27,6 @@ public class ClassSelectionManager : MonoBehaviour
             return;
         }
         SelectedClass = availableClasses[index];
-        Debug.Log($"Clase seleccionada: {SelectedClass.name}");
-        Debug.Log($"Cargando escena: {gameSceneName}");
         SceneManager.LoadScene(gameSceneName);
-    }
-
-    public void TestButton()
-    {
-        Debug.Log("¡El botón funciona!");
     }
 }

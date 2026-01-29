@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Gestiona la salud del jugador, el sistema de daño e invulnerabilidad temporal.
+/// Actualiza la interfaz de usuario de corazones y procesa la muerte del jugador.
+/// </summary>
 public class PlayerHealth : MonoBehaviour
 {
     public int maxHealth;
@@ -32,20 +36,21 @@ public class PlayerHealth : MonoBehaviour
     private Color[] originalColors;
     private Coroutine damageCoroutine;
 
+    /// <summary>
+    /// Obtiene la referencia al PlayerController.
+    /// </summary>
     void Start()
     {
         playerController = GetComponent<PlayerController>();
-        // NO inicializar aquí, esperar a que PlayerController llame a Initialize()
     }
 
-    // Método público para inicializar después de que playerClass esté asignado
+    /// <summary>
+    /// Inicializa la salud del jugador basándose en la clase seleccionada y actualiza la interfaz.
+    /// </summary>
     public void Initialize()
     {
-        Debug.Log("[PlayerHealth] Initialize() llamado");
-        
         if (isInitialized) 
         {
-            Debug.Log("[PlayerHealth] Ya estaba inicializado, saliendo...");
             return;
         }
         
@@ -63,27 +68,23 @@ public class PlayerHealth : MonoBehaviour
         maxHealth = playerController.playerClass.maxHealth;
         currentHealth = maxHealth;
         
-        Debug.Log($"[PlayerHealth] maxHealth={maxHealth}, heartDisplay={(heartDisplay != null ? "ASIGNADO" : "NULL")}");
-        
-        // Inicializar el nuevo sistema de HeartDisplay
         if (heartDisplay != null)
         {
-            Debug.Log($"[PlayerHealth] Llamando a heartDisplay.InitializeHearts({maxHealth})");
             heartDisplay.InitializeHearts(maxHealth);
             heartDisplay.UpdateHearts(currentHealth);
         }
         else
         {
-            Debug.LogWarning("[PlayerHealth] No hay HeartDisplay asignado. Usando sistema antiguo.");
-            UpdateHeartsOldSystem(); // Fallback al sistema antiguo
+            UpdateHeartsOldSystem();
         }
         
         isInitialized = true;
-        Debug.Log($"PlayerHealth inicializado: {currentHealth}/{maxHealth} HP");
-
         CacheSpriteRenderers();
     }
 
+    /// <summary>
+    /// Almacena referencias a los SpriteRenderers para el efecto de parpadeo.
+    /// </summary>
     private void CacheSpriteRenderers()
     {
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
@@ -94,6 +95,10 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Aplica daño al jugador y activa el periodo de invulnerabilidad.
+    /// </summary>
+    /// <param name="amount">Cantidad de daño a recibir.</param>
     public void TakeDamage(int amount)
     {
         if (isInvulnerable || (playerController != null && playerController.IsInvulnerable()))
@@ -102,7 +107,6 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         
-        // Actualizar UI
         UpdateHearts();
         
         if (currentHealth <= 0)
@@ -119,6 +123,9 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Gestiona el periodo de invulnerabilidad tras recibir daño con efecto visual de parpadeo.
+    /// </summary>
     private System.Collections.IEnumerator DamageInvulnerabilityCoroutine()
     {
         isInvulnerable = true;
@@ -164,7 +171,6 @@ public class PlayerHealth : MonoBehaviour
             yield return null;
         }
 
-        // Restaurar colores
         if (spriteRenderers != null)
         {
             for (int i = 0; i < spriteRenderers.Length; i++)
@@ -182,31 +188,37 @@ public class PlayerHealth : MonoBehaviour
         damageCoroutine = null;
     }
 
+    /// <summary>
+    /// Restaura salud al jugador sin exceder el máximo.
+    /// </summary>
+    /// <param name="amount">Cantidad de salud a restaurar.</param>
     public void Heal(int amount)
     {
         currentHealth += amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         UpdateHearts();
-        Debug.Log($"[PlayerHealth] Curado {amount} HP. HP actual: {currentHealth}/{maxHealth}");
     }
 
+    /// <summary>
+    /// Actualiza la interfaz de usuario de salud.
+    /// </summary>
     void UpdateHearts()
     {
-        // Sistema nuevo (preferido)
         if (heartDisplay != null)
         {
             heartDisplay.UpdateHearts(currentHealth);
         }
         else
         {
-            // Fallback al sistema antiguo
             UpdateHeartsOldSystem();
         }
     }
 
+    /// <summary>
+    /// Actualiza la interfaz de corazones usando el sistema antiguo basado en arrays de imágenes.
+    /// </summary>
     void UpdateHeartsOldSystem()
     {
-        // Sistema antiguo compatible con el array de Image[]
         if (hearts == null || hearts.Length == 0) return;
         
         for (int i = 0; i < hearts.Length; i++)
@@ -219,22 +231,26 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Procesa la muerte del jugador notificando al GameManager.
+    /// </summary>
     void Die()
     {
-        Debug.Log("[PlayerHealth] Player Dead - Notificando a GameManager");
-        
-        // Notificar al GameManager
-        if (GameManager.Instance != null)
+        var gm = GameManager.Instance;
+        if (gm == null)
         {
-            GameManager.Instance.GameOver();
+            Debug.LogWarning("[PlayerHealth] GameManager no encontrado. Creando uno en runtime...");
+            new GameObject("GameManager").AddComponent<GameManager>();
+            gm = GameManager.Instance;
+        }
+
+        if (gm != null)
+        {
+            gm.GameOver();
         }
         else
         {
-            Debug.LogWarning("[PlayerHealth] GameManager no encontrado. Recargando escena como fallback.");
-            // Fallback: recargar escena si no hay GameManager
-            UnityEngine.SceneManagement.SceneManager.LoadScene(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
-            );
+            Debug.LogError("[PlayerHealth] No se pudo crear/encontrar GameManager. No se hará GameOver.");
         }
     }
 }

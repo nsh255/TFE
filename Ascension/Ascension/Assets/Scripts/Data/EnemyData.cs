@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// ScriptableObject que define las propiedades de un enemigo.
+/// </summary>
 [CreateAssetMenu(menuName = "Enemies/EnemyData")]
 public class EnemyData : ScriptableObject
 {

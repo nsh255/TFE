@@ -3,6 +3,9 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+/// <summary>
+/// Entrada de spawn con prefab y peso relativo para selección aleatoria.
+/// </summary>
 [System.Serializable]
 public class EnemySpawnEntry
 {
@@ -10,10 +13,14 @@ public class EnemySpawnEntry
     [Range(0, 10)] public int weight = 1;
 }
 
+/// <summary>
+/// Gestiona el spawn y tracking de enemigos en una sala.
+/// Controla el estado de "sala limpia" para desbloquear puertas.
+/// </summary>
 public class EnemyManager : MonoBehaviour
 {
-    [Header("Spawn List (Weighted)")] public List<EnemySpawnEntry> enemies = new();
-    // [Header("Refs")] public GameBalance balance; // Comentado - clase eliminada
+    [Header("Spawn List (Weighted)")] 
+    public List<EnemySpawnEntry> enemies = new();
 
     [Header("Spawn Safety")]
     [Tooltip("Radio en unidades de mundo alrededor del jugador donde NO pueden spawnear enemigos.")]
@@ -34,17 +41,21 @@ public class EnemyManager : MonoBehaviour
         get
         {
             PruneTracked();
-            // Importante: al quedar la sala limpia ponemos roomCleared=true y roomActive=false.
-            // IsRoomCleared debe reflejar el estado de "sala ya limpiada", no solo "sala activa".
             return roomCleared;
         }
     }
 
+    /// <summary>
+    /// Auto-configura la lista de enemigos si está vacía al iniciar.
+    /// </summary>
     private void Awake()
     {
         AutoConfigureEnemyListIfEmpty();
     }
 
+    /// <summary>
+    /// Verifica cada frame si la sala está limpia de enemigos.
+    /// </summary>
     private void Update()
     {
         if (!roomActive) return;
@@ -61,6 +72,9 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Inicia una nueva sala reseteando el estado y la lista de enemigos.
+    /// </summary>
     public void BeginRoom()
     {
         trackedEnemies.Clear();
@@ -70,15 +84,13 @@ public class EnemyManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Registra un enemigo instanciado externamente (por ejemplo, un boss) para que cuente
-    /// en el estado de sala limpia.
+    /// Registra un enemigo instanciado externamente (por ejemplo, un boss).
     /// </summary>
     public void RegisterEnemy(Enemy enemy)
     {
         if (enemy == null) return;
         if (!roomActive)
         {
-            // Si alguien registra un enemigo fuera del flujo normal, activar sala.
             BeginRoom();
         }
         trackedEnemies.Add(enemy);
@@ -90,6 +102,9 @@ public class EnemyManager : MonoBehaviour
         RegisterEnemy(instance.GetComponent<Enemy>());
     }
 
+    /// <summary>
+    /// Limpia todos los enemigos de la escena sin lanzar el evento OnRoomCleared.
+    /// </summary>
     public void ClearAll()
     {
         suppressClearEvent = true;
@@ -100,10 +115,15 @@ public class EnemyManager : MonoBehaviour
         suppressClearEvent = false;
     }
 
+    /// <summary>
+    /// Spawnea una oleada de enemigos basada en profundidad.
+    /// </summary>
+    /// <param name="area">Área rectangular donde spawnear</param>
+    /// <param name="depth">Profundidad de la sala (determina cantidad)</param>
     public void SpawnWave(Rect area, int depth)
     {
         BeginRoom();
-        int count = 3 + depth; // balance eliminado, usando valor por defecto
+        int count = 3 + depth;
         int spawned = 0;
         for (int i = 0; i < count; i++)
         {
@@ -117,7 +137,6 @@ public class EnemyManager : MonoBehaviour
 
         if (spawned == 0)
         {
-            // No dejamos al jugador bloqueado.
             roomActive = false;
             roomCleared = true;
             Debug.LogWarning("[EnemyManager] SpawnWave no instanció enemigos; sala marcada como limpia.");
@@ -125,9 +144,12 @@ public class EnemyManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fill a room by total enemy cost (using EnemyData.enemyCost) up to maxCost.
-    /// Chooses random weighted enemy prefabs; skips those whose cost would exceed remaining budget.
+    /// Spawnea enemigos hasta alcanzar el coste máximo especificado.
+    /// Usa EnemyData.enemyCost para calcular el presupuesto.
     /// </summary>
+    /// <param name="area">Área rectangular donde spawnear</param>
+    /// <param name="maxCost">Coste total máximo permitido</param>
+    /// <param name="depth">Profundidad de la sala</param>
     public void SpawnByCost(Rect area, int maxCost, int depth)
     {
         BeginRoom();
@@ -139,9 +161,8 @@ public class EnemyManager : MonoBehaviour
             return;
         }
         int remaining = maxCost;
-        int safety = 200; // avoid infinite loop
+        int safety = 200;
 
-        // Precompute costs
         var available = new List<(GameObject prefab, int cost, int weight)>();
         foreach (var e in enemies)
         {
@@ -166,7 +187,6 @@ public class EnemyManager : MonoBehaviour
         int spawned = 0;
         while (remaining >= minCost && safety-- > 0)
         {
-            // Build weighted selection filtered by remaining cost
             int totalWeight = 0;
             foreach (var a in available) if (a.cost <= remaining) totalWeight += a.weight;
             if (totalWeight == 0) break;
@@ -189,16 +209,16 @@ public class EnemyManager : MonoBehaviour
             spawned++;
         }
 
-        Debug.Log($"[EnemyManager] SpawnByCost: spawned={spawned}, maxCost={maxCost}, remaining={remaining}, depth={depth}, area={area}");
-
         if (spawned == 0)
         {
-            // Si no spawneó nada, no bloqueamos la progresión.
             roomActive = false;
             roomCleared = true;
         }
     }
 
+    /// <summary>
+    /// Obtiene una posición de spawn segura alejada del jugador.
+    /// </summary>
     private Vector2 GetSafeSpawnPosition(Rect area)
     {
         Vector2 fallback = new Vector2(Random.Range(area.xMin, area.xMax), Random.Range(area.yMin, area.yMax));
@@ -220,10 +240,12 @@ public class EnemyManager : MonoBehaviour
                 return candidate;
         }
 
-        // Fallback: no se encontró punto seguro; devolver el aleatorio inicial
         return fallback;
     }
 
+    /// <summary>
+    /// Añade el enemigo a la lista de tracking si es válido.
+    /// </summary>
     private void TrackIfEnemy(GameObject instance)
     {
         if (instance == null) return;
@@ -231,18 +253,23 @@ public class EnemyManager : MonoBehaviour
         if (enemy == null) return;
         trackedEnemies.Add(enemy);
 
-        // Asegurar efectos de tiles en enemigos
         if (instance.GetComponent<EnemyTileEffectReceiver>() == null)
         {
             instance.AddComponent<EnemyTileEffectReceiver>();
         }
     }
 
+    /// <summary>
+    /// Elimina enemigos muertos de la lista de tracking.
+    /// </summary>
     private void PruneTracked()
     {
         trackedEnemies.RemoveAll(e => e == null || e.isDead);
     }
 
+    /// <summary>
+    /// Carga automáticamente enemigos desde Resources/Enemies si la lista está vacía.
+    /// </summary>
     private void AutoConfigureEnemyListIfEmpty()
     {
         if (enemies == null) enemies = new List<EnemySpawnEntry>();
@@ -262,10 +289,11 @@ public class EnemyManager : MonoBehaviour
             if (prefab.GetComponent<Enemy>() == null) continue;
             enemies.Add(new EnemySpawnEntry { prefab = prefab, weight = 1 });
         }
-
-        Debug.Log($"[EnemyManager] Auto-configurado: {enemies.Count} enemigos cargados desde Resources/Enemies.");
     }
 
+    /// <summary>
+    /// Elige un enemigo aleatorio según pesos.
+    /// </summary>
     private GameObject PickWeighted()
     {
         int total = 0; foreach (var e in enemies) total += Mathf.Max(0, e.weight);

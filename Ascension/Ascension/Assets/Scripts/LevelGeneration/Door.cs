@@ -35,9 +35,11 @@ public class Door : MonoBehaviour
     // Estado
     private bool isOpen = false;
 
+    /// <summary>
+    /// Inicializa la puerta y aplica el estado inicial.
+    /// </summary>
     void Awake()
     {
-        // Auto-asignar componentes si no están configurados
         if (doorSprite == null)
         {
             doorSprite = GetComponent<SpriteRenderer>();
@@ -48,10 +50,9 @@ public class Door : MonoBehaviour
             doorCollider = GetComponent<Collider2D>();
         }
 
-        // Aplicar estado inicial
         if (startOpen)
         {
-            Open(false); // Sin animación/sonido al inicio
+            Open(false);
         }
         else
         {
@@ -60,67 +61,59 @@ public class Door : MonoBehaviour
     }
 
     /// <summary>
-    /// Abre la puerta
+    /// Abre la puerta permitiendo el paso del jugador.
     /// </summary>
+    /// <param name="playEffects">Si debe reproducir sonido</param>
     public void Open(bool playEffects = true)
     {
         if (isOpen) return;
 
         isOpen = true;
 
-        // Desactivar collider para permitir paso
         if (doorCollider != null)
         {
             doorCollider.enabled = false;
         }
 
-        // Cambiar sprite
         if (doorSprite != null && openSprite != null)
         {
             doorSprite.sprite = openSprite;
         }
 
-        // Reproducir sonido
         if (playEffects && openSound != null)
         {
             AudioSource.PlayClipAtPoint(openSound, transform.position);
         }
-
-        Debug.Log($"[Door] Puerta abierta en {transform.position}");
     }
 
     /// <summary>
-    /// Cierra la puerta
+    /// Cierra la puerta bloqueando el paso del jugador.
     /// </summary>
+    /// <param name="playEffects">Si debe reproducir sonido</param>
     public void Close(bool playEffects = true)
     {
-        if (!isOpen && !startOpen) return; // Ya estaba cerrada
+        if (!isOpen && !startOpen) return;
 
         isOpen = false;
 
-        // Activar collider para bloquear paso
         if (doorCollider != null)
         {
             doorCollider.enabled = true;
         }
 
-        // Cambiar sprite
         if (doorSprite != null && closedSprite != null)
         {
             doorSprite.sprite = closedSprite;
         }
 
-        // Reproducir sonido
         if (playEffects && closeSound != null)
         {
             AudioSource.PlayClipAtPoint(closeSound, transform.position);
         }
-
-        Debug.Log($"[Door] Puerta cerrada en {transform.position}");
     }
 
     /// <summary>
-    /// Alterna el estado de la puerta
+    /// Alterna entre abrir y cerrar la puerta.
     /// </summary>
     [ContextMenu("Toggle Door")]
     public void Toggle()

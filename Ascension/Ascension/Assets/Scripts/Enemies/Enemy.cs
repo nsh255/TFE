@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Clase base para todos los enemigos del juego.
+/// Gestiona la salud, movimiento, daño al jugador y efectos de tiles.
+/// </summary>
 public class Enemy : MonoBehaviour
 {
     [Header("Configuración")]
@@ -17,10 +21,8 @@ public class Enemy : MonoBehaviour
     protected Animator animator;
 
     private float nextPlayerFindTime;
-
     private bool hasFacingFlip;
     private bool lastFlipX;
-
     private System.Collections.Generic.Dictionary<Transform, Vector3> mirroredPointBaseLocalPos;
 
     private bool hasAnimHorizontal;
@@ -31,13 +33,13 @@ public class Enemy : MonoBehaviour
     private bool hasAnimLookY;
     
     [Header("Daño al Jugador")]
-    public float damageRate = 1f; // Daño por segundo al tocar al jugador
+    public float damageRate = 1f;
     private float lastDamageTime;
 
     [Header("Spawn Cooldown")]
-    [Tooltip("Tiempo tras spawnear durante el cual no puede dañar al jugador.")]
+    [Tooltip("Tiempo tras spawnear durante el cual no puede dañar al jugador")]
     [SerializeField] private float contactDamageGraceSeconds = 0.75f;
-    [Tooltip("Tiempo tras spawnear durante el cual no debe hacer acciones agresivas (dash/disparo/persecución).")]
+    [Tooltip("Tiempo tras spawnear durante el cual no debe hacer acciones agresivas")]
     [SerializeField] private float aiGraceSeconds = 0.75f;
 
     private float contactDamageEnabledTime;
@@ -49,19 +51,28 @@ public class Enemy : MonoBehaviour
     [SerializeField, Min(0.1f)] private float tileSpeedMultiplier = 1f;
     public float TileSpeedMultiplier => tileSpeedMultiplier;
 
+    /// <summary>
+    /// Establece el multiplicador de velocidad por efectos de tiles.
+    /// </summary>
+    /// <param name="multiplier">Multiplicador de velocidad (limitado entre 0.1 y 5).</param>
     public void SetTileSpeedMultiplier(float multiplier)
     {
         tileSpeedMultiplier = Mathf.Clamp(multiplier, 0.1f, 5f);
     }
 
+    /// <summary>
+    /// Restaura el multiplicador de velocidad al valor base.
+    /// </summary>
     public void ResetTileSpeedMultiplier()
     {
         tileSpeedMultiplier = 1f;
     }
 
+    /// <summary>
+    /// Inicializa componentes y configura físicas básicas del enemigo.
+    /// </summary>
     protected virtual void Awake()
     {
-        // Algunos prefabs tienen SpriteRenderer/Animator en hijos.
         allSpriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null && allSpriteRenderers != null && allSpriteRenderers.Length > 0)
@@ -73,15 +84,12 @@ public class Enemy : MonoBehaviour
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>(true);
 
-        // Top-down defaults: evitar que los enemigos caigan o roten por físicas.
         if (rb != null)
         {
             rb.gravityScale = 0f;
             rb.freezeRotation = true;
         }
 
-        // Si algún prefab viene con Sorting Layer "Default", queda por debajo del Tilemap de suelo.
-        // Ajuste defensivo: solo toca renderers que estén en Default.
         int entitiesSortingLayerId = SortingLayer.NameToID("Entities");
         if (entitiesSortingLayerId != 0)
         {
@@ -110,6 +118,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Inicializa el estado del enemigo y busca al jugador en la escena.
+    /// </summary>
     protected virtual void Start()
     {
         if (enemyData == null)
@@ -130,26 +141,23 @@ public class Enemy : MonoBehaviour
             playerController = player.GetComponent<PlayerController>();
         }
         
-        // Configurar sprite inicial si:
-        // - no hay Animator, o
-        // - hay Animator pero NO tiene controller asignado (caso común en prefabs incompletos)
         bool animatorHasController = animator != null && animator.runtimeAnimatorController != null;
         if (spriteRenderer != null && enemyData.sprite != null && !animatorHasController)
         {
             spriteRenderer.sprite = enemyData.sprite;
         }
-        
-        Debug.Log($"[Enemy] {enemyData.enemyName} spawneado con {currentHealth} HP");
     }
 
+    /// <summary>
+    /// Aplica daño al enemigo y procesa su muerte si la salud llega a cero.
+    /// </summary>
+    /// <param name="amount">Cantidad de daño a recibir.</param>
     public virtual void TakeDamage(int amount)
     {
         if (isDead) return;
         
         currentHealth -= amount;
-        Debug.Log($"[Enemy] {enemyData.enemyName} recibió {amount} daño. HP: {currentHealth}/{enemyData.maxHealth}");
         
-        // Efecto visual de daño (opcional)
         if (spriteRenderer != null)
         {
             StartCoroutine(FlashDamage());
@@ -161,6 +169,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Muestra un breve efecto visual de flash rojo al recibir daño.
+    /// </summary>
     private System.Collections.IEnumerator FlashDamage()
     {
         Color original = spriteRenderer.color;
@@ -169,25 +180,24 @@ public class Enemy : MonoBehaviour
         spriteRenderer.color = original;
     }
 
+    /// <summary>
+    /// Procesa la muerte del enemigo, notifica al GameManager y destruye el objeto.
+    /// </summary>
     protected virtual void Die()
     {
         if (isDead) return;
         isDead = true;
         
-        Debug.Log($"[Enemy] {enemyData.enemyName} murió");
-        
-        // Notificar al GameManager
         if (GameManager.Instance != null)
         {
-            int scoreValue = enemyData != null ? enemyData.damage * 5 : 10; // Score basado en daño del enemigo
+            int scoreValue = enemyData != null ? enemyData.damage * 5 : 10;
             GameManager.Instance.NotifyEnemyKilled(scoreValue);
         }
         
-        // Animación de muerte si existe
         if (animator != null)
         {
             animator.SetTrigger("Die");
-            Destroy(gameObject, 0.5f); // Esperar a que termine la animación
+            Destroy(gameObject, 0.5f);
         }
         else
         {
@@ -195,12 +205,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Actualiza el estado del enemigo buscando al jugador y actualizando su orientación.
+    /// </summary>
     protected virtual void Update()
     {
         if (isDead) return;
 
-        // El Player puede spawnear después que los enemigos (orden de ejecución).
-        // Reintentar encontrarlo de forma throttled para que la IA no se quede "ciega".
         if (player == null && Time.time >= nextPlayerFindTime)
         {
             nextPlayerFindTime = Time.time + 0.5f;
@@ -211,12 +222,12 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        // Por defecto, los enemigos miran hacia el jugador cuando lo tienen detectado.
         UpdateFacingToPlayer();
-        
-        // Movimiento y lógica en clases hijas
     }
 
+    /// <summary>
+    /// Actualiza la orientación del sprite y parámetros del animator para mirar hacia el jugador.
+    /// </summary>
     protected void UpdateFacingToPlayer()
     {
         if (player == null) return;
@@ -225,10 +236,8 @@ public class Enemy : MonoBehaviour
         if (toPlayer.sqrMagnitude < 0.0001f) return;
         Vector2 dir = toPlayer.normalized;
 
-        // Sprite flip básico (para sprites laterales). Aplicar a todos los renderers.
         if (allSpriteRenderers != null && allSpriteRenderers.Length > 0)
         {
-            // Deadzone para evitar vibración cuando está alineado en X.
             bool flipX;
             const float deadzone = 0.05f;
             if (dir.x > deadzone) flipX = false;
@@ -244,11 +253,9 @@ public class Enemy : MonoBehaviour
                 sr.flipX = flipX;
             }
 
-            // Espejar puntos de disparo/spawn para que el ataque salga del lado correcto.
             MirrorNamedChildPoints(flipX);
         }
 
-        // Si el animator tiene parámetros de dirección, rellenarlos.
         if (animator != null)
         {
             if (hasAnimHorizontal) animator.SetFloat("Horizontal", dir.x);
@@ -260,12 +267,14 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Espeja los puntos de spawn de proyectiles para que apunten correctamente al voltear el sprite.
+    /// </summary>
+    /// <param name="flipX">True si el sprite está volteado horizontalmente.</param>
     private void MirrorNamedChildPoints(bool flipX)
     {
-        // Cacheamos una vez las posiciones base.
         mirroredPointBaseLocalPos ??= new System.Collections.Generic.Dictionary<Transform, Vector3>();
 
-        // Buscar puntos típicos usados por enemigos que disparan.
         var points = GetComponentsInChildren<Transform>(true);
         if (points == null || points.Length == 0) return;
 
@@ -279,7 +288,6 @@ public class Enemy : MonoBehaviour
             string n = t.name;
             if (string.IsNullOrEmpty(n)) continue;
 
-            // Solo nombres típicos para evitar tocar transforms sin querer.
             if (!n.Contains("ShootPoint") && !n.Contains("SpawnPoint") && !n.Contains("ProjectileSpawnPoint"))
                 continue;
 
@@ -289,12 +297,15 @@ public class Enemy : MonoBehaviour
                 mirroredPointBaseLocalPos[t] = basePos;
             }
 
-            // Espejar solo el eje X manteniendo magnitud.
             float absX = Mathf.Abs(basePos.x);
             t.localPosition = new Vector3(absX * sign, basePos.y, basePos.z);
         }
     }
 
+    /// <summary>
+    /// Aplica daño continuo al jugador mientras permanece en contacto con el enemigo.
+    /// </summary>
+    /// <param name="collision">Información de la colisión.</param>
     protected virtual void OnCollisionStay2D(Collision2D collision)
     {
         if (isDead) return;
@@ -303,7 +314,6 @@ public class Enemy : MonoBehaviour
         {
             if (Time.time < contactDamageEnabledTime) return;
 
-            // Daño continuo al jugador
             if (Time.time >= lastDamageTime + damageRate)
             {
                 PlayerHealth ph = collision.gameObject.GetComponent<PlayerHealth>();
@@ -311,7 +321,6 @@ public class Enemy : MonoBehaviour
                 {
                     ph.TakeDamage(enemyData.damage);
                     lastDamageTime = Time.time;
-                    Debug.Log($"[Enemy] {enemyData.enemyName} dañó al jugador por {enemyData.damage}");
                 }
             }
         }

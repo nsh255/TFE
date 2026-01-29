@@ -1,10 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Pequeña animación para VFX 2D basados en sprites:
-/// - Hace "pulse" de alpha (aparece/desaparece)
-/// - Optional: pequeño bob vertical y escala
-/// - Se autodestruye tras un tiempo
+/// Efecto visual de pulso para sprites 2D.
+/// Anima la opacidad, posición y escala del sprite con efecto de pulsación.
+/// Se autodestruye tras completar su tiempo de vida.
 /// </summary>
 public class PulseVFX : MonoBehaviour
 {
@@ -27,6 +26,9 @@ public class PulseVFX : MonoBehaviour
     private Vector3 baseLocalScale;
     private float startTime;
 
+    /// <summary>
+    /// Inicializa los componentes de renderizado y almacena los valores base.
+    /// </summary>
     private void Awake()
     {
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
@@ -40,16 +42,26 @@ public class PulseVFX : MonoBehaviour
         baseLocalScale = transform.localScale;
     }
 
+    /// <summary>
+    /// Registra el tiempo de activación del efecto.
+    /// </summary>
     private void OnEnable()
     {
         startTime = Time.time;
     }
 
+    /// <summary>
+    /// Establece el tiempo de vida del efecto.
+    /// </summary>
+    /// <param name="seconds">Duración en segundos.</param>
     public void SetLifetime(float seconds)
     {
         lifetimeSeconds = Mathf.Max(0.05f, seconds);
     }
 
+    /// <summary>
+    /// Actualiza la animación del pulso cada frame.
+    /// </summary>
     private void Update()
     {
         float t = Time.time - startTime;
@@ -77,6 +89,10 @@ public class PulseVFX : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Establece la opacidad de todos los SpriteRenderers.
+    /// </summary>
+    /// <param name="a">Valor de alpha entre 0 y 1.</param>
     private void SetAlpha(float a)
     {
         a = Mathf.Clamp01(a);

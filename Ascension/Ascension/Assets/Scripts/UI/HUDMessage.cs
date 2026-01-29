@@ -15,6 +15,11 @@ public class HUDMessage : MonoBehaviour
 
     private Coroutine hideRoutine;
 
+    /// <summary>
+    /// Muestra un mensaje temporal en el HUD.
+    /// </summary>
+    /// <param name="message">Texto a mostrar</param>
+    /// <param name="durationSeconds">Duración en segundos (-1 usa duración por defecto)</param>
     public static void Show(string message, float durationSeconds = -1f)
     {
         EnsureInstance();
@@ -26,6 +31,9 @@ public class HUDMessage : MonoBehaviour
         instance.InternalShow(message, durationSeconds);
     }
 
+    /// <summary>
+    /// Asegura que existe una instancia de HUDMessage en la escena.
+    /// </summary>
     private static void EnsureInstance()
     {
         if (instance != null) return;
@@ -51,6 +59,10 @@ public class HUDMessage : MonoBehaviour
         instance.TryEnsureLabel();
     }
 
+    /// <summary>
+    /// Busca el Canvas del HUD en la jerarquía.
+    /// </summary>
+    /// <returns>Canvas encontrado o null</returns>
     private static Canvas FindHUDCanvas()
     {
         var hud = GameObject.Find("HUD");
@@ -63,6 +75,9 @@ public class HUDMessage : MonoBehaviour
         return FindFirstObjectByType<Canvas>();
     }
 
+    /// <summary>
+    /// Crea el componente TextMeshProUGUI si no existe.
+    /// </summary>
     private void TryEnsureLabel()
     {
         if (label != null) return;
@@ -85,6 +100,9 @@ public class HUDMessage : MonoBehaviour
         rt.sizeDelta = new Vector2(800f, 80f);
     }
 
+    /// <summary>
+    /// Muestra el mensaje internamente y programa su ocultación.
+    /// </summary>
     private void InternalShow(string message, float durationSeconds)
     {
         TryEnsureLabel();
@@ -99,6 +117,9 @@ public class HUDMessage : MonoBehaviour
         hideRoutine = StartCoroutine(HideAfter(durationSeconds));
     }
 
+    /// <summary>
+    /// Oculta el mensaje tras el tiempo especificado.
+    /// </summary>
     private IEnumerator HideAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);

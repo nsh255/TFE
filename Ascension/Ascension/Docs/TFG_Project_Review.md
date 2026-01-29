@@ -1,127 +1,115 @@
-# Ascension — Informe de Preparación TFG Rogue‑like
+# Ascension — Informe de Preparación TFG *roguelike*
 
-Fecha: 2026-01-21
+Fecha: 2026-01-29
 
 ## Resumen Ejecutivo
 
-El proyecto está listo para ser presentado como TFG de un rogue‑like estilo Tiny Rogues. Incluye flujo completo (menú → selección de clase → salas procedurales → encuentros con enemigos → boss periódico → victoria/derrota), sistemas modulares (GameManager, generación de salas, IA de enemigos, armas y proyectiles, salud y UI), además de amplias herramientas de Editor para automatizar contenido.
+Se dispone de un flujo jugable completo: menú principal, selección de clase, generación procedimental de una sala en una única escena con regeneración del suelo, combate, avance mediante escaleras y aparición periódica de jefes cada cinco salas, con victoria tras derrotar tres jefes o derrota. Se integran gestión de estados con `GameManager`, generación de sala con `RoomGenerator`, flujo con `RoomFlowController`, efectos de baldosas, armas cuerpo a cuerpo y a distancia, puntuación persistente y herramientas de Editor para automatización.
 
-Fortalezas:
-- Arquitectura clara y modular, uso de ScriptableObjects para datos.
-- Generación de salas y control de flujo con progreso y limpieza por sala.
-- Varios tipos de enemigos con comportamientos distintos y boss con 2 fases/periodicidad.
-- Sistemas de armas (melee/ranged/proyectiles) y pickups funcionales.
-- UI completa: pausa, HUD, pantalla de victoria y game over.
-- Herramientas de Editor robustas para creación/validación/auto‑setup.
+## Fortalezas
 
-Gaps menores (opcionales):
-- Sistema genérico de drops (más allá de `WeaponPickup`).
-- `AudioManager` y mezcla básica de SFX/música.
-- Balance fino y persistencia mínima (p.ej. high score/clase seleccionada entre sesiones).
+- se emplea una arquitectura modular con `GameManager` y objetos `ScriptableObject` para datos
+- se mantiene un flujo continuo de salas con regeneración de suelo y control de avance por escaleras
+- se ofrece variedad de enemigos con comportamientos diferenciados y jefes periódicos con escalado y multiplicadores
+- se define una condición de victoria estable con tres jefes y una derrota con retorno automático al menú
+- se dispone de un sistema de puntuación persistente con historial y panel de clasificación en el menú principal
+- se incluye interfaz de usuario (IU) con pausa, panel de estado, pantallas de victoria y derrota
+- se cuenta con herramientas de Editor para auto‑configuración y validación del contenido.
+
+## Carencias Relevantes
+
+- la recogida de armas en el mundo no equipa todavía el arma en el jugador y requiere integración en `PlayerController`
+- el jefe dedicado en `BossController` está disponible pero no se usa en el flujo actual de jefes periódicos
+- no existe `AudioManager` ni mezcla básica de música y efectos de sonido
+- no hay un sistema genérico de caídas de objetos más allá de baldosas con efectos y `WeaponPickup`
+- falta una pasada de balance de progresión y pesos de aparición.
 
 ## Escenas y Flujo
 
-Escenas en Build Settings:
+Escenas en configuración de compilación.
 - [Assets/Scenes/MainMenu.unity](../../Assets/Scenes/MainMenu.unity)
 - [Assets/Scenes/ClassSelection.unity](../../Assets/Scenes/ClassSelection.unity)
 - [Assets/Scenes/GameScene.unity](../../Assets/Scenes/GameScene.unity)
-- [Assets/Scenes/SampleScene.unity](../../Assets/Scenes/SampleScene.unity)
+- [Assets/Scenes/SampleScene.unity](../../Assets/Scenes/SampleScene.unity).
 
-Flujo de juego:
-1. Menú principal → selección de clase → `GameScene`.
-2. `RoomGenerator` genera suelo y muros; `RoomFlowController` calcula área jugable y decide spawns.
-3. `EnemyManager` spawnea enemigos por coste/weights; limpieza de sala abre puertas/permite avanzar.
-4. Boss periódico (p.ej. cada 4 salas) o boss dedicado; al morir, `GameManager.Victory()`.
-5. Muerte del jugador → `GameManager.GameOver()`.
+Flujo de juego.
+- se accede a la selección de clase desde el menú principal y se carga `GameScene`
+- se genera la sala con `RoomGenerator` y se inicia el flujo con `RoomFlowController`
+- se instancian enemigos con `EnemyManager` por coste y se valida la sala limpia
+- se avanza con la tecla de interacción en la escalera cuando la sala está limpia
+- se activan jefes cada cinco salas y la victoria se dispara tras tres jefes
+- la derrota se produce con `GameManager.GameOver()` y se retorna al menú.
 
 ## Arquitectura y Sistemas Clave
 
-- Game loop y estados:
-  - `GameManager` (pausa, estados, transición de escenas, puntuación): [Assets/Scripts/Core/GameManager.cs](../../Assets/Scripts/Core/GameManager.cs)
-  - UI de pausa: [Assets/Scripts/UI/PauseMenu.cs](../../Assets/Scripts/UI/PauseMenu.cs)
-  - Pantallas de victoria/game over: [Assets/Scripts/UI/VictoryScreen.cs](../../Assets/Scripts/UI/VictoryScreen.cs), [Assets/Scripts/UI/GameOverScreen.cs](../../Assets/Scripts/UI/GameOverScreen.cs)
-- Generación y flujo de salas:
-  - `RoomGenerator` (tilemaps, rect interno, regeneración): [Assets/Scripts/Tiles/RoomGenerator.cs](../../Assets/Scripts/Tiles/RoomGenerator.cs)
-  - `RoomFlowController` (spawn periódico de boss, avance de salas): [Assets/Scripts/Core/RoomFlowController.cs](../../Assets/Scripts/Core/RoomFlowController.cs)
-  - `RoomController` (puertas, detección de limpieza, spawns): [Assets/Scripts/LevelGeneration/RoomController.cs](../../Assets/Scripts/LevelGeneration/RoomController.cs)
-  - `Door` (abrir/cerrar): [Assets/Scripts/LevelGeneration/Door.cs](../../Assets/Scripts/LevelGeneration/Door.cs)
-- Enemigos y boss:
-  - Base `Enemy` (daño al jugador, facing/anim, tile effects): [Assets/Scripts/Enemies/Enemy.cs](../../Assets/Scripts/Enemies/Enemy.cs)
-  - `EnemyManager` (spawn ponderado/por coste, safe spawn, tracking/clear): [Assets/Scripts/Enemies/EnemyManager.cs](../../Assets/Scripts/Enemies/EnemyManager.cs)
-  - Tipos: `ChaserEnemy`, `ShooterEnemy`, `JumperEnemy` (prefabs y datos en Resources/Data).
-  - Boss: `BossController` (2 fases, patrón de ataque, victoria al morir): [Assets/Scripts/Enemy/BossController.cs](../../Assets/Scripts/Enemy/BossController.cs)
-- Armas y proyectiles:
-  - Base `Weapon` + `MeleeWeapon` + `RangedWeapon` + `Projectile`: [Assets/Scripts/Weapons](../../Assets/Scripts/Weapons)
-  - `WeaponGenerator` (stats y rareza por run): [Assets/Scripts/Weapons/WeaponGenerator.cs](../../Assets/Scripts/Weapons/WeaponGenerator.cs)
-  - `WeaponPickup` (recogida en el mundo): [Assets/Scripts/Weapons/WeaponPickup.cs](../../Assets/Scripts/Weapons/WeaponPickup.cs)
-- Jugador:
-  - Movimiento y control: [Assets/Scripts/Player/PlayerController.cs](../../Assets/Scripts/Player/PlayerController.cs)
-  - Salud y HUD: [Assets/Scripts/Player/PlayerHealth.cs](../../Assets/Scripts/Player/PlayerHealth.cs), `HeartDisplay` en [Assets/Scripts/UI/HeartDisplay.cs](../../Assets/Scripts/UI/HeartDisplay.cs)
-  - Spawner: [Assets/Scripts/PlayerSpawner.cs](../../Assets/Scripts/PlayerSpawner.cs)
-- Selección de personaje:
-  - `ClassSelectionManager` con `PlayerClass` ScriptableObjects: [Assets/Scripts/ClassSelectionManager.cs](../../Assets/Scripts/ClassSelectionManager.cs), datos en [Assets/Data/Classes](../../Assets/Data/Classes)
-- Tile effects:
-  - `TileEffectPainter` (Editor), `EnemyTileEffectReceiver`, y efectos SO en [Assets/Data/TileEffects](../../Assets/Data/TileEffects)
+- gestión de estados y puntuación: `GameManager` coordina pausa, escenas, victoria y derrota, y `ScoreManager` registra historial persistente en PlayerPrefs en [Assets/Scripts/Core/GameManager.cs](../../Assets/Scripts/Core/GameManager.cs) y [Assets/Scripts/Core/ScoreManager.cs](../../Assets/Scripts/Core/ScoreManager.cs)
+- interfaz de usuario: `PauseMenu`, `VictoryScreen`, `GameOverScreen`, `ScoreDisplay` y panel de clasificación con `ScoreboardMenuUI` en [Assets/Scripts/UI](../../Assets/Scripts/UI)
+- generación y avance de salas: `RoomGenerator` crea suelo y muros y `RoomFlowController` inicia salas, alterna jefes y regenera el suelo en [Assets/Scripts/Tiles/RoomGenerator.cs](../../Assets/Scripts/Tiles/RoomGenerator.cs) y [Assets/Scripts/Core/RoomFlowController.cs](../../Assets/Scripts/Core/RoomFlowController.cs)
+- interacción con escaleras y efectos: `FloorTileManager` gestiona baldosas, escaleras y mensajes de bloqueo en [Assets/Scripts/Tiles/FloorTileManager.cs](../../Assets/Scripts/Tiles/FloorTileManager.cs) y [Assets/Scripts/UI/HUDMessage.cs](../../Assets/Scripts/UI/HUDMessage.cs)
+- enemigos y combate: `EnemyManager` selecciona prefabricados ponderados, aplica radio seguro y registra limpieza en [Assets/Scripts/Enemies/EnemyManager.cs](../../Assets/Scripts/Enemies/EnemyManager.cs)
+- jefes: el flujo actual usa enemigos escalados con multiplicadores y secuencia fija opcional, mientras `BossController` queda disponible para un jefe dedicado en [Assets/Scripts/Enemy/BossController.cs](../../Assets/Scripts/Enemy/BossController.cs)
+- armas y proyectiles: base `Weapon` con variantes `MeleeWeapon` y `RangedWeapon`, y `Projectile` con daño y escala en [Assets/Scripts/Weapons](../../Assets/Scripts/Weapons)
+- jugador y salud: `PlayerController`, `PlayerHealth` y `PlayerSpawner` gestionan movimiento, rodar, invulnerabilidad y panel de corazones en [Assets/Scripts/Player](../../Assets/Scripts/Player) y [Assets/Scripts/PlayerSpawner.cs](../../Assets/Scripts/PlayerSpawner.cs)
+- efectos de baldosas y daño: `TileEffect`, `DamageBoostManager` y receptores en enemigos en [Assets/Scripts/Tiles/TileEffect.cs](../../Assets/Scripts/Tiles/TileEffect.cs) y [Assets/Scripts/Tiles/DamageBoostManager.cs](../../Assets/Scripts/Tiles/DamageBoostManager.cs).
 
 ## Herramientas de Editor (Automatización)
 
-Ubicación: [Assets/Scripts/Editor](../../Assets/Scripts/Editor)
-- Room Auto‑Setup: `RoomAutoSetup.cs`
-- Dungeon Auto‑Builder: `DungeonAutoBuilder.cs`
-- Enemy Database Editor: `EnemyDatabaseEditor.cs`
-- Weapon Database Editor: `WeaponDatabaseEditor.cs`
-- Tile Effect Painter: `TileEffectPainter.cs`
-- Validaciones/fixers: `EnemyDataValidator.cs`, `FixEnemyPhysics.cs`, `FixPlayerPrefab.cs`, `FixWeaponColliders.cs`, `ProjectSettingsAutoFix.cs`, `CleanMissingScripts.cs`, etc.
+Ubicación en [Assets/Scripts/Editor](../../Assets/Scripts/Editor).
+- se incluyen utilidades de auto‑configuración de salas y mazmorras con `RoomAutoSetup` y `DungeonAutoBuilder`
+- se dispone de editores de bases de datos para enemigos y armas con `EnemyDatabaseEditor` y `WeaponDatabaseEditor`
+- se ofrece pintado de efectos con `TileEffectPainter` y validadores con `EnemyDataValidator`
+- se incorporan correctores y utilidades como `FixEnemyPhysics`, `FixPlayerPrefab`, `FixWeaponColliders`, `ProjectSettingsAutoFix`, `CleanMissingScripts`, `AutoFixer`, etc.
 
 ## Datos y Prefabs
 
-- Enemigos (SO): [Assets/Data/Enemies](../../Assets/Data/Enemies)
-- Armas (SO): [Assets/Data/Weapons](../../Assets/Data/Weapons)
-- Clases (SO): [Assets/Data/Classes](../../Assets/Data/Classes)
-- Tile Effects (SO): [Assets/Data/TileEffects](../../Assets/Data/TileEffects)
-- Prefabs:
-  - Enemigos: [Assets/Resources/Enemies](../../Assets/Resources/Enemies) (incluye `BossEnemy` y enemigos base para auto‑descubrimiento)
-  - Armas: [Assets/Prefabs/Weapons](../../Assets/Prefabs/Weapons)
-  - VFX: [Assets/Prefabs/VFX](../../Assets/Prefabs/VFX)
+- enemigos: [Assets/Data/Enemies](../../Assets/Data/Enemies)
+- armas: [Assets/Data/Weapons](../../Assets/Data/Weapons)
+- clases: [Assets/Data/Classes](../../Assets/Data/Classes)
+- efectos de baldosas: [Assets/Data/TileEffects](../../Assets/Data/TileEffects)
+- prefabricados de enemigos en [Assets/Resources/Enemies](../../Assets/Resources/Enemies), usados por la carga automática de `EnemyManager`
+- prefabricados de armas en [Assets/Prefabs/Weapons](../../Assets/Prefabs/Weapons)
+- prefabricados de efectos visuales en [Assets/Prefabs/VFX](../../Assets/Prefabs/VFX).
 
 ## Criterios del TFG — Cobertura
 
-- Mazmorras lineales/procedurales: Sí (`RoomGenerator`, `RoomFlowController`).
-- Enemigos con IA simple: Sí (chaser/shooter/jumper con base `Enemy`).
-- Armas con stats y proyectiles: Sí (melee/ranged/proyectiles, `WeaponGenerator`).
-- Clases seleccionables: Sí (3 clases en SO + `ClassSelectionManager`).
-- Boss + victoria/derrota: Sí (`BossController` + `GameManager.Victory`/`GameOver`).
-- Drops/powerups: Sí (tile powerups y `WeaponPickup`; se recomienda `DropController` genérico como mejora).
-- Menú de pausa y GameManager: Sí (`PauseMenu`, `GameManager`).
-- Editor Tools: Sí (varias herramientas para contenido y validación).
+- mazmorras lineales o procedurales: sí, con `RoomGenerator` y `RoomFlowController`
+- enemigos con inteligencia artificial (IA) simple: sí, con base `Enemy` y variantes de comportamiento
+- armas con estadísticas y proyectiles: sí, con `Weapon`, `MeleeWeapon`, `RangedWeapon` y `Projectile`
+- clases seleccionables: sí, con `PlayerClass` y `ClassSelectionManager`
+- jefes y condiciones de fin: sí, con jefes periódicos y `GameManager.Victory` o `GameManager.GameOver`
+- caídas y potenciadores: parcial, con baldosas de efectos y `WeaponPickup` sin equipamiento completo
+- menú de pausa y gestión de estado: sí, con `PauseMenu` y `GameManager`
+- sistema de puntuación: sí, con historial persistente y panel de clasificación
+- herramientas de Editor: sí, con utilidades de validación y automatización.
 
 ## Sugerencias de Mejora (Opcional)
 
-- Audio: `AudioManager` (singleton, mixer groups), música por estado (menú/salas/boss), SFX (ataques, daño, pickup, puertas).
-- Drops generales: `DropController` con probabilidades (health shard, buff temporal, cambio de arma); base `Pickup` con variantes.
-- UX/VFX: telegráficos de spawn, flash de puertas al abrir, pequeñas partículas en daño.
-- Balance: ajustar `EnemyManager` (costes/pesos) y progresión de armas.
-- Persistencia mínima: `PlayerPrefs` para high score y clase seleccionada.
+- se recomienda integrar un `AudioManager` con mezcla básica y música por estado
+- se recomienda completar la lógica de equipamiento en `WeaponPickup` y añadir un gestor de inventario sencillo
+- se recomienda introducir un sistema de caídas con probabilidades para salud y mejoras temporales
+- se recomienda integrar el jefe dedicado con `BossController` o ampliar la secuencia de jefes
+- se recomienda ajustar los pesos de aparición en `EnemyManager` y el escalado de armas.
 
 ## Cómo Probar Rápido
 
-1. Abrir `MainMenu` y pulsar Play.
-2. Seleccionar clase en `ClassSelection`.
-3. En `GameScene`, moverse/rodar/disparar; limpiar salas para abrir puertas; avanzar.
-4. Ver boss periódico; al morir, aparece pantalla de victoria.
-5. Morir para comprobar pantalla de game over.
+- se inicia en `MainMenu` y se accede a la selección de clase
+- se carga `GameScene` y se comprueba movimiento, rodar y ataque
+- se limpia la sala y se avanza con la interacción en la escalera
+- se verifica la aparición de jefes cada cinco salas y la victoria tras tres jefes
+- se fuerza la derrota para validar la pantalla de derrota y el retorno automático al menú.
 
 ## Glosario de Rutas Clave
 
-- Game loop: [Assets/Scripts/Core/GameManager.cs](../../Assets/Scripts/Core/GameManager.cs)
-- Flujo de salas: [Assets/Scripts/Core/RoomFlowController.cs](../../Assets/Scripts/Core/RoomFlowController.cs)
-- Generación de salas: [Assets/Scripts/Tiles/RoomGenerator.cs](../../Assets/Scripts/Tiles/RoomGenerator.cs)
-- Control de sala: [Assets/Scripts/LevelGeneration/RoomController.cs](../../Assets/Scripts/LevelGeneration/RoomController.cs)
-- Enemigos base: [Assets/Scripts/Enemies/Enemy.cs](../../Assets/Scripts/Enemies/Enemy.cs)
-- Boss: [Assets/Scripts/Enemy/BossController.cs](../../Assets/Scripts/Enemy/BossController.cs)
-- Armas: [Assets/Scripts/Weapons](../../Assets/Scripts/Weapons)
-- UI: pausa/victoria/game over en [Assets/Scripts/UI](../../Assets/Scripts/UI)
-- Editor Tools: [Assets/Scripts/Editor](../../Assets/Scripts/Editor)
+- ciclo de juego: [Assets/Scripts/Core/GameManager.cs](../../Assets/Scripts/Core/GameManager.cs)
+- flujo de salas: [Assets/Scripts/Core/RoomFlowController.cs](../../Assets/Scripts/Core/RoomFlowController.cs)
+- generación de salas: [Assets/Scripts/Tiles/RoomGenerator.cs](../../Assets/Scripts/Tiles/RoomGenerator.cs)
+- control de escaleras y efectos: [Assets/Scripts/Tiles/FloorTileManager.cs](../../Assets/Scripts/Tiles/FloorTileManager.cs)
+- control de sala con puertas: [Assets/Scripts/LevelGeneration/RoomController.cs](../../Assets/Scripts/LevelGeneration/RoomController.cs)
+- enemigos base: [Assets/Scripts/Enemies/Enemy.cs](../../Assets/Scripts/Enemies/Enemy.cs)
+- jefe dedicado: [Assets/Scripts/Enemy/BossController.cs](../../Assets/Scripts/Enemy/BossController.cs)
+- armas: [Assets/Scripts/Weapons](../../Assets/Scripts/Weapons)
+- interfaz de usuario y clasificación: [Assets/Scripts/UI](../../Assets/Scripts/UI)
+- herramientas de Editor: [Assets/Scripts/Editor](../../Assets/Scripts/Editor).
 
 ---
 Este documento resume el estado actual del proyecto Ascension para alimentación de una IA de documentación. Para más detalle técnico, revisar los archivos y carpetas vinculados arriba.

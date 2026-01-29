@@ -19,8 +19,23 @@ public class RoomFlowController : MonoBehaviour
     [Tooltip("Candidatos a boss (se elige uno random). Si está vacío, se auto-carga desde Resources/Enemies (SlimeGreen/Red/Blue).")]
     [SerializeField] private System.Collections.Generic.List<GameObject> bossCandidates = new();
 
-    [Tooltip("Cada cuántas salas aparece un boss (p.ej. 4 = boss en la 4, 8, 12...).")]
-    [SerializeField] private int bossEveryRooms = 4;
+    [Tooltip("Secuencia fija de bosses para completar la run (1: shooter, 2: perseguidor, 3: dash).")]
+    [SerializeField] private bool useFixedBossSequence = true;
+
+    [Tooltip("Boss 1: slime shooter grande (por defecto intenta SlimeGreen en Resources/Enemies).")]
+    [SerializeField] private GameObject boss1ShooterPrefab;
+
+    [Tooltip("Boss 2: slime perseguidor grande (por defecto intenta SlimeRed en Resources/Enemies).")]
+    [SerializeField] private GameObject boss2ChaserPrefab;
+
+    [Tooltip("Boss 3: slime dash grande (por defecto intenta SlimeBlue en Resources/Enemies).")]
+    [SerializeField] private GameObject boss3DashPrefab;
+
+    [Tooltip("Cantidad de bosses necesarios para ganar.")]
+    [SerializeField] private int bossesToWin = 3;
+
+    [Tooltip("Cada cuántas salas aparece un boss (p.ej. 5 = boss en la 5, 10, 15...).")]
+    [SerializeField] private int bossEveryRooms = 5;
 
     [Tooltip("Multiplicador de escala del boss provisional (slime grande).")]
     [SerializeField] private float bossScaleMultiplier = 2.4f;
@@ -44,6 +59,9 @@ public class RoomFlowController : MonoBehaviour
     private bool isBossRoom;
 
     private string lastBossName;
+
+    private int bossesDefeated;
+    private EnemyManager hookedEnemyManager;
 
     private string lastSceneName;
     private bool startedRoomInCurrentScene;
@@ -75,14 +93,17 @@ public class RoomFlowController : MonoBehaviour
 
         if (bossEveryRooms < 2)
         {
-            Debug.LogWarning($"[RoomFlowController] bossEveryRooms estaba en {bossEveryRooms}. Forzando a 4 para evitar bosses demasiado frecuentes.");
-            bossEveryRooms = 4;
+            Debug.LogWarning($"[RoomFlowController] bossEveryRooms estaba en {bossEveryRooms}. Forzando a 5 para evitar bosses demasiado frecuentes.");
+            bossEveryRooms = 5;
         }
 
         if (bossCandidates == null) bossCandidates = new System.Collections.Generic.List<GameObject>();
 
         // Auto-cargar candidatos por defecto si faltan (3 bosses random).
         EnsureDefaultBossCandidates();
+
+        EnsureBossSequencePrefabs();
+        HookEnemyManagerEvents();
     }
 
     private void OnDestroy()
@@ -128,6 +149,9 @@ public class RoomFlowController : MonoBehaviour
 
         ResolveRefs(logIfMissing: false);
 
+        EnsureBossSequencePrefabs();
+        HookEnemyManagerEvents();
+
         if (spawnOnStart)
         {
             StartCoroutine(TryStartRoomWhenReady());
@@ -144,6 +168,48 @@ public class RoomFlowController : MonoBehaviour
         {
             Debug.LogWarning("[RoomFlowController] No se encontró RoomGenerator aún (probablemente estás en un menú). Se reintentará al cargar escena.");
         }
+    }
+
+    private void HookEnemyManagerEvents()
+    {
+        if (hookedEnemyManager == enemyManager) return;
+
+        if (hookedEnemyManager != null)
+        {
+            hookedEnemyManager.OnRoomCleared -= HandleRoomCleared;
+        }
+
+        hookedEnemyManager = enemyManager;
+        if (hookedEnemyManager != null)
+        {
+            hookedEnemyManager.OnRoomCleared += HandleRoomCleared;
+        }
+    }
+
+    private void HandleRoomCleared()
+    {
+        if (!isBossRoom) return;
+
+        bossesDefeated = Mathf.Max(0, bossesDefeated + 1);
+        isBossRoom = false;
+
+        Debug.Log($"[RoomFlowController] Boss derrotado. bossesDefeated={bossesDefeated}/{bossesToWin}");
+
+        if (bossesToWin > 0 && bossesDefeated >= bossesToWin)
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.Victory();
+            }
+        }
+    }
+
+    public void ResetRunProgress()
+    {
+        roomDepth = 1;
+        bossesDefeated = 0;
+        isBossRoom = false;
+        lastBossName = null;
     }
 
     private System.Collections.IEnumerator TryStartRoomWhenReady()
@@ -233,8 +299,10 @@ public class RoomFlowController : MonoBehaviour
 
         if (ShouldSpawnBossRoom())
         {
-            SpawnBossRoom(area);
-            return;
+            if (TrySpawnBossRoom(area))
+            {
+                return;
+            }
         }
 
         int cost = Mathf.Max(1, baseSpawnCost + (roomDepth - 1) * spawnCostPerRoom);
@@ -263,20 +331,38 @@ public class RoomFlowController : MonoBehaviour
     private bool ShouldSpawnBossRoom()
     {
         if (!spawnPeriodicBosses) return false;
-        if (bossCandidates == null || bossCandidates.Count == 0) return false;
+        if (bossesToWin > 0 && bossesDefeated >= bossesToWin) return false;
         if (bossEveryRooms <= 0) return false;
 
         int safeDepth = Mathf.Max(1, roomDepth);
         if (safeDepth < bossEveryRooms) return false;
 
-        // Boss en la 4, 8, 12... (roomDepth empieza en 1)
+        // Boss en la 5, 10, 15... (roomDepth empieza en 1)
         return safeDepth % bossEveryRooms == 0;
     }
 
-    private void SpawnBossRoom(Rect area)
+    private bool TrySpawnBossRoom(Rect area)
     {
-        if (bossCandidates == null || bossCandidates.Count == 0 || enemyManager == null)
-            return;
+        if (enemyManager == null) return false;
+
+        EnsureBossSequencePrefabs();
+
+        GameObject chosen = null;
+        if (useFixedBossSequence)
+        {
+            chosen = GetFixedBossPrefabForIndex(bossesDefeated);
+        }
+
+        // Fallback: random (por compatibilidad si faltan prefabs)
+        if (chosen == null)
+        {
+            EnsureDefaultBossCandidates();
+            if (bossCandidates == null || bossCandidates.Count == 0)
+            {
+                Debug.LogWarning("[RoomFlowController] No hay boss prefabs disponibles. Se spawneará sala normal.");
+                return false;
+            }
+        }
 
         isBossRoom = true;
         enemyManager.BeginRoom();
@@ -285,35 +371,42 @@ public class RoomFlowController : MonoBehaviour
 
         Vector2 spawnPos = PickBossSpawn(area);
 
-        // Elegir uno random intentando no repetir el anterior.
-        GameObject chosen = null;
-        int attempts = Mathf.Clamp(bossCandidates.Count * 2, 2, 10);
-        for (int i = 0; i < attempts; i++)
-        {
-            var candidate = bossCandidates[Random.Range(0, bossCandidates.Count)];
-            if (candidate == null) continue;
-            if (!string.IsNullOrEmpty(lastBossName) && candidate.name == lastBossName && bossCandidates.Count > 1)
-            {
-                continue;
-            }
-            chosen = candidate;
-            break;
-        }
-
         if (chosen == null)
         {
-            chosen = bossCandidates[0];
+            // Elegir uno random intentando no repetir el anterior.
+            int attempts = Mathf.Clamp(bossCandidates.Count * 2, 2, 10);
+            for (int i = 0; i < attempts; i++)
+            {
+                var candidate = bossCandidates[Random.Range(0, bossCandidates.Count)];
+                if (candidate == null) continue;
+                if (!string.IsNullOrEmpty(lastBossName) && candidate.name == lastBossName && bossCandidates.Count > 1)
+                {
+                    continue;
+                }
+                chosen = candidate;
+                break;
+            }
+
+            if (chosen == null)
+            {
+                chosen = bossCandidates[0];
+            }
         }
 
         lastBossName = chosen != null ? chosen.name : null;
-        Debug.Log($"[RoomFlowController] BossRoom depth={roomDepth}. Candidates={bossCandidates.Count}. Chosen={(chosen != null ? chosen.name : "null")}");
+        Debug.Log($"[RoomFlowController] BossRoom depth={roomDepth}. bossesDefeated={bossesDefeated}. Chosen={(chosen != null ? chosen.name : "null")}");
         GameObject bossObj = Instantiate(chosen, spawnPos, Quaternion.identity);
         var enemy = bossObj != null ? bossObj.GetComponent<Enemy>() : null;
         if (enemy != null)
         {
             enemyManager.RegisterEnemy(enemy);
             StartCoroutine(ConfigureProvisionalBoss(enemy));
+            return true;
         }
+
+        Debug.LogWarning("[RoomFlowController] Boss instanciado sin componente Enemy. Se considerará sala normal.");
+        isBossRoom = false;
+        return false;
     }
 
     private System.Collections.IEnumerator ConfigureProvisionalBoss(Enemy enemy)
@@ -351,12 +444,56 @@ public class RoomFlowController : MonoBehaviour
             enemy.currentHealth = Mathf.RoundToInt(baseHp * bossHealthMultiplier);
         }
 
+        // Shooter boss (SlimeGreen): hacer que dispare "más grande" (proyectil más grande + un poco más rápido)
+        var slimeGreen = enemy.GetComponent<SlimeGreen>();
+        if (slimeGreen != null)
+        {
+            float projScale = Mathf.Clamp(1.0f + (bossScaleMultiplier - 1f) * 0.5f, 1.2f, 2.5f);
+            slimeGreen.BossProjectileScale = projScale;
+            slimeGreen.projectileSpeed *= 1.25f;
+            slimeGreen.projectileDamage = Mathf.Max(slimeGreen.projectileDamage, 1) + 1;
+        }
+
         // (Opcional) evitar que salga disparado por físicas
         var rb = enemy.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
             rb.mass = Mathf.Max(rb.mass, 3f);
         }
+    }
+
+    private void EnsureBossSequencePrefabs()
+    {
+        if (!useFixedBossSequence) return;
+
+        var prefabs = Resources.LoadAll<GameObject>("Enemies");
+        if (prefabs == null || prefabs.Length == 0) return;
+
+        if (boss1ShooterPrefab == null) boss1ShooterPrefab = FindEnemyPrefabByName(prefabs, "SlimeGreen");
+        if (boss2ChaserPrefab == null) boss2ChaserPrefab = FindEnemyPrefabByName(prefabs, "SlimeRed");
+        if (boss3DashPrefab == null) boss3DashPrefab = FindEnemyPrefabByName(prefabs, "SlimeBlue");
+    }
+
+    private GameObject FindEnemyPrefabByName(GameObject[] prefabs, string name)
+    {
+        if (prefabs == null) return null;
+        foreach (var p in prefabs)
+        {
+            if (p == null) continue;
+            if (!p.name.Contains(name)) continue;
+            if (p.GetComponent<Enemy>() == null) continue;
+            return p;
+        }
+        return null;
+    }
+
+    private GameObject GetFixedBossPrefabForIndex(int bossIndex)
+    {
+        // 0 -> shooter, 1 -> chaser, 2 -> dash
+        if (bossIndex == 0) return boss1ShooterPrefab;
+        if (bossIndex == 1) return boss2ChaserPrefab;
+        if (bossIndex == 2) return boss3DashPrefab;
+        return null;
     }
 
     private Vector2 PickBossSpawn(Rect area)

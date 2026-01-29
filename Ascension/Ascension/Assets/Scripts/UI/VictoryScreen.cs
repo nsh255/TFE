@@ -18,36 +18,38 @@ public class VictoryScreen : MonoBehaviour
 
     private float runStartTime;
 
+    /// <summary>
+    /// Inicializa la pantalla y configura los listeners de botones.
+    /// </summary>
     void Start()
     {
-        // Ocultar panel al inicio
         if (victoryPanel != null)
         {
             victoryPanel.SetActive(false);
         }
 
-        // Configurar botones
         if (playAgainButton != null)
             playAgainButton.onClick.AddListener(OnPlayAgainClicked);
         
         if (mainMenuButton != null)
             mainMenuButton.onClick.AddListener(OnMainMenuClicked);
 
-        // Suscribirse a cambios de estado
         GameManager.OnGameStateChanged += OnGameStateChanged;
-
-        // Registrar tiempo de inicio
         runStartTime = Time.time;
     }
 
+    /// <summary>
+    /// Desuscribe eventos al destruirse.
+    /// </summary>
     void OnDestroy()
     {
         GameManager.OnGameStateChanged -= OnGameStateChanged;
     }
 
     /// <summary>
-    /// Reacciona a cambios de estado del juego
+    /// Reacciona a cambios de estado del juego.
     /// </summary>
+    /// <param name="newState">Nuevo estado del juego</param>
     private void OnGameStateChanged(GameState newState)
     {
         if (newState == GameState.Victory)
@@ -56,13 +58,12 @@ public class VictoryScreen : MonoBehaviour
         }
         else if (newState == GameState.Playing)
         {
-            // Registrar nuevo tiempo de inicio al empezar run
             runStartTime = Time.time;
         }
     }
 
     /// <summary>
-    /// Muestra la pantalla de Victoria con estadísticas
+    /// Muestra la pantalla de Victoria con estadísticas finales y tiempo de run.
     /// </summary>
     public void Show()
     {
@@ -70,7 +71,6 @@ public class VictoryScreen : MonoBehaviour
 
         victoryPanel.SetActive(true);
 
-        // Mostrar estadísticas
         if (scoreText != null && ScoreManager.Instance != null)
         {
             scoreText.text = $"Puntuación Final: {ScoreManager.Instance.CurrentScore}";
@@ -93,10 +93,11 @@ public class VictoryScreen : MonoBehaviour
             int seconds = Mathf.FloorToInt(runTime % 60f);
             timeText.text = $"Tiempo: {minutes:00}:{seconds:00}";
         }
-
-        Debug.Log("[VictoryScreen] ¡Victoria! Pantalla mostrada");
     }
 
+    /// <summary>
+    /// Oculta la pantalla de Victoria.
+    /// </summary>
     public void Hide()
     {
         if (victoryPanel != null)
@@ -109,7 +110,6 @@ public class VictoryScreen : MonoBehaviour
 
     private void OnPlayAgainClicked()
     {
-        Debug.Log("[VictoryScreen] Iniciando nueva run...");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RestartRun();
@@ -118,7 +118,6 @@ public class VictoryScreen : MonoBehaviour
 
     private void OnMainMenuClicked()
     {
-        Debug.Log("[VictoryScreen] Volviendo al menú principal...");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadMainMenu();

@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// ScriptableObject que define las propiedades de una clase de jugador.
+/// </summary>
 [CreateAssetMenu(fileName = "PlayerClass", menuName = "Roguelike/PlayerClass")]
 public class PlayerClass : ScriptableObject
 {

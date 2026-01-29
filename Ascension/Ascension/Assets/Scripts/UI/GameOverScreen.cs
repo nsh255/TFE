@@ -15,33 +15,37 @@ public class GameOverScreen : MonoBehaviour
     [SerializeField] private Button restartButton;
     [SerializeField] private Button mainMenuButton;
 
+    /// <summary>
+    /// Inicializa la pantalla y configura los listeners de botones.
+    /// </summary>
     void Start()
     {
-        // Ocultar panel al inicio
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
         }
 
-        // Configurar botones
         if (restartButton != null)
             restartButton.onClick.AddListener(OnRestartClicked);
         
         if (mainMenuButton != null)
             mainMenuButton.onClick.AddListener(OnMainMenuClicked);
 
-        // Suscribirse a cambios de estado
         GameManager.OnGameStateChanged += OnGameStateChanged;
     }
 
+    /// <summary>
+    /// Desuscribe eventos al destruirse.
+    /// </summary>
     void OnDestroy()
     {
         GameManager.OnGameStateChanged -= OnGameStateChanged;
     }
 
     /// <summary>
-    /// Reacciona a cambios de estado del juego
+    /// Reacciona a cambios de estado del juego.
     /// </summary>
+    /// <param name="newState">Nuevo estado del juego</param>
     private void OnGameStateChanged(GameState newState)
     {
         if (newState == GameState.GameOver)
@@ -51,7 +55,7 @@ public class GameOverScreen : MonoBehaviour
     }
 
     /// <summary>
-    /// Muestra la pantalla de Game Over con estadísticas
+    /// Muestra la pantalla de Game Over con estadísticas finales.
     /// </summary>
     public void Show()
     {
@@ -59,7 +63,6 @@ public class GameOverScreen : MonoBehaviour
 
         gameOverPanel.SetActive(true);
 
-        // Mostrar estadísticas
         if (scoreText != null && ScoreManager.Instance != null)
         {
             scoreText.text = $"Puntuación: {ScoreManager.Instance.CurrentScore}";
@@ -74,10 +77,11 @@ public class GameOverScreen : MonoBehaviour
         {
             enemiesKilledText.text = $"Enemigos eliminados: {GameManager.Instance.EnemiesKilled}";
         }
-
-        Debug.Log("[GameOverScreen] Pantalla mostrada");
     }
 
+    /// <summary>
+    /// Oculta la pantalla de Game Over.
+    /// </summary>
     public void Hide()
     {
         if (gameOverPanel != null)
@@ -90,7 +94,6 @@ public class GameOverScreen : MonoBehaviour
 
     private void OnRestartClicked()
     {
-        Debug.Log("[GameOverScreen] Reiniciando run...");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RestartRun();
@@ -99,7 +102,6 @@ public class GameOverScreen : MonoBehaviour
 
     private void OnMainMenuClicked()
     {
-        Debug.Log("[GameOverScreen] Volviendo al menú principal...");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadMainMenu();

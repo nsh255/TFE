@@ -1,13 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Controla el movimiento, animación y comportamiento del jugador.
+/// Gestiona la inicialización basada en la clase seleccionada y el sistema de esquiva.
+/// </summary>
 public class PlayerController : MonoBehaviour
 {
     private Animator animator;
     private new Rigidbody2D rigidbody;
     private Vector3 velocity;
-
     private bool isInvulnerable = false;
 
     public PlayerClass playerClass;
@@ -20,11 +22,11 @@ public class PlayerController : MonoBehaviour
     public float CurrentSpeed => speed;
 
     [Header("Weapon")]
-    [Tooltip("Offset del arma respecto al jugador. Se aplica automáticamente (5, 0, 0) si está en (0,0,0)")]
-    public Vector3 weaponOffset = Vector3.zero; // Se inicializa en Awake
-    [Tooltip("Si está activo, el offset del arma se escala con el tamaño del jugador (uniforme).")]
+    [Tooltip("Offset del arma respecto al jugador")]
+    public Vector3 weaponOffset = Vector3.zero;
+    [Tooltip("Si está activo, el offset del arma se escala con el tamaño del jugador")]
     public bool scaleWeaponOffsetWithPlayer = true;
-    [Tooltip("Multiplicador adicional para afinar el offset del arma tras el escalado.")]
+    [Tooltip("Multiplicador adicional para afinar el offset del arma")]
     public float weaponOffsetScale = 1f;
 
     [Header("Roll")]
@@ -37,29 +39,27 @@ public class PlayerController : MonoBehaviour
     private bool canRoll = true;
     private Vector2 lastInputDirection = Vector2.up;
     
-    // Propiedad pública para que las armas puedan verificar si estamos en roll
     public bool IsRolling => isRolling;
 
     private PlayerHealth playerHealth;
     private bool isInitialized = false;
 
+    /// <summary>
+    /// Inicializa componentes críticos y configuración de físicas.
+    /// </summary>
     void Awake()
     {
         EnsureCriticalLayerCollisions();
 
-        // SIEMPRE aplicar valores si está en (0,0,0)
         if (weaponOffset == Vector3.zero)
         {
-            // Offset reducido para que rote cerca de la cabeza del jugador
             weaponOffset = new Vector3(0.8f, 0.5f, 0f);
         }
         
-        // Inicializar referencias de componentes en Awake para que estén listas antes de Initialize()
         animator = GetComponent<Animator>();
         rigidbody = GetComponent<Rigidbody2D>();
         playerHealth = GetComponent<PlayerHealth>();
 
-        // Hardening de físicas: evita atravesar colliders por tunneling.
         if (rigidbody != null)
         {
             rigidbody.gravityScale = 0f;
@@ -69,6 +69,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Asegura que las colisiones críticas entre capas estén habilitadas.
+    /// </summary>
     private void EnsureCriticalLayerCollisions()
     {
         int playerLayer = LayerMask.NameToLayer("Player");
@@ -76,11 +79,9 @@ public class PlayerController : MonoBehaviour
         int enemyLayer = LayerMask.NameToLayer("Enemy");
         int entitiesLayer = LayerMask.NameToLayer("Entities");
 
-        // Si el proyecto tiene capas configuradas, aseguramos que NO estén ignoradas.
         if (playerLayer >= 0 && wallLayer >= 0)
             Physics2D.IgnoreLayerCollision(playerLayer, wallLayer, false);
 
-        // Útil si en algún punto migramos player/enemies a Entities.
         if (entitiesLayer >= 0 && wallLayer >= 0)
             Physics2D.IgnoreLayerCollision(entitiesLayer, wallLayer, false);
 
@@ -88,16 +89,21 @@ public class PlayerController : MonoBehaviour
             Physics2D.IgnoreLayerCollision(enemyLayer, wallLayer, false);
     }
 
+    /// <summary>
+    /// Inicializa el jugador si ya tiene una clase asignada.
+    /// </summary>
     void Start()
     {
-        // Si playerClass ya está asignado (para testing directo), inicializar
         if (playerClass != null && !isInitialized)
         {
             Initialize();
         }
     }
 
-    // Método público para inicializar después de asignar playerClass
+    /// <summary>
+    /// Inicializa las estadísticas del jugador basadas en la clase seleccionada.
+    /// Instancia el arma inicial y configura la salud.
+    /// </summary>
     public void Initialize()
     {
         if (isInitialized) return;
@@ -111,7 +117,6 @@ public class PlayerController : MonoBehaviour
         baseSpeed = playerClass.speed;
         speed = baseSpeed;
 
-        // Instanciar el arma según el WeaponData de la clase
         if (playerClass.startingWeaponData != null)
         {
             if (playerClass.startingWeaponData.weaponPrefab != null)
@@ -120,14 +125,12 @@ public class PlayerController : MonoBehaviour
                     playerClass.startingWeaponData.weaponPrefab,
                     transform.position,
                     Quaternion.identity,
-                    transform // parent al jugador
+                    transform
                 );
 
-                // Aplicar el offset del arma, ajustando por el scale del jugador si corresponde
                 Vector3 finalOffset;
                 if (scaleWeaponOffsetWithPlayer)
                 {
-                    // Asumimos escala uniforme; tomamos el mayor eje para evitar distorsión
                     float uniformScale = Mathf.Max(transform.localScale.x, transform.localScale.y);
                     finalOffset = weaponOffset * uniformScale * weaponOffsetScale;
                 }
@@ -144,71 +147,48 @@ public class PlayerController : MonoBehaviour
                     weaponScript.weaponData = playerClass.startingWeaponData;
                     weaponScript.Initialize();
                 }
-                else
-                {
-                    Debug.LogWarning("Weapon script not found on the weapon prefab.");
-                }
 
-                // Asegurar que el arma se renderiza por encima del suelo.
                 var playerSr = GetComponent<SpriteRenderer>();
                 if (playerSr != null)
                 {
                     foreach (var sr in weaponInstance.GetComponentsInChildren<SpriteRenderer>(true))
                     {
-                        // Si el prefab viene en Default, lo subimos a la capa de Entities.
                         sr.sortingLayerID = playerSr.sortingLayerID;
                         sr.sortingOrder = Mathf.Max(sr.sortingOrder, playerSr.sortingOrder);
                     }
                 }
             }
-            else
-            {
-                Debug.LogWarning("No weaponPrefab assigned in WeaponData for class: " + playerClass.className);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("No startingWeaponData assigned to PlayerClass: " + playerClass.className);
         }
 
-        // Inicializar PlayerHealth después de que playerClass esté asignado
         if (playerHealth != null)
         {
-            Debug.Log("[PlayerController] Inicializando PlayerHealth...");
             playerHealth.Initialize();
-        }
-        else
-        {
-            Debug.LogError("[PlayerController] playerHealth es NULL! No se puede inicializar. Buscando componente...");
-            playerHealth = GetComponent<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                Debug.Log("[PlayerController] PlayerHealth encontrado, inicializando...");
-                playerHealth.Initialize();
-            }
-            else
-            {
-                Debug.LogError("[PlayerController] PlayerHealth NO existe en el prefab del jugador!");
-            }
         }
 
         isInitialized = true;
-        Debug.Log($"PlayerController inicializado con clase: {playerClass.className}");
-
         LogPlayerVisualSize();
     }
 
+    /// <summary>
+    /// Aplica un multiplicador de velocidad al movimiento base.
+    /// </summary>
+    /// <param name="multiplier">Factor multiplicador.</param>
     public void SetSpeedMultiplier(float multiplier)
     {
         speed = BaseSpeed * multiplier;
     }
 
+    /// <summary>
+    /// Restaura la velocidad al valor base de la clase.
+    /// </summary>
     public void ResetSpeed()
     {
         speed = BaseSpeed;
     }
 
-
+    /// <summary>
+    /// Procesa la entrada del jugador y actualiza la animación de movimiento.
+    /// </summary>
     void Update()
     {
         if (isRolling)
@@ -242,6 +222,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Aplica el movimiento del jugador mediante físicas.
+    /// </summary>
     void FixedUpdate()
     {
         if (!isRolling)
@@ -253,15 +236,28 @@ public class PlayerController : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Establece el estado de invulnerabilidad del jugador.
+    /// </summary>
+    /// <param name="value">True para activar invulnerabilidad, false para desactivarla.</param>
     public void SetInvulnerable(bool value)
     {
         isInvulnerable = value;
     }
+    
+    /// <summary>
+    /// Verifica si el jugador es actualmente invulnerable.
+    /// </summary>
+    /// <returns>True si el jugador es invulnerable.</returns>
     public bool IsInvulnerable()
     {
         return isInvulnerable;
     }
 
+    /// <summary>
+    /// Ejecuta la animación y movimiento de esquiva del jugador.
+    /// </summary>
+    /// <param name="direction">Dirección normalizada de la esquiva.</param>
     private IEnumerator DoRoll(Vector2 direction)
     {
         isRolling = true;
@@ -303,8 +299,8 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Calcula y muestra en Debug el tamaño visual del jugador en píxeles en pantalla.
-    /// Útil para ajustar pixelScale / escala del sprite.
+    /// Calcula y registra el tamaño visual del jugador en píxeles en pantalla.
+    /// Utilizado para depuración y ajustes de escala.
     /// </summary>
     private void LogPlayerVisualSize()
     {
@@ -312,14 +308,13 @@ public class PlayerController : MonoBehaviour
         Camera mainCam = Camera.main;
         if (sr == null || sr.sprite == null || mainCam == null)
         {
-            Debug.LogWarning("[PlayerSizeDebug] Faltan referencias para calcular tamaño visual.");
             return;
         }
-        float ppu = sr.sprite.pixelsPerUnit; // debería ser 16
-        float spritePixelHeight = sr.sprite.rect.height; // normalmente 16
+        float ppu = sr.sprite.pixelsPerUnit;
+        float spritePixelHeight = sr.sprite.rect.height;
         float worldHeightUnits = (spritePixelHeight / ppu) * transform.localScale.y;
 
-        float worldVisibleHeight = mainCam.orthographicSize * 2f; // unidades mundo visibles verticalmente
+        float worldVisibleHeight = mainCam.orthographicSize * 2f;
         float pixelsPerWorldUnit = Screen.height / worldVisibleHeight;
         float onScreenPixelHeight = worldHeightUnits * pixelsPerWorldUnit;
 

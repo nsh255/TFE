@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// ScriptableObject que define las propiedades de un arma.
+/// </summary>
 [CreateAssetMenu(menuName = "Items/WeaponData")]
 public class WeaponData : ScriptableObject
 {

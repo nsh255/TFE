@@ -14,15 +14,16 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button quitButton;
 
+    /// <summary>
+    /// Inicializa el menú y configura los listeners de botones.
+    /// </summary>
     void Start()
     {
-        // Ocultar menú al inicio
         if (pauseMenuPanel != null)
         {
             pauseMenuPanel.SetActive(false);
         }
 
-        // Configurar botones
         if (resumeButton != null)
             resumeButton.onClick.AddListener(OnResumeClicked);
         
@@ -35,19 +36,22 @@ public class PauseMenu : MonoBehaviour
         if (quitButton != null)
             quitButton.onClick.AddListener(OnQuitClicked);
 
-        // Suscribirse a cambios de estado
         GameManager.OnGameStateChanged += OnGameStateChanged;
     }
 
+    /// <summary>
+    /// Desuscribe eventos al destruirse.
+    /// </summary>
     void OnDestroy()
     {
-        // Desuscribirse para evitar errores
         GameManager.OnGameStateChanged -= OnGameStateChanged;
     }
 
+    /// <summary>
+    /// Detecta pulsación de ESC para pausar/despausar.
+    /// </summary>
     void Update()
     {
-        // Backup: detectar ESC si el GameManager no lo maneja
         if (Input.GetKeyDown(KeyCode.Escape) && GameManager.Instance != null)
         {
             GameManager.Instance.TogglePause();
@@ -55,24 +59,21 @@ public class PauseMenu : MonoBehaviour
     }
 
     /// <summary>
-    /// Reacciona a cambios de estado del juego
+    /// Reacciona a cambios de estado del juego mostrando/ocultando el panel.
     /// </summary>
+    /// <param name="newState">Nuevo estado del juego</param>
     private void OnGameStateChanged(GameState newState)
     {
         if (pauseMenuPanel == null) return;
 
-        // Mostrar menú solo cuando esté pausado
         bool shouldShow = (newState == GameState.Paused);
         pauseMenuPanel.SetActive(shouldShow);
-
-        Debug.Log($"[PauseMenu] Estado: {newState}, Mostrar: {shouldShow}");
     }
 
     #region Callbacks de Botones
 
     private void OnResumeClicked()
     {
-        Debug.Log("[PauseMenu] Botón REANUDAR presionado");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.Resume();
@@ -81,7 +82,6 @@ public class PauseMenu : MonoBehaviour
 
     private void OnRestartClicked()
     {
-        Debug.Log("[PauseMenu] Botón REINICIAR presionado");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RestartRun();
@@ -90,7 +90,6 @@ public class PauseMenu : MonoBehaviour
 
     private void OnMainMenuClicked()
     {
-        Debug.Log("[PauseMenu] Botón MENÚ PRINCIPAL presionado");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadMainMenu();
@@ -99,7 +98,6 @@ public class PauseMenu : MonoBehaviour
 
     private void OnQuitClicked()
     {
-        Debug.Log("[PauseMenu] Botón SALIR presionado");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.QuitGame();
@@ -108,8 +106,11 @@ public class PauseMenu : MonoBehaviour
 
     #endregion
 
-    #region Métodos Públicos (por si se llaman desde otros scripts)
+    #region Métodos Públicos
 
+    /// <summary>
+    /// Muestra el menú de pausa manualmente.
+    /// </summary>
     public void Show()
     {
         if (pauseMenuPanel != null)
@@ -118,6 +119,9 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Oculta el menú de pausa manualmente.
+    /// </summary>
     public void Hide()
     {
         if (pauseMenuPanel != null)

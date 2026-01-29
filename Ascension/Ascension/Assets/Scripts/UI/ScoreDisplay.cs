@@ -2,8 +2,8 @@ using UnityEngine;
 using TMPro;
 
 /// <summary>
-/// Displays the current score in the HUD.
-/// Automatically reads from ScoreManager singleton.
+/// Muestra la puntuación actual en el HUD.
+/// Se actualiza automáticamente desde ScoreManager.
 /// </summary>
 public class ScoreDisplay : MonoBehaviour
 {
@@ -18,6 +18,9 @@ public class ScoreDisplay : MonoBehaviour
     [Tooltip("Number format (e.g. N0 for thousands separator)")]
     public string numberFormat = "N0";
 
+    /// <summary>
+    /// Actualiza el texto de puntuación cada frame leyendo de ScoreManager.
+    /// </summary>
     private void Update()
     {
         if (ScoreManager.Instance != null && scoreText != null)
@@ -27,7 +30,6 @@ public class ScoreDisplay : MonoBehaviour
         }
         else if (scoreText != null && ScoreManager.Instance == null)
         {
-            // Fallback si no hay ScoreManager
             scoreText.text = prefix + "0";
         }
     }
