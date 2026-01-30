@@ -7,6 +7,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Herramienta para estandarizar fuentes y fondos de UI en escenas y prefabs.
+/// </summary>
 public class AscensionUIStandardizerWindow : EditorWindow
 {
     private const string DefaultFontTtfPath = "Assets/Font/VCR_OSD_MONO_1.001.ttf";
@@ -18,6 +21,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
     private Sprite backgroundSprite;
 
     [MenuItem("Tools/Ascension/UI Standardizer")]
+    /// <summary>
+    /// Abre la ventana de estandarización de UI.
+    /// </summary>
     public static void ShowWindow()
     {
         var w = GetWindow<AscensionUIStandardizerWindow>();
@@ -26,6 +32,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         w.Show();
     }
 
+    /// <summary>
+    /// Carga assets por defecto al habilitar la ventana.
+    /// </summary>
     private void OnEnable()
     {
         if (sourceTtf == null)
@@ -38,6 +47,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
             tmpFontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultFontAssetOutPath);
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de configuración.
+    /// </summary>
     private void OnGUI()
     {
         EditorGUILayout.LabelField("Assets", EditorStyles.boldLabel);
@@ -112,6 +124,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
             MessageType.Info);
     }
 
+    /// <summary>
+    /// Crea el TMP Font Asset a partir de la fuente seleccionada.
+    /// </summary>
     private void CreateTmpFontAsset()
     {
         if (sourceTtf == null)
@@ -168,6 +183,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Create TMP Font Asset", "TMP Font Asset creado en Assets/Font/VCR_OSD_MONO.asset", "OK");
     }
 
+    /// <summary>
+    /// Establece el TMP Font Asset como fuente por defecto en TMP.
+    /// </summary>
     private void SetTmpDefaultFont()
     {
         if (tmpFontAsset == null)
@@ -185,6 +203,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Set TMP Default Font", "TMP default font actualizado.", "OK");
     }
 
+    /// <summary>
+    /// Aplica la fuente TMP a todos los textos de la escena activa.
+    /// </summary>
     private void ApplyTmpFontToActiveScene()
     {
         if (tmpFontAsset == null)
@@ -208,6 +229,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Apply TMP Font", $"Actualizado {changed} textos TMP en la escena activa.", "OK");
     }
 
+    /// <summary>
+    /// Aplica la fuente TMP a todos los prefabs del proyecto.
+    /// </summary>
     private void ApplyTmpFontToAllPrefabs()
     {
         if (tmpFontAsset == null)
@@ -256,6 +280,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Apply TMP Font", $"Prefabs actualizados: {changedPrefabs}\nTextos cambiados: {changedTexts}", "OK");
     }
 
+    /// <summary>
+    /// Configura el fondo y el título del menú principal.
+    /// </summary>
     private void SetupMainMenuBackgroundAndTitle(bool openSceneIfNeeded, bool saveScene)
     {
         if (backgroundSprite == null)
@@ -348,6 +375,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Setup MainMenu", saveScene ? "MainMenu actualizado y guardado." : "MainMenu actualizado (sin guardar).", "OK");
     }
 
+    /// <summary>
+    /// Configura el fondo de la escena de selección de clase.
+    /// </summary>
     private void SetupClassSelectionBackground(bool openSceneIfNeeded, bool saveScene)
     {
         if (backgroundSprite == null)
@@ -407,6 +437,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         EditorUtility.DisplayDialog("Setup ClassSelection", saveScene ? "ClassSelection actualizado y guardado." : "ClassSelection actualizado (sin guardar).", "OK");
     }
 
+    /// <summary>
+    /// Determina si el TMP Font Asset está incompleto.
+    /// </summary>
     private static bool IsTmpFontAssetBroken(TMP_FontAsset fontAsset)
     {
         if (fontAsset == null) return false;
@@ -416,6 +449,9 @@ public class AscensionUIStandardizerWindow : EditorWindow
         return false;
     }
 
+    /// <summary>
+    /// Repara atlas y material del TMP Font Asset.
+    /// </summary>
     private static void RepairTmpFontAsset(TMP_FontAsset fontAsset)
     {
         if (fontAsset == null) return;

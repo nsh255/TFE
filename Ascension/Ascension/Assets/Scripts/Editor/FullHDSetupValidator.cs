@@ -23,6 +23,9 @@ public static class FullHDSetupValidator
     private static readonly Vector2 ReferenceUIResolution = new Vector2(480, 270);
 
     [MenuItem("Ascension/Diagnostics/Validate FullHD Setup")]
+    /// <summary>
+    /// Valida la configuración de escenas para Full HD.
+    /// </summary>
     public static void ValidateFullHD()
     {
         // Buscar escenas en la carpeta estándar del proyecto

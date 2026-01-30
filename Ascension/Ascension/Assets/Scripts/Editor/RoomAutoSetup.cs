@@ -14,11 +14,17 @@ public class RoomAutoSetup : EditorWindow
     private RoomType roomType = RoomType.Normal;
 
     [MenuItem("Tools/Ascension/Room Auto-Setup")]
+    /// <summary>
+    /// Abre la herramienta de configuración automática de salas.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<RoomAutoSetup>("Room Auto-Setup");
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de configuración en el editor.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Room Auto-Setup Tool", EditorStyles.boldLabel);
@@ -56,6 +62,9 @@ public class RoomAutoSetup : EditorWindow
         );
     }
 
+    /// <summary>
+    /// Configura la sala seleccionada con componentes básicos.
+    /// </summary>
     private void SetupRoom()
     {
         if (selectedRoom == null)
@@ -71,7 +80,6 @@ public class RoomAutoSetup : EditorWindow
         if (roomController == null)
         {
             roomController = Undo.AddComponent<RoomController>(selectedRoom);
-            Debug.Log("[RoomAutoSetup] RoomController añadido");
         }
 
         // Usar reflection para setear el tipo de sala (campo privado)
@@ -91,10 +99,6 @@ public class RoomAutoSetup : EditorWindow
             {
                 Debug.LogWarning("[RoomAutoSetup] No se encontraron puertas. Considera añadirlas manualmente.");
             }
-            else
-            {
-                Debug.Log($"[RoomAutoSetup] {doors.Length} puertas detectadas");
-            }
         }
 
         // 3. Auto-detectar spawners
@@ -112,12 +116,6 @@ public class RoomAutoSetup : EditorWindow
                 BoxCollider2D spawnerCollider = Undo.AddComponent<BoxCollider2D>(spawnerObj);
                 spawnerCollider.isTrigger = true;
                 spawnerCollider.size = new Vector2(20f, 10f);
-
-                Debug.Log("[RoomAutoSetup] EnemySpawner creado automáticamente");
-            }
-            else
-            {
-                Debug.Log($"[RoomAutoSetup] {spawners.Length} spawners detectados");
             }
         }
 
@@ -130,17 +128,14 @@ public class RoomAutoSetup : EditorWindow
                 BoxCollider2D newCollider = Undo.AddComponent<BoxCollider2D>(selectedRoom);
                 newCollider.isTrigger = true;
                 newCollider.size = new Vector2(20f, 10f);
-                Debug.Log("[RoomAutoSetup] Collider añadido a la sala");
             }
             else
             {
                 roomCollider.isTrigger = true;
-                Debug.Log("[RoomAutoSetup] Collider existente configurado como trigger");
             }
         }
 
         EditorUtility.SetDirty(selectedRoom);
-        EditorUtility.DisplayDialog("Success", "Sala configurada correctamente", "OK");
-        Debug.Log("[RoomAutoSetup] Setup completado para: " + selectedRoom.name);
+        EditorUtility.DisplayDialog("Proceso completado", "Sala configurada correctamente.", "OK");
     }
 }

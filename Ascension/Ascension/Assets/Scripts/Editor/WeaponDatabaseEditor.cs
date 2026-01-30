@@ -21,16 +21,25 @@ public class WeaponDatabaseEditor : EditorWindow
     private GameObject newWeaponPrefab;
 
     [MenuItem("Tools/Ascension/Weapon Database Editor")]
+    /// <summary>
+    /// Abre el editor de base de datos de armas.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<WeaponDatabaseEditor>("Weapon Database");
     }
 
+    /// <summary>
+    /// Carga la base de datos al habilitar la ventana.
+    /// </summary>
     void OnEnable()
     {
         LoadWeaponDatabase();
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de edición en el editor.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Weapon Database Editor", EditorStyles.boldLabel);
@@ -73,6 +82,9 @@ public class WeaponDatabaseEditor : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
+    /// <summary>
+    /// Dibuja el panel de creación de WeaponData.
+    /// </summary>
     private void DrawCreatePanel()
     {
         EditorGUILayout.BeginVertical("box");
@@ -95,6 +107,9 @@ public class WeaponDatabaseEditor : EditorWindow
         EditorGUILayout.EndVertical();
     }
 
+    /// <summary>
+    /// Dibuja una entrada de arma en la lista.
+    /// </summary>
     private void DrawWeaponEntry(WeaponData weapon, int index)
     {
         EditorGUILayout.BeginVertical("box");
@@ -141,6 +156,9 @@ public class WeaponDatabaseEditor : EditorWindow
         EditorGUILayout.Space();
     }
 
+    /// <summary>
+    /// Recarga todos los WeaponData presentes en el proyecto.
+    /// </summary>
     private void LoadWeaponDatabase()
     {
         weaponDatabase.Clear();
@@ -156,9 +174,11 @@ public class WeaponDatabaseEditor : EditorWindow
             }
         }
 
-        Debug.Log($"[WeaponDatabaseEditor] {weaponDatabase.Count} armas cargadas");
     }
 
+    /// <summary>
+    /// Crea un nuevo WeaponData a partir de los campos del editor.
+    /// </summary>
     private void CreateNewWeapon()
     {
         if (string.IsNullOrEmpty(newWeaponName))
@@ -189,8 +209,7 @@ public class WeaponDatabaseEditor : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[WeaponDatabaseEditor] Weapon creado: {path}");
-        EditorUtility.DisplayDialog("Success", $"Weapon '{newWeaponName}' creado correctamente", "OK");
+        EditorUtility.DisplayDialog("Éxito", $"Weapon '{newWeaponName}' creado correctamente.", "OK");
 
         // Resetear campos
         newWeaponName = "New Weapon";
@@ -204,6 +223,9 @@ public class WeaponDatabaseEditor : EditorWindow
         showCreatePanel = false;
     }
 
+    /// <summary>
+    /// Elimina un WeaponData seleccionado.
+    /// </summary>
     private void DeleteWeapon(WeaponData weapon)
     {
         string path = AssetDatabase.GetAssetPath(weapon);
@@ -211,10 +233,12 @@ public class WeaponDatabaseEditor : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[WeaponDatabaseEditor] Weapon eliminado: {weapon.weaponName}");
         LoadWeaponDatabase();
     }
 
+    /// <summary>
+    /// Duplica un WeaponData y lo guarda como nuevo asset.
+    /// </summary>
     private void DuplicateWeapon(WeaponData weapon)
     {
         WeaponData duplicate = Object.Instantiate(weapon);
@@ -225,7 +249,6 @@ public class WeaponDatabaseEditor : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[WeaponDatabaseEditor] Weapon duplicado: {path}");
         LoadWeaponDatabase();
     }
 }

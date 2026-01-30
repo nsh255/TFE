@@ -7,11 +7,17 @@ using UnityEngine;
 public class FixSpeedsForPPU16 : EditorWindow
 {
     [MenuItem("Ascension/Debug/Fix All Speeds for PPU=16")]
+    /// <summary>
+    /// Ejecuta el ajuste de velocidades para PPU igual a dieciséis.
+    /// </summary>
     static void ShowWindow()
     {
         FixAllSpeeds();
     }
 
+    /// <summary>
+    /// Ajusta velocidades de clases de jugador y enemigos.
+    /// </summary>
     private static void FixAllSpeeds()
     {
         int fixedCount = 0;
@@ -31,7 +37,6 @@ public class FixSpeedsForPPU16 : EditorWindow
                 float oldSpeed = playerClass.speed;
                 playerClass.speed = oldSpeed / 16f;
                 EditorUtility.SetDirty(playerClass);
-                Debug.Log($"✅ {playerClass.className}: speed {oldSpeed} → {playerClass.speed}");
                 fixedCount++;
             }
         }
@@ -56,25 +61,21 @@ public class FixSpeedsForPPU16 : EditorWindow
                 if (enemyData.name.Contains("Jumper"))
                 {
                     // SlimeBlue tiene dashSpeed, ajustarlo también
-                    Debug.Log($"   ⚠️ {enemyData.name} puede tener dashSpeed hardcoded en SlimeBlue.cs");
+                    Debug.LogWarning($"{enemyData.name} puede tener dashSpeed fijo en SlimeBlue.cs.");
                 }
                 
                 EditorUtility.SetDirty(enemyData);
-                Debug.Log($"✅ {enemyData.name}: speed {oldSpeed} → {enemyData.speed}");
                 fixedCount++;
             }
         }
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ {fixedCount} velocidades ajustadas (divididas por 16)\n\n" +
-                        "Player classes: speed / 16\n" +
-                        "Enemy data: speed / 16\n\n" +
-                        "NOTA: SlimeBlue dashSpeed está hardcoded en código (speed=2, dashSpeed=12).\n" +
-                        "Cambiar a: speed=0.125, dashSpeed=0.75\n\n" +
-                        "PRUEBA EL JUEGO AHORA.";
-
-        Debug.Log(message);
+        string message = $"Se han ajustado {fixedCount} velocidades.\n\n" +
+                "Clases de jugador: velocidad dividida por dieciséis\n" +
+                "Datos de enemigos: velocidad dividida por dieciséis\n\n" +
+                "Nota: SlimeBlue mantiene dashSpeed en código.\n" +
+                "Valores recomendados: speed = cero coma uno dos cinco, dashSpeed = cero coma siete cinco.";
 
         EditorUtility.DisplayDialog(
             "Velocidades Ajustadas",

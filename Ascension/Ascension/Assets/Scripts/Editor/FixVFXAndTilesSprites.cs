@@ -21,6 +21,9 @@ public static class FixVFXAndTilesSprites
 
     // Menú rápido
     [MenuItem("Ascension/Pixel Art/Fix Sprites in VFX & Tiles")] 
+    /// <summary>
+    /// Normaliza sprites en carpetas de VFX y tiles predefinidas.
+    /// </summary>
     public static void FixNow()
     {
         var candidateFolders = new List<string>
@@ -57,6 +60,9 @@ public static class FixVFXAndTilesSprites
 
     // Opción adicional: permitir elegir una carpeta manualmente
     [MenuItem("Ascension/Pixel Art/Fix Sprites (Pick Folder…)")]
+    /// <summary>
+    /// Normaliza sprites en una carpeta seleccionada manualmente.
+    /// </summary>
     public static void FixFromSelectedFolder()
     {
         string abs = EditorUtility.OpenFolderPanel(
@@ -91,6 +97,9 @@ public static class FixVFXAndTilesSprites
         FixSpritesInFolders(new List<string> { rel });
     }
 
+    /// <summary>
+    /// Aplica la normalización de importación a las carpetas indicadas.
+    /// </summary>
     private static void FixSpritesInFolders(List<string> folders)
     {
         string[] guids = AssetDatabase.FindAssets("t:Texture2D", folders.ToArray());
@@ -178,7 +187,6 @@ public static class FixVFXAndTilesSprites
             EditorUtility.ClearProgressBar();
         }
 
-        Debug.Log($"[FixVFXAndTilesSprites] Texturas procesadas: {processed}, modificadas: {changed}. Carpetas: {string.Join(", ", folders)}");
         EditorUtility.DisplayDialog(
             "Fix Sprites — VFX & Tiles",
             $"Texturas procesadas: {processed}\nModificadas: {changed}",

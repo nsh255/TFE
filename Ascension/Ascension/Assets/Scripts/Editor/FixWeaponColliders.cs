@@ -7,11 +7,17 @@ using UnityEngine;
 public class FixWeaponColliders : EditorWindow
 {
     [MenuItem("Ascension/Debug/Fix Weapon and Enemy Colliders")]
+    /// <summary>
+    /// Ejecuta la verificación y corrección de colisionadores.
+    /// </summary>
     static void ShowWindow()
     {
         FixAllColliders();
     }
 
+    /// <summary>
+    /// Corrige colliders en armas y enemigos para la detección de daño.
+    /// </summary>
     private static void FixAllColliders()
     {
         int fixedCount = 0;
@@ -41,14 +47,12 @@ public class FixWeaponColliders : EditorWindow
                     CircleCollider2D circleCol = instance.AddComponent<CircleCollider2D>();
                     circleCol.isTrigger = true;
                     circleCol.radius = 0.3f;
-                    Debug.Log($"✅ CircleCollider2D (trigger) añadido a {prefab.name}");
                 }
                 else
                 {
                     BoxCollider2D boxCol = instance.AddComponent<BoxCollider2D>();
                     boxCol.isTrigger = true;
                     boxCol.size = new Vector2(1f, 0.3f);
-                    Debug.Log($"✅ BoxCollider2D (trigger) añadido a {prefab.name}");
                 }
                 fixedCount++;
             }
@@ -58,7 +62,6 @@ public class FixWeaponColliders : EditorWindow
                 if (!col.isTrigger)
                 {
                     col.isTrigger = true;
-                    Debug.Log($"✅ {prefab.name}: Collider configurado como Trigger");
                     fixedCount++;
                 }
             }
@@ -88,7 +91,6 @@ public class FixWeaponColliders : EditorWindow
             if (instance.tag != "Enemy")
             {
                 instance.tag = "Enemy";
-                Debug.Log($"✅ {prefab.name}: Tag configurado como 'Enemy'");
                 fixedCount++;
             }
 
@@ -97,7 +99,6 @@ public class FixWeaponColliders : EditorWindow
             if (col != null && col.isTrigger)
             {
                 col.isTrigger = false;
-                Debug.Log($"✅ {prefab.name}: Collider configurado como NO-trigger (sólido)");
                 fixedCount++;
             }
 
@@ -107,16 +108,13 @@ public class FixWeaponColliders : EditorWindow
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ {fixedCount} configuraciones corregidas:\n\n" +
-                        "ARMAS:\n" +
-                        "- Colliders configurados como TRIGGER\n" +
-                        "- Pueden detectar enemigos con OnTriggerEnter2D\n\n" +
-                        "ENEMIGOS:\n" +
-                        "- Tag 'Enemy' asignado\n" +
-                        "- Colliders NO-trigger (sólidos)\n\n" +
-                        "Ahora las armas deberían dañar a los enemigos correctamente.";
-
-        Debug.Log(message);
+        string message = $"{fixedCount} configuraciones corregidas:\n\n" +
+                "ARMAS:\n" +
+                "- Colliders configurados como trigger\n" +
+                "- Detección por OnTriggerEnter2D\n\n" +
+                "ENEMIGOS:\n" +
+                "- Tag 'Enemy' asignado\n" +
+                "- Colliders no trigger (sólidos).";
 
         EditorUtility.DisplayDialog(
             "Colliders Configurados",

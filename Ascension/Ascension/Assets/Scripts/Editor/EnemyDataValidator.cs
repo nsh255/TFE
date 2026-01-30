@@ -8,19 +8,25 @@ using UnityEngine;
 public class EnemyDataValidator : EditorWindow
 {
     [MenuItem("Ascension/Setup/5. Verify EnemyData Costs")]
+    /// <summary>
+    /// Abre la ventana de validación de costes de enemigos.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<EnemyDataValidator>("EnemyData Validator");
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de validación en el editor.
+    /// </summary>
     private void OnGUI()
     {
         GUILayout.Label("EnemyData Cost Validator", EditorStyles.boldLabel);
         EditorGUILayout.HelpBox(
             "Verifica y configura enemyCost:\n" +
-            "✅ SlimeRedData → enemyCost = 2\n" +
-            "✅ SlimeBlueData → enemyCost = 3\n" +
-            "✅ SlimeGreenData → enemyCost = 4\n\n" +
+            "SlimeRedData → enemyCost = dos\n" +
+            "SlimeBlueData → enemyCost = tres\n" +
+            "SlimeGreenData → enemyCost = cuatro\n\n" +
             "Estos valores se usan en EnemyManager.SpawnByCost()\n" +
             "para controlar cuántos enemigos caben en una sala.",
             MessageType.Info
@@ -28,16 +34,17 @@ public class EnemyDataValidator : EditorWindow
 
         EditorGUILayout.Space();
 
-        if (GUILayout.Button("🔍 VERIFICAR Y CONFIGURAR COSTS", GUILayout.Height(40)))
+        if (GUILayout.Button("Verificar y configurar costes", GUILayout.Height(40)))
         {
             VerifyAndConfigureCosts();
         }
     }
 
+    /// <summary>
+    /// Verifica los costes y actualiza EnemyData si es necesario.
+    /// </summary>
     private static void VerifyAndConfigureCosts()
     {
-        Debug.Log("[EnemyDataValidator] Verificando EnemyData...");
-
         bool allCorrect = true;
 
         // Buscar todos los EnemyData
@@ -75,39 +82,29 @@ public class EnemyDataValidator : EditorWindow
             // Verificar y corregir
             if (data.enemyCost != expectedCost)
             {
-                Debug.LogWarning($"[EnemyDataValidator] ⚠️ {enemyType} tiene cost={data.enemyCost}, corrigiendo a {expectedCost}");
+                Debug.LogWarning($"{enemyType} tiene cost={data.enemyCost}, corrigiendo a {expectedCost}.");
                 data.enemyCost = expectedCost;
                 EditorUtility.SetDirty(data);
                 allCorrect = false;
-            }
-            else
-            {
-                Debug.Log($"[EnemyDataValidator] ✅ {enemyType} cost={data.enemyCost} (correcto)");
             }
         }
 
         AssetDatabase.SaveAssets();
 
-        string message = allCorrect
-            ? "Todos los EnemyData tienen costs correctos:\n" +
-              "✅ SlimeRed = 2\n" +
-              "✅ SlimeBlue = 3\n" +
-              "✅ SlimeGreen = 4\n\n" +
-              "¡Configuración completa!\n" +
-              "Ahora puedes jugar."
-            : "EnemyData costs actualizados correctamente:\n" +
-              "✅ SlimeRed = 2\n" +
-              "✅ SlimeBlue = 3\n" +
-              "✅ SlimeGreen = 4\n\n" +
-              "¡Configuración completa!\n" +
-              "Ahora puedes jugar.";
+                string message = allCorrect
+                        ? "Los EnemyData tienen costes correctos:\n" +
+                            "SlimeRed = dos\n" +
+                            "SlimeBlue = tres\n" +
+                            "SlimeGreen = cuatro."
+                        : "Se han actualizado los costes de EnemyData:\n" +
+                            "SlimeRed = dos\n" +
+                            "SlimeBlue = tres\n" +
+                            "SlimeGreen = cuatro.";
 
         EditorUtility.DisplayDialog(
-            allCorrect ? "✅ Verificación Completa" : "✅ Costs Actualizados",
+            allCorrect ? "Verificación completada" : "Costes actualizados",
             message,
-            "Jugar!"
+            "OK"
         );
-
-        Debug.Log("[EnemyDataValidator] ✅ Verificación completada.");
     }
 }

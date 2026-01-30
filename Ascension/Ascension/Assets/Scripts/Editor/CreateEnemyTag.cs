@@ -7,11 +7,17 @@ using UnityEngine;
 public class CreateEnemyTag : EditorWindow
 {
     [MenuItem("Ascension/Debug/Create and Assign Enemy Tag")]
+    /// <summary>
+    /// Ejecuta la creación del tag Enemy y su asignación a prefabs.
+    /// </summary>
     static void ShowWindow()
     {
         CreateTagAndAssign();
     }
 
+    /// <summary>
+    /// Crea el tag Enemy si no existe y lo asigna a prefabs de enemigos.
+    /// </summary>
     private static void CreateTagAndAssign()
     {
         // 1. Crear el tag 'Enemy' si no existe
@@ -35,11 +41,6 @@ public class CreateEnemyTag : EditorWindow
             SerializedProperty newTag = tagsProp.GetArrayElementAtIndex(0);
             newTag.stringValue = "Enemy";
             tagManager.ApplyModifiedProperties();
-            Debug.Log("✅ Tag 'Enemy' creado en el proyecto");
-        }
-        else
-        {
-            Debug.Log("✓ Tag 'Enemy' ya existe");
         }
 
         // 2. Asignar tag a todos los prefabs de enemigos
@@ -65,7 +66,6 @@ public class CreateEnemyTag : EditorWindow
             if (instance.tag != "Enemy")
             {
                 instance.tag = "Enemy";
-                Debug.Log($"✅ {prefab.name}: Tag 'Enemy' asignado");
                 fixedCount++;
             }
 
@@ -75,12 +75,9 @@ public class CreateEnemyTag : EditorWindow
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ Tag 'Enemy' configurado:\n\n" +
-                        "- Tag creado en TagManager\n" +
-                        $"- {fixedCount} prefabs actualizados\n\n" +
-                        "Ahora las armas podrán detectar enemigos correctamente.";
-
-        Debug.Log(message);
+        string message = $"Tag 'Enemy' configurado.\n\n" +
+                "- Tag creado en TagManager\n" +
+                $"- {fixedCount} prefabs actualizados.";
 
         EditorUtility.DisplayDialog(
             "Tag Enemy Configurado",

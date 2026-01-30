@@ -20,18 +20,24 @@ public class EnemyAnimationSystemGenerator : EditorWindow
     private float attackFPS = 12f;
     
     [MenuItem("Tools/Enemies/Generate Enemy Animation System")]
+    /// <summary>
+    /// Abre el generador de animaciones de enemigos.
+    /// </summary>
     public static void ShowWindow()
     {
         EnemyAnimationSystemGenerator window = GetWindow<EnemyAnimationSystemGenerator>("Enemy Animation System");
         window.Show();
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de generación en el editor.
+    /// </summary>
     private void OnGUI()
     {
         GUILayout.Label("Enemy Animation System Generator", EditorStyles.boldLabel);
         EditorGUILayout.HelpBox(
-            "Genera animaciones y Animator Controller con Blend Trees para los 3 enemigos.\n" +
-            "Sistema idéntico al Player: Idle, Walk y Attack en 8 direcciones.",
+            "Genera animaciones y Animator Controller con Blend Trees para tres enemigos.\n" +
+            "Sistema equivalente al del jugador: Idle, Walk y Attack en ocho direcciones.",
             MessageType.Info
         );
         
@@ -53,11 +59,11 @@ public class EnemyAnimationSystemGenerator : EditorWindow
         EditorGUILayout.Space();
         GUI.backgroundColor = Color.green;
         
-        if (GUILayout.Button("🎬 GENERAR TODO (Animaciones + Blend Trees)", GUILayout.Height(40)))
+        if (GUILayout.Button("Generar todo (animaciones y Blend Trees)", GUILayout.Height(40)))
         {
             if (chaserSprite == null || jumperSprite == null || shooterSprite == null)
             {
-                EditorUtility.DisplayDialog("Error", "¡Asigna los 3 spritesheets primero!", "OK");
+                EditorUtility.DisplayDialog("Error", "Se deben asignar los tres spritesheets.", "OK");
                 return;
             }
             GenerateCompleteSystem();
@@ -92,11 +98,11 @@ public class EnemyAnimationSystemGenerator : EditorWindow
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             
-            EditorUtility.DisplayDialog("¡Éxito!", 
-                "✅ Animaciones creadas (Idle, Walk, Attack en 8 direcciones)\n" +
-                "✅ Animator Controllers con Blend Trees\n" +
-                "✅ Parámetros configurados (Horizontal, Vertical, Speed, IsAttacking)\n\n" +
-                "Ahora asigna los Controllers a tus prefabs!", 
+            EditorUtility.DisplayDialog("Proceso completado", 
+                "Animaciones creadas (Idle, Walk y Attack en ocho direcciones).\n" +
+                "Animator Controllers generados con Blend Trees.\n" +
+                "Parámetros configurados (Horizontal, Vertical, Speed, IsAttacking).\n\n" +
+                "Se recomienda asignar los Controllers a los prefabs correspondientes.", 
                 "OK");
         }
         catch (System.Exception e)
@@ -146,7 +152,6 @@ public class EnemyAnimationSystemGenerator : EditorWindow
         // Crear animaciones Attack (8 direcciones - 6 frames cada una)
         CreateAttackAnimations(sprites, savePath);
         
-        Debug.Log($"✅ Animaciones creadas para {enemyName}");
     }
 
     private void CreateIdleAnimations(Sprite[] sprites, string savePath)
@@ -382,7 +387,6 @@ public class EnemyAnimationSystemGenerator : EditorWindow
         EditorUtility.SetDirty(controller);
         AssetDatabase.SaveAssets();
         
-        Debug.Log($"✅ Controller creado: {controllerPath}");
     }
 
     private AnimatorState CreateBlendTreeState(AnimatorController controller, AnimatorStateMachine stateMachine, 

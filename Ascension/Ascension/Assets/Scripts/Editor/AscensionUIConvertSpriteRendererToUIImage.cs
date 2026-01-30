@@ -5,9 +5,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Convierte SpriteRenderer dentro de un Canvas a UI Image.
+/// </summary>
 public static class AscensionUIConvertSpriteRendererToUIImage
 {
     [MenuItem("Tools/Ascension/UI/Fix Weapon Sprites (SpriteRenderer -> UI Image)")]
+    /// <summary>
+    /// Ejecuta la conversión en la escena activa.
+    /// </summary>
     public static void ConvertInActiveScene()
     {
         var active = SceneManager.GetActiveScene();
@@ -23,6 +29,9 @@ public static class AscensionUIConvertSpriteRendererToUIImage
         EditorUtility.DisplayDialog("Fix Weapon Sprites", $"Convertidos: {converted}\n\nAhora esos sprites se dibujan como UI encima del fondo.", "OK");
     }
 
+    /// <summary>
+    /// Convierte todos los SpriteRenderer bajo un Canvas en UI Image.
+    /// </summary>
     public static int ConvertSpriteRenderersUnderCanvas()
     {
         var spriteRenderers = Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);

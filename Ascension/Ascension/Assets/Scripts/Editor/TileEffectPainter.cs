@@ -17,16 +17,25 @@ public class TileEffectPainter : EditorWindow
     private TileEffect[] availableEffects;
 
     [MenuItem("Tools/Ascension/Tile Effect Painter")]
+    /// <summary>
+    /// Abre la herramienta de asignación de efectos a tiles.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<TileEffectPainter>("Tile Effect Painter");
     }
 
+    /// <summary>
+    /// Carga los TileEffect disponibles al habilitar la ventana.
+    /// </summary>
     void OnEnable()
     {
         LoadAvailableEffects();
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de edición en el editor.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Tile Effect Painter", EditorStyles.boldLabel);
@@ -106,9 +115,9 @@ public class TileEffectPainter : EditorWindow
         // Información
         EditorGUILayout.HelpBox(
             "Pasos:\n" +
-            "1. Selecciona un TileEffect de la lista o asígnalo manualmente\n" +
-            "2. Selecciona un VariantTile desde el proyecto\n" +
-            "3. Haz clic en 'Aplicar Efecto al Tile'\n\n" +
+            "uno. Selecciona un TileEffect de la lista o asígnalo manualmente\n" +
+            "dos. Selecciona un VariantTile desde el proyecto\n" +
+            "tres. Haz clic en 'Aplicar Efecto al Tile'\n\n" +
             "El tile automáticamente tendrá el efecto asignado",
             MessageType.Info
         );
@@ -124,6 +133,9 @@ public class TileEffectPainter : EditorWindow
         }
     }
 
+    /// <summary>
+    /// Carga todos los TileEffect disponibles en el proyecto.
+    /// </summary>
     private void LoadAvailableEffects()
     {
         string[] guids = AssetDatabase.FindAssets("t:TileEffect");
@@ -135,9 +147,11 @@ public class TileEffectPainter : EditorWindow
             availableEffects[i] = AssetDatabase.LoadAssetAtPath<TileEffect>(path);
         }
 
-        Debug.Log($"[TileEffectPainter] {availableEffects.Length} efectos cargados");
     }
 
+    /// <summary>
+    /// Aplica el TileEffect seleccionado al VariantTile seleccionado.
+    /// </summary>
     private void ApplyEffectToTile()
     {
         if (selectedEffect == null || selectedTile == null)
@@ -158,8 +172,7 @@ public class TileEffectPainter : EditorWindow
             EditorUtility.SetDirty(selectedTile);
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"[TileEffectPainter] Efecto '{selectedEffect.effectType}' aplicado a '{selectedTile.name}'");
-            EditorUtility.DisplayDialog("Success", $"Efecto aplicado correctamente a {selectedTile.name}", "OK");
+            EditorUtility.DisplayDialog("Proceso completado", $"Efecto aplicado correctamente a {selectedTile.name}.", "OK");
         }
         else
         {
@@ -167,6 +180,9 @@ public class TileEffectPainter : EditorWindow
         }
     }
 
+    /// <summary>
+    /// Devuelve un color representativo por tipo de efecto.
+    /// </summary>
     private Color GetEffectColor(TileEffectType type)
     {
         return type switch

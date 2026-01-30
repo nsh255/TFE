@@ -7,11 +7,17 @@ using UnityEngine;
 public class SetupMeleeWeapons : EditorWindow
 {
     [MenuItem("Ascension/Debug/Setup Melee Weapons")]
+    /// <summary>
+    /// Ejecuta la configuración de prefabs de armas cuerpo a cuerpo.
+    /// </summary>
     static void ShowWindow()
     {
         SetupAllMeleeWeapons();
     }
 
+    /// <summary>
+    /// Recorre los prefabs configurados y asegura hitbox y colisionadores.
+    /// </summary>
     private static void SetupAllMeleeWeapons()
     {
         string[] weaponPaths = {
@@ -31,7 +37,7 @@ public class SetupMeleeWeapons : EditorWindow
 
             if (meleeWeapon == null)
             {
-                Debug.LogWarning($"{prefab.name} no tiene componente MeleeWeapon, saltando...");
+                Debug.LogWarning($"{prefab.name} no tiene componente MeleeWeapon, se omite su configuración.");
                 PrefabUtility.UnloadPrefabContents(instance);
                 continue;
             }
@@ -48,7 +54,6 @@ public class SetupMeleeWeapons : EditorWindow
                 hitboxObj.transform.localPosition = new Vector3(0.6f, 0f, 0f); // Adelante del arma
                 hitboxObj.transform.localRotation = Quaternion.identity;
                 hitboxObj.transform.localScale = Vector3.one;
-                Debug.Log($"✅ {prefab.name}: Hitbox creada");
             }
             else
             {
@@ -60,7 +65,6 @@ public class SetupMeleeWeapons : EditorWindow
             if (hitboxCollider == null)
             {
                 hitboxCollider = hitboxObj.AddComponent<BoxCollider2D>();
-                Debug.Log($"✅ {prefab.name}: BoxCollider2D añadido a Hitbox");
             }
 
             hitboxCollider.isTrigger = true;
@@ -72,7 +76,6 @@ public class SetupMeleeWeapons : EditorWindow
             if (weaponHitbox == null)
             {
                 weaponHitbox = hitboxObj.AddComponent<WeaponHitbox>();
-                Debug.Log($"✅ {prefab.name}: WeaponHitbox script añadido");
             }
 
             // Asignar referencia en MeleeWeapon
@@ -80,21 +83,16 @@ public class SetupMeleeWeapons : EditorWindow
 
             PrefabUtility.SaveAsPrefabAsset(instance, path);
             PrefabUtility.UnloadPrefabContents(instance);
-
-            Debug.Log($"✅ {prefab.name} configurado correctamente");
             fixedCount++;
         }
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ {fixedCount} armas configuradas:\n\n" +
-                        "- Hitbox creada como hijo\n" +
-                        "- BoxCollider2D (trigger) configurado\n" +
-                        "- WeaponHitbox script añadido\n" +
-                        "- Referencia asignada en MeleeWeapon\n\n" +
-                        "Ahora las armas cuerpo a cuerpo deberían funcionar.";
-
-        Debug.Log(message);
+        string message = $"{fixedCount} armas configuradas.\n\n" +
+                "- Hitbox creada como hijo\n" +
+                "- BoxCollider2D (trigger) configurado\n" +
+                "- WeaponHitbox añadido\n" +
+                "- Referencia asignada en MeleeWeapon.";
 
         EditorUtility.DisplayDialog(
             "Armas Configuradas",

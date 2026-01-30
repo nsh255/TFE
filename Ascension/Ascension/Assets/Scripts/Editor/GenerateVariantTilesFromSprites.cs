@@ -27,11 +27,17 @@ public class GenerateVariantTilesFromSprites : EditorWindow
     private string effectsOutputPath = "Assets/Data/TileEffects";
     
     [MenuItem("Tools/Generate Variant Tiles from Sprites")]
+    /// <summary>
+    /// Abre la ventana de generación de tiles.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<GenerateVariantTilesFromSprites>("Generate Variant Tiles");
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de configuración del generador.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Generador de VariantTiles", EditorStyles.boldLabel);
@@ -50,23 +56,26 @@ public class GenerateVariantTilesFromSprites : EditorWindow
         EditorGUILayout.Space();
         EditorGUILayout.HelpBox(
             "Este script:\n" +
-            "1. Lee todos los PNG en Assets/Sprites/Tiles/\n" +
-            "2. Agrupa sprites por prefijo (floor1,floor2,floor3 → floor)\n" +
-            "3. Crea VariantTile por cada grupo\n" +
-            "4. Crea TileEffect segun el nombre del grupo\n" +
-            "5. Asigna el TileEffect al VariantTile\n\n" +
+            "uno. Lee todos los PNG en Assets/Sprites/Tiles/\n" +
+            "dos. Agrupa sprites por prefijo (floor1,floor2,floor3 → floor)\n" +
+            "tres. Crea VariantTile por cada grupo\n" +
+            "cuatro. Crea TileEffect según el nombre del grupo\n" +
+            "cinco. Asigna el TileEffect al VariantTile\n\n" +
             "Efectos:\n" +
             "- floor: Sin efecto\n" +
             "- ice: Velocidad +50%\n" +
             "- mud: Velocidad -50%\n" +
-            "- heal: Cura 1 HP/0.5s\n" +
-            "- powerUp: +1 danio permanente\n" +
+            "- heal: Cura un HP cada 0.5 s\n" +
+            "- powerUp: más uno de daño permanente\n" +
             "- wall: Sin efecto (collider)\n" +
-            "- stairs: Sin efecto (interaccion)",
+            "- stairs: Sin efecto (interacción)",
             MessageType.Info
         );
     }
 
+    /// <summary>
+    /// Genera VariantTiles y TileEffects a partir de sprites.
+    /// </summary>
     void GenerateTiles()
     {
         if (!Directory.Exists(spritesPath))
@@ -102,8 +111,6 @@ public class GenerateVariantTilesFromSprites : EditorWindow
         // Agrupar sprites por prefijo (floor1, floor2 → floor)
         Dictionary<string, List<Sprite>> groupedSprites = GroupSpritesByPrefix(allSprites);
 
-        Debug.Log($"[GenerateVariantTiles] Encontrados {groupedSprites.Count} grupos de sprites");
-
         // Crear VariantTile + TileEffect para cada grupo
         foreach (var group in groupedSprites)
         {
@@ -115,10 +122,11 @@ public class GenerateVariantTilesFromSprites : EditorWindow
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        
-        Debug.Log($"[GenerateVariantTiles] ✅ Generación completada. Creados {groupedSprites.Count} VariantTiles.");
     }
 
+    /// <summary>
+    /// Agrupa sprites por prefijo, eliminando sufijos numéricos.
+    /// </summary>
     Dictionary<string, List<Sprite>> GroupSpritesByPrefix(List<Sprite> sprites)
     {
         Dictionary<string, List<Sprite>> groups = new Dictionary<string, List<Sprite>>();
@@ -145,6 +153,9 @@ public class GenerateVariantTilesFromSprites : EditorWindow
         return groups;
     }
 
+    /// <summary>
+    /// Crea un VariantTile y su TileEffect asociado.
+    /// </summary>
     void CreateVariantTileAndEffect(string baseName, List<Sprite> sprites)
     {
         string capitalizedName = char.ToUpper(baseName[0]) + baseName.Substring(1);
@@ -164,10 +175,11 @@ public class GenerateVariantTilesFromSprites : EditorWindow
         // Guardar VariantTile
         string tilePath = $"{tilesOutputPath}/{variantTileName}.asset";
         AssetDatabase.CreateAsset(variantTile, tilePath);
-        
-        Debug.Log($"[GenerateVariantTiles] Creado {variantTileName} con {sprites.Count} sprites");
     }
 
+    /// <summary>
+    /// Crea un TileEffect según el nombre base del grupo.
+    /// </summary>
     TileEffect CreateTileEffect(string baseName, string effectName)
     {
         TileEffect effect = ScriptableObject.CreateInstance<TileEffect>();

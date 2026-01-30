@@ -7,11 +7,17 @@ using UnityEngine;
 public class CleanMissingScripts : EditorWindow
 {
     [MenuItem("Ascension/Debug/Clean Missing Scripts from Enemies")]
+    /// <summary>
+    /// Ejecuta la limpieza de scripts faltantes en prefabs de enemigos.
+    /// </summary>
     static void ShowWindow()
     {
         CleanAllMissingScripts();
     }
 
+    /// <summary>
+    /// Elimina componentes rotos y asegura componentes básicos en prefabs.
+    /// </summary>
     private static void CleanAllMissingScripts()
     {
         string[] enemyPaths = {
@@ -40,7 +46,6 @@ public class CleanMissingScripts : EditorWindow
             
             if (removedFromThis > 0)
             {
-                Debug.Log($"✅ {prefab.name}: {removedFromThis} componente(s) rotos eliminados");
                 cleanedCount++;
                 totalRemoved += removedFromThis;
                 
@@ -52,7 +57,6 @@ public class CleanMissingScripts : EditorWindow
             }
             else
             {
-                Debug.Log($"✓ {prefab.name}: Sin componentes rotos");
             }
             
             PrefabUtility.UnloadPrefabContents(instance);
@@ -60,12 +64,9 @@ public class CleanMissingScripts : EditorWindow
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ Limpieza completada:\n\n" +
-                        $"- {cleanedCount} prefabs limpiados\n" +
-                        $"- {totalRemoved} componentes rotos eliminados\n\n" +
-                        "Los prefabs ahora pueden guardarse correctamente.";
-
-        Debug.Log(message);
+        string message = $"Limpieza completada:\n\n" +
+                $"- {cleanedCount} prefabs limpiados\n" +
+                $"- {totalRemoved} componentes rotos eliminados.";
 
         EditorUtility.DisplayDialog(
             "Limpieza Completada",
@@ -84,7 +85,6 @@ public class CleanMissingScripts : EditorWindow
             rb.bodyType = RigidbodyType2D.Dynamic;
             rb.gravityScale = 0f;
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            Debug.Log($"  → Rigidbody2D añadido a {instance.name}");
         }
 
         // Asegurar CircleCollider2D
@@ -94,7 +94,6 @@ public class CleanMissingScripts : EditorWindow
             col = instance.AddComponent<CircleCollider2D>();
             col.radius = 0.4f;
             col.isTrigger = false;
-            Debug.Log($"  → CircleCollider2D añadido a {instance.name}");
         }
 
         // Asegurar SpriteRenderer
@@ -102,14 +101,13 @@ public class CleanMissingScripts : EditorWindow
         if (sr == null)
         {
             sr = instance.AddComponent<SpriteRenderer>();
-            Debug.Log($"  → SpriteRenderer añadido a {instance.name}");
         }
 
         // Verificar si tiene script de comportamiento Enemy
         Enemy enemy = instance.GetComponent<Enemy>();
         if (enemy == null)
         {
-            Debug.LogWarning($"  ⚠️ {instance.name} no tiene componente Enemy base!");
+            Debug.LogWarning($"{instance.name} no tiene componente Enemy base.");
         }
     }
 }

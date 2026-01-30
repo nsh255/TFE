@@ -7,11 +7,17 @@ using UnityEngine;
 public class FixSpritePPU : EditorWindow
 {
     [MenuItem("Ascension/Debug/Fix Sprite PPU to 16")]
+    /// <summary>
+    /// Ejecuta la normalización de PPU de los sprites.
+    /// </summary>
     static void ShowWindow()
     {
         FixAllSprites();
     }
 
+    /// <summary>
+    /// Normaliza el PPU y la importación de los sprites del proyecto.
+    /// </summary>
     private static void FixAllSprites()
     {
         // Buscar TODOS los sprites en la carpeta Sprites
@@ -34,24 +40,19 @@ public class FixSpritePPU : EditorWindow
                 importer.filterMode = FilterMode.Point;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.SaveAndReimport();
-                
-                Debug.Log($"✅ {path}: PPU {oldPPU} → 16");
+
                 fixedCount++;
             }
             else
             {
-                Debug.LogWarning($"⚠️ No se encontró: {path}");
             }
         }
 
         AssetDatabase.Refresh();
 
-        string message = $"✅ {fixedCount} sprites actualizados a PPU=16\n\n" +
-                        "Incluye: Jugador, Enemigos (Slimes), Armas, Proyectiles\n\n" +
-                        "AHORA todo tendrá el tamaño correcto.\n\n" +
-                        "PRUEBA EL JUEGO DE NUEVO.";
-
-        Debug.Log(message);
+        string message = $"Se han actualizado {fixedCount} sprites a PPU = 16.\n\n" +
+                "Incluye: jugador, enemigos, armas y proyectiles.\n\n" +
+                "Se recomienda validar el resultado en ejecución.";
 
         EditorUtility.DisplayDialog(
             "Sprites Corregidos",

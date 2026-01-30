@@ -26,21 +26,27 @@ public class EnemyPrefabUpdater : EditorWindow
     private float targetScale = 0.75f;
 
     [MenuItem("Tools/Enemies/Update Enemy Prefabs")]
+    /// <summary>
+    /// Abre la ventana de actualización de prefabs de enemigos.
+    /// </summary>
     public static void ShowWindow()
     {
         EnemyPrefabUpdater window = GetWindow<EnemyPrefabUpdater>("Enemy Prefab Updater");
         window.Show();
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de actualización en el editor.
+    /// </summary>
     private void OnGUI()
     {
         GUILayout.Label("Enemy Prefab Updater", EditorStyles.boldLabel);
         EditorGUILayout.HelpBox(
             "Actualiza los prefabs de enemigos:\n" +
-            "✅ Escala al 75% (0.75, 0.75, 1)\n" +
-            "✅ Asigna sprites correctos\n" +
-            "✅ Asigna Animator Controllers\n" +
-            "✅ Verifica componentes necesarios",
+            "- Escala al setenta y cinco por ciento\n" +
+            "- Asignación de sprites\n" +
+            "- Asignación de Animator Controllers\n" +
+            "- Verificación de componentes necesarios",
             MessageType.Info
         );
         
@@ -72,7 +78,7 @@ public class EnemyPrefabUpdater : EditorWindow
         EditorGUILayout.Space();
         GUI.backgroundColor = Color.cyan;
         
-        if (GUILayout.Button("🔧 ACTUALIZAR TODOS LOS PREFABS", GUILayout.Height(40)))
+        if (GUILayout.Button("Actualizar todos los prefabs", GUILayout.Height(40)))
         {
             UpdateAllPrefabs();
         }
@@ -81,12 +87,15 @@ public class EnemyPrefabUpdater : EditorWindow
         
         EditorGUILayout.Space();
         
-        if (GUILayout.Button("🔍 Auto-Find Assets"))
+        if (GUILayout.Button("Auto-detectar assets"))
         {
             AutoFindAssets();
         }
     }
 
+    /// <summary>
+    /// Intenta localizar prefabs, sprites y controllers automáticamente.
+    /// </summary>
     private void AutoFindAssets()
     {
         int foundCount = 0;
@@ -106,7 +115,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 {
                     chaserPrefab = prefab;
                     foundCount++;
-                    Debug.Log($"✅ Encontrado: {prefab.name}");
                 }
             }
             else if (prefab.GetComponent<SlimeBlue>() != null || 
@@ -116,7 +124,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 {
                     jumperPrefab = prefab;
                     foundCount++;
-                    Debug.Log($"✅ Encontrado: {prefab.name}");
                 }
             }
             else if (prefab.GetComponent<SlimeGreen>() != null || 
@@ -126,7 +133,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 {
                     shooterPrefab = prefab;
                     foundCount++;
-                    Debug.Log($"✅ Encontrado: {prefab.name}");
                 }
             }
         }
@@ -179,14 +185,16 @@ public class EnemyPrefabUpdater : EditorWindow
             }
         }
         
-        Debug.Log($"✅ {foundCount} assets de enemigos encontrados");
         EditorUtility.DisplayDialog("Auto-Find", 
             $"Se encontraron {foundCount} assets de enemigos.\n\n" +
-            "Verifica los campos antes de actualizar.", 
+            "Se recomienda revisar los campos antes de actualizar.", 
             "OK");
         Repaint();
     }
 
+    /// <summary>
+    /// Actualiza los prefabs configurados en la ventana.
+    /// </summary>
     private void UpdateAllPrefabs()
     {
         if (chaserPrefab != null && chaserSprite != null && chaserController != null)
@@ -207,12 +215,12 @@ public class EnemyPrefabUpdater : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         
-        EditorUtility.DisplayDialog("✅ Actualización Completa", 
+        EditorUtility.DisplayDialog("Actualización completada", 
             "Prefabs actualizados:\n" +
-            $"• Escala: ({targetScale}, {targetScale}, 1)\n" +
-            "• Sprites reasignados\n" +
-            "• Controllers asignados\n" +
-            "• Componentes verificados", 
+            $"- Escala: ({targetScale}, {targetScale}, 1)\n" +
+            "- Sprites reasignados\n" +
+            "- Controllers asignados\n" +
+            "- Componentes verificados.", 
             "OK");
     }
 
@@ -223,7 +231,7 @@ public class EnemyPrefabUpdater : EditorWindow
         // VALIDACIÓN DE SEGURIDAD: Solo actualizar si es un prefab de enemigo
         if (prefabPath.Contains("Player") || prefabPath.Contains("Weapon"))
         {
-            Debug.LogWarning($"❌ BLOQUEADO: {prefab.name} no es un prefab de enemigo. No se modificará.");
+            Debug.LogWarning($"{prefab.name} no es un prefab de enemigo. No se modificará.");
             return;
         }
         
@@ -236,7 +244,7 @@ public class EnemyPrefabUpdater : EditorWindow
         // Si no tiene el componente Enemy, añadir el script correcto según el nombre
         if (!hasEnemyScript)
         {
-            Debug.LogWarning($"⚠️ {prefab.name} no tiene componente Enemy. Intentando añadir el script correcto...");
+            Debug.LogWarning($"{prefab.name} no tiene componente Enemy. Se intentará añadir el script correcto.");
             
             // Determinar qué script añadir según el nombre del enemigo
             if (enemyName.Contains("Chaser") || enemyName.Contains("Red"))
@@ -253,7 +261,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 
                 instance.AddComponent<SlimeRed>();
                 enemyComponent = instance.GetComponent<SlimeRed>();
-                Debug.Log($"➕ Añadido script SlimeRed a {prefab.name}");
             }
             else if (enemyName.Contains("Jumper") || enemyName.Contains("Blue"))
             {
@@ -268,7 +275,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 
                 instance.AddComponent<SlimeBlue>();
                 enemyComponent = instance.GetComponent<SlimeBlue>();
-                Debug.Log($"➕ Añadido script SlimeBlue a {prefab.name}");
             }
             else if (enemyName.Contains("Shooter") || enemyName.Contains("Green"))
             {
@@ -283,7 +289,6 @@ public class EnemyPrefabUpdater : EditorWindow
                 
                 instance.AddComponent<SlimeGreen>();
                 enemyComponent = instance.GetComponent<SlimeGreen>();
-                Debug.Log($"➕ Añadido script SlimeGreen a {prefab.name}");
             }
             
             hasEnemyScript = enemyComponent != null;
@@ -291,20 +296,15 @@ public class EnemyPrefabUpdater : EditorWindow
         
         if (!hasEnemyScript)
         {
-            Debug.LogError($"❌ ERROR: No se pudo añadir script de enemigo a {prefab.name}. No se modificará.");
+            Debug.LogError($"No se pudo añadir script de enemigo a {prefab.name}. No se modificará.");
             PrefabUtility.UnloadPrefabContents(instance);
             return;
         }
         
-        Debug.Log($"✅ Prefab validado: {prefab.name} - Componente: {enemyComponent.GetType().Name}");
-        
         try
         {
-            Debug.Log($"🔧 Actualizando prefab de enemigo: {enemyName}");
-            
             // 1. Cambiar escala al 75%
             instance.transform.localScale = new Vector3(targetScale, targetScale, 1f);
-            Debug.Log($"✅ [{enemyName}] Escala ajustada a {targetScale}");
             
             // 2. Obtener primer sprite del spritesheet para el SpriteRenderer
             string spritePath = AssetDatabase.GetAssetPath(spriteSheet);
@@ -318,12 +318,10 @@ public class EnemyPrefabUpdater : EditorWindow
                 if (idleSprite != null)
                 {
                     spriteRenderer.sprite = idleSprite;
-                    Debug.Log($"✅ [{enemyName}] Sprite asignado: {idleSprite.name}");
                 }
                 else
                 {
                     spriteRenderer.sprite = sprites[0];
-                    Debug.Log($"⚠️ [{enemyName}] Sprite ID no encontrado, usando primer sprite");
                 }
             }
             
@@ -332,17 +330,14 @@ public class EnemyPrefabUpdater : EditorWindow
             if (animator == null)
             {
                 animator = instance.AddComponent<Animator>();
-                Debug.Log($"➕ [{enemyName}] Animator añadido");
             }
             animator.runtimeAnimatorController = controller;
-            Debug.Log($"✅ [{enemyName}] Controller asignado: {controller.name}");
             
             // 5. Verificar componentes necesarios
             Rigidbody2D rb = instance.GetComponent<Rigidbody2D>();
             if (rb == null)
             {
                 rb = instance.AddComponent<Rigidbody2D>();
-                Debug.Log($"➕ [{enemyName}] Rigidbody2D añadido");
             }
             rb.gravityScale = 0f;
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
@@ -351,12 +346,10 @@ public class EnemyPrefabUpdater : EditorWindow
             {
                 BoxCollider2D collider = instance.AddComponent<BoxCollider2D>();
                 collider.size = new Vector2(1f, 1f);
-                Debug.Log($"➕ [{enemyName}] BoxCollider2D añadido");
             }
             
             // 6. Guardar prefab
             PrefabUtility.SaveAsPrefabAsset(instance, prefabPath);
-            Debug.Log($"💾 [{enemyName}] Prefab guardado: {prefabPath}");
         }
         finally
         {

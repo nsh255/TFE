@@ -9,6 +9,9 @@ using UnityEngine;
 public class CreateEnemyProjectilePrefab : EditorWindow
 {
     [MenuItem("Ascension/Setup/Create Enemy Projectile Prefab")]
+    /// <summary>
+    /// Crea el prefab del proyectil enemigo y lo asigna a los slimes.
+    /// </summary>
     static void CreatePrefab()
     {
         // Crear GameObject
@@ -67,21 +70,19 @@ public class CreateEnemyProjectilePrefab : EditorWindow
         
         EditorUtility.DisplayDialog(
             "Proyectil Enemigo Creado",
-            $"✅ Prefab creado en:\n{prefabPath}\n\n" +
+            $"Prefab creado en:\n{prefabPath}\n\n" +
             "Características:\n" +
-            "- Radio: 1/4 del enemigo\n" +
-            "- Color: Verde brillante\n" +
-            "- Velocidad: Configurada en SlimeGreen (0.3125)\n" +
-            "- Daño: 1\n" +
-            "- Lifetime: 5 segundos\n\n" +
-            "Asignado automáticamente a SlimeGreen prefabs.",
+            "- Radio: un cuarto del enemigo\n" +
+            "- Color: verde\n" +
+            "- Daño: uno\n" +
+            "- Duración: cinco segundos\n\n" +
+            "Asignado automáticamente a SlimeGreen.",
             "OK"
         );
         
         Selection.activeObject = savedPrefab;
         EditorGUIUtility.PingObject(savedPrefab);
         
-        Debug.Log($"✅ [CreateEnemyProjectilePrefab] Prefab creado: {prefabPath}");
     }
     
     /// <summary>
@@ -163,10 +164,7 @@ public class CreateEnemyProjectilePrefab : EditorWindow
         string resourcePath = "Assets/Resources/EnemyProjectile.prefab";
         
         // Copiar el prefab
-        if (AssetDatabase.CopyAsset("Assets/Prefabs/Enemies/EnemyProjectile.prefab", resourcePath))
-        {
-            Debug.Log($"✓ Proyectil copiado a Resources para runtime");
-        }
+        AssetDatabase.CopyAsset("Assets/Prefabs/Enemies/EnemyProjectile.prefab", resourcePath);
     }
     
     /// <summary>
@@ -191,7 +189,6 @@ public class CreateEnemyProjectilePrefab : EditorWindow
             if (slime != null)
             {
                 slime.projectilePrefab = projectilePrefab;
-                Debug.Log($"✓ {prefab.name}: Proyectil asignado");
             }
             
             PrefabUtility.SaveAsPrefabAsset(instance, path);

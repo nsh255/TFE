@@ -16,11 +16,17 @@ public class DungeonAutoBuilder : EditorWindow
     private string dungeonName = "GeneratedDungeon";
 
     [MenuItem("Tools/Ascension/Dungeon Auto-Builder")]
+    /// <summary>
+    /// Abre la herramienta de generación de mazmorras.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<DungeonAutoBuilder>("Dungeon Builder");
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de configuración de la mazmorra.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Dungeon Auto-Builder", EditorStyles.boldLabel);
@@ -64,6 +70,9 @@ public class DungeonAutoBuilder : EditorWindow
         );
     }
 
+    /// <summary>
+    /// Genera la mazmorra según la configuración actual.
+    /// </summary>
     private void GenerateDungeon()
     {
         // Validaciones
@@ -86,12 +95,14 @@ public class DungeonAutoBuilder : EditorWindow
             GenerateRandomDungeon(dungeonRoot);
         }
 
-        Debug.Log($"[DungeonAutoBuilder] Mazmorra '{dungeonName}' generada con {roomCount} salas");
-        EditorUtility.DisplayDialog("Success", $"Mazmorra '{dungeonName}' generada correctamente", "OK");
+        EditorUtility.DisplayDialog("Proceso completado", $"Mazmorra '{dungeonName}' generada correctamente.", "OK");
 
         Selection.activeGameObject = dungeonRoot;
     }
 
+    /// <summary>
+    /// Genera una mazmorra con disposición lineal.
+    /// </summary>
     private void GenerateLinearDungeon(GameObject parent)
     {
         Vector3 currentPos = Vector3.zero;
@@ -116,6 +127,9 @@ public class DungeonAutoBuilder : EditorWindow
         CreateBossRoom(parent, currentPos);
     }
 
+    /// <summary>
+    /// Genera una mazmorra con disposición aleatoria controlada.
+    /// </summary>
     private void GenerateRandomDungeon(GameObject parent)
     {
         // Implementación simplificada: grid con caminos aleatorios
@@ -138,6 +152,9 @@ public class DungeonAutoBuilder : EditorWindow
         CreateBossRoom(parent, currentPos + Vector3.right * roomSpacing);
     }
 
+    /// <summary>
+    /// Crea una sala en la posición indicada.
+    /// </summary>
     private GameObject CreateRoom(GameObject parent, Vector3 position, int index)
     {
         GameObject room;
@@ -175,6 +192,9 @@ public class DungeonAutoBuilder : EditorWindow
         return room;
     }
 
+    /// <summary>
+    /// Crea una puerta en la posición indicada.
+    /// </summary>
     private GameObject CreateDoor(GameObject parent, Vector3 position, GameObject connectedRoom)
     {
         GameObject door;
@@ -204,6 +224,9 @@ public class DungeonAutoBuilder : EditorWindow
         return door;
     }
 
+    /// <summary>
+    /// Crea la sala de jefe y configura su tipo.
+    /// </summary>
     private GameObject CreateBossRoom(GameObject parent, Vector3 position)
     {
         GameObject bossRoom = new GameObject("BossRoom");
@@ -240,6 +263,9 @@ public class DungeonAutoBuilder : EditorWindow
         return bossRoom;
     }
 
+    /// <summary>
+    /// Elimina la mazmorra generada si existe.
+    /// </summary>
     private void ClearDungeon()
     {
         GameObject existingDungeon = GameObject.Find(dungeonName);
@@ -248,7 +274,6 @@ public class DungeonAutoBuilder : EditorWindow
             if (EditorUtility.DisplayDialog("Confirm", $"¿Eliminar '{dungeonName}'?", "Sí", "No"))
             {
                 Undo.DestroyObjectImmediate(existingDungeon);
-                Debug.Log($"[DungeonAutoBuilder] Mazmorra '{dungeonName}' eliminada");
             }
         }
         else

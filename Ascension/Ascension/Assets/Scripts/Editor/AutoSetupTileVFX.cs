@@ -3,6 +3,9 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// Genera prefabs de VFX para tiles y los asigna a los TileEffect.
+/// </summary>
 public static class AutoSetupTileVFX
 {
     private const string VfxSpritesFolder = "Assets/Sprites/Vfx";
@@ -10,6 +13,9 @@ public static class AutoSetupTileVFX
     private const string TileEffectsFolder = "Assets/Data/TileEffects";
 
     [MenuItem("Ascension/Tiles/Auto-Setup Tile VFX (Create Prefabs + Assign)")]
+    /// <summary>
+    /// Crea prefabs de VFX y los asigna según el tipo de TileEffect.
+    /// </summary>
     public static void CreateAndAssign()
     {
         EnsureFolder(VfxPrefabsFolder);
@@ -72,6 +78,9 @@ public static class AutoSetupTileVFX
         );
     }
 
+    /// <summary>
+    /// Carga un sprite por nombre base en la carpeta de VFX.
+    /// </summary>
     private static Sprite LoadSpriteByFileName(string baseName)
     {
         string[] candidates =
@@ -90,6 +99,9 @@ public static class AutoSetupTileVFX
         return null;
     }
 
+    /// <summary>
+    /// Crea o actualiza el prefab de VFX con el sprite indicado.
+    /// </summary>
     private static GameObject CreateOrUpdateVfxPrefab(string prefabName, Sprite sprite)
     {
         string prefabPath = $"{VfxPrefabsFolder}/{prefabName}.prefab";
@@ -113,6 +125,9 @@ public static class AutoSetupTileVFX
         }
     }
 
+    /// <summary>
+    /// Asegura la existencia de una carpeta en la ruta indicada.
+    /// </summary>
     private static void EnsureFolder(string folderPath)
     {
         if (AssetDatabase.IsValidFolder(folderPath)) return;

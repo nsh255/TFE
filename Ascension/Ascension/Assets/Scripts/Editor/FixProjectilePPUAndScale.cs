@@ -10,6 +10,9 @@ using UnityEngine;
 public static class FixProjectilePPUAndScale
 {
     [MenuItem("Ascension/Setup/Fix Projectile PPU & Scale")] 
+    /// <summary>
+    /// Ejecuta la normalización de sprites y la corrección de prefabs.
+    /// </summary>
     public static void Run()
     {
         int changedImporters = 0;
@@ -22,7 +25,6 @@ public static class FixProjectilePPUAndScale
         if (!System.IO.File.Exists(playerBulletSpritePath))
         {
             CreateCircleSprite(playerBulletSpritePath, new Color(1f, 0.92f, 0.016f, 1f)); // Amarillo
-            Debug.Log($"[FixProjectilePPUAndScale] Creado sprite circular: {playerBulletSpritePath}");
         }
         
         // Normalizar los sprites de proyectil
@@ -56,7 +58,6 @@ public static class FixProjectilePPUAndScale
                 prefab.transform.localScale = Vector3.one;
                 EditorUtility.SetDirty(prefab);
                 changedPrefabs++;
-                Debug.Log($"[FixProjectilePPUAndScale] Escala reseteada en prefab {prefab.name}");
             }
 
             // Asignar el sprite correcto
@@ -69,7 +70,6 @@ public static class FixProjectilePPUAndScale
                     sr.sprite = newSprite;
                     EditorUtility.SetDirty(prefab);
                     changedPrefabs++;
-                    Debug.Log($"[FixProjectilePPUAndScale] Sprite asignado a {prefab.name}: {newSprite.name}");
                 }
             }
             else
@@ -82,9 +82,12 @@ public static class FixProjectilePPUAndScale
         AssetDatabase.Refresh();
 
         EditorUtility.DisplayDialog("Fix Projectile PPU & Scale",
-            $"Importers modificados: {changedImporters}\nPrefabs ajustados: {changedPrefabs}", "OK");
+            $"Importers modificados: {changedImporters}\nPrefabs ajustados: {changedPrefabs}.", "OK");
     }
 
+    /// <summary>
+    /// Normaliza la configuración de importación de un sprite.
+    /// </summary>
     private static void NormalizeSpriteImporter(string path, ref int changedCount)
     {
         if (!System.IO.File.Exists(path)) return;
@@ -127,10 +130,12 @@ public static class FixProjectilePPUAndScale
         {
             importer.SaveAndReimport();
             changedCount++;
-            Debug.Log($"[FixProjectilePPUAndScale] Sprite normalizado: {System.IO.Path.GetFileName(path)}");
         }
     }
 
+    /// <summary>
+    /// Crea un sprite circular simple en disco.
+    /// </summary>
     private static void CreateCircleSprite(string path, Color color)
     {
         int size = 16;

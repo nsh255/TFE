@@ -25,6 +25,9 @@ public static class FullHDAutoFixer
     private const int RecommendedPixelScale = 4; // 1080p -> 1920/480 = 4, 1080/270 = 4
 
     [MenuItem("Ascension/Diagnostics/Auto-Fix FullHD Setup")]
+    /// <summary>
+    /// Aplica correcciones automáticas de configuración para Full HD.
+    /// </summary>
     public static void AutoFixFullHD()
     {
         var sceneGuids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Scenes" });
@@ -135,7 +138,6 @@ public static class FullHDAutoFixer
             }
         }
 
-        Debug.Log("[Auto-Fix FullHD Setup] Resultado:\n" + string.Join("\n", perSceneLogs));
         EditorUtility.DisplayDialog(
             "Auto-Fix FullHD Setup",
             totalFixed == 0 ? "No se realizaron cambios (todo estaba correcto o no había cámaras/UI para corregir)." : $"Escenas guardadas con correcciones: {totalFixed}",

@@ -6,11 +6,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Crea un botón de puntuaciones en la escena de menú principal.
+/// </summary>
 public static class BakeScoresButton
 {
     private const string DefaultNewName = "ScoresButton";
 
     [MenuItem("Tools/Ascension/Bake Scores Button")]
+    /// <summary>
+    /// Genera el botón de puntuaciones y lo enlaza a MainMenuManager.ToggleScores.
+    /// </summary>
     public static void Bake()
     {
         var scene = SceneManager.GetActiveScene();
@@ -61,10 +67,7 @@ public static class BakeScoresButton
         }
 
         // Etiqueta
-        if (!TrySetLabel(cloneGo, "Scores"))
-        {
-            Debug.LogWarning("[BakeScoresButton] No se encontró componente Text/TMP_Text para cambiar la etiqueta.");
-        }
+        TrySetLabel(cloneGo, "Scores");
 
         // Posición: mismo que template pero un poco abajo.
         var templateRt = template.GetComponent<RectTransform>();
@@ -97,6 +100,9 @@ public static class BakeScoresButton
         );
     }
 
+    /// <summary>
+    /// Obtiene el botón plantilla desde la selección o la escena.
+    /// </summary>
     private static Button GetTemplateButton()
     {
         // 1) Si el usuario seleccionó el botón
@@ -129,6 +135,9 @@ public static class BakeScoresButton
         return null;
     }
 
+    /// <summary>
+    /// Busca un botón por el texto visible de su etiqueta.
+    /// </summary>
     private static Button FindButtonByLabel(string label)
     {
         var buttons = Object.FindObjectsByType<Button>(FindObjectsSortMode.None);
@@ -147,6 +156,9 @@ public static class BakeScoresButton
         return null;
     }
 
+    /// <summary>
+    /// Asigna la etiqueta de texto al botón clonado.
+    /// </summary>
     private static bool TrySetLabel(GameObject root, string label)
     {
         var t = root.GetComponentInChildren<Text>(true);

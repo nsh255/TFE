@@ -22,16 +22,25 @@ public class EnemyDatabaseEditor : EditorWindow
     private GameObject newEnemyPrefab;
 
     [MenuItem("Tools/Ascension/Enemy Database Editor")]
+    /// <summary>
+    /// Abre el editor de base de datos de enemigos.
+    /// </summary>
     public static void ShowWindow()
     {
         GetWindow<EnemyDatabaseEditor>("Enemy Database");
     }
 
+    /// <summary>
+    /// Carga la base de datos al habilitar la ventana.
+    /// </summary>
     void OnEnable()
     {
         LoadEnemyDatabase();
     }
 
+    /// <summary>
+    /// Dibuja la interfaz de edición en el inspector.
+    /// </summary>
     void OnGUI()
     {
         GUILayout.Label("Enemy Database Editor", EditorStyles.boldLabel);
@@ -74,6 +83,9 @@ public class EnemyDatabaseEditor : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
+    /// <summary>
+    /// Dibuja el panel de creación de nuevos EnemyData.
+    /// </summary>
     private void DrawCreatePanel()
     {
         EditorGUILayout.BeginVertical("box");
@@ -96,6 +108,9 @@ public class EnemyDatabaseEditor : EditorWindow
         EditorGUILayout.EndVertical();
     }
 
+    /// <summary>
+    /// Dibuja una entrada de enemigo en la lista.
+    /// </summary>
     private void DrawEnemyEntry(EnemyData enemy, int index)
     {
         EditorGUILayout.BeginVertical("box");
@@ -137,6 +152,9 @@ public class EnemyDatabaseEditor : EditorWindow
         EditorGUILayout.Space();
     }
 
+    /// <summary>
+    /// Recarga todos los EnemyData presentes en el proyecto.
+    /// </summary>
     private void LoadEnemyDatabase()
     {
         enemyDatabase.Clear();
@@ -152,9 +170,11 @@ public class EnemyDatabaseEditor : EditorWindow
             }
         }
 
-        Debug.Log($"[EnemyDatabaseEditor] {enemyDatabase.Count} enemigos cargados");
     }
 
+    /// <summary>
+    /// Crea un nuevo EnemyData a partir de los campos de la interfaz.
+    /// </summary>
     private void CreateNewEnemy()
     {
         if (string.IsNullOrEmpty(newEnemyName))
@@ -185,8 +205,7 @@ public class EnemyDatabaseEditor : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[EnemyDatabaseEditor] Enemy creado: {path}");
-        EditorUtility.DisplayDialog("Success", $"Enemy '{newEnemyName}' creado correctamente", "OK");
+        EditorUtility.DisplayDialog("Éxito", $"Enemy '{newEnemyName}' creado correctamente.", "OK");
 
         // Resetear campos
         newEnemyName = "New Enemy";
@@ -200,6 +219,9 @@ public class EnemyDatabaseEditor : EditorWindow
         showCreatePanel = false;
     }
 
+    /// <summary>
+    /// Elimina un EnemyData seleccionado.
+    /// </summary>
     private void DeleteEnemy(EnemyData enemy)
     {
         string path = AssetDatabase.GetAssetPath(enemy);
@@ -207,7 +229,6 @@ public class EnemyDatabaseEditor : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"[EnemyDatabaseEditor] Enemy eliminado: {enemy.enemyName}");
         LoadEnemyDatabase();
     }
 }

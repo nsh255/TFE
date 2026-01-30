@@ -7,11 +7,17 @@ using UnityEngine;
 public class FixPlayerPrefab : EditorWindow
 {
     [MenuItem("Ascension/Debug/Fix Player Prefab Weapon Offset")]
+    /// <summary>
+    /// Ejecuta la corrección del weaponOffset en el prefab de jugador.
+    /// </summary>
     static void ShowWindow()
     {
         FixPrefab();
     }
 
+    /// <summary>
+    /// Fuerza weaponOffset a cero para que se inicialice en Awake.
+    /// </summary>
     private static void FixPrefab()
     {
         string prefabPath = "Assets/Prefabs/Player.prefab";
@@ -36,14 +42,10 @@ public class FixPlayerPrefab : EditorWindow
         EditorUtility.SetDirty(prefab);
         AssetDatabase.SaveAssets();
         
-        Debug.Log("✅ Player prefab actualizado. weaponOffset = (0, 0, 0)");
-        Debug.Log("   El código en Awake() lo inicializará a (0.5, 0.25, 0)");
-        
         EditorUtility.DisplayDialog(
             "Prefab Actualizado",
-            "✅ Player prefab configurado correctamente.\n\n" +
-            "IMPORTANTE: Cierra Unity y vuelve a abrir para que los cambios surtan efecto.\n\n" +
-            "O simplemente prueba el juego desde MainMenu (nueva instancia).",
+            "El prefab Player ha sido configurado correctamente.\n\n" +
+            "Se recomienda reiniciar Unity o validar el cambio en una nueva ejecución.",
             "OK"
         );
     }

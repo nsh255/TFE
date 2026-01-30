@@ -13,6 +13,9 @@ public static class AscensionTmpFontAssetRepair
         EditorApplication.delayCall += TryRepair;
     }
 
+    /// <summary>
+    /// Repara el TMP Font Asset si está incompleto.
+    /// </summary>
     private static void TryRepair()
     {
         var fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
@@ -21,9 +24,11 @@ public static class AscensionTmpFontAssetRepair
         if (!IsBroken(fontAsset)) return;
 
         Repair(fontAsset);
-        Debug.Log("[Ascension] Reparado TMP Font Asset (atlas/material) en " + FontAssetPath);
     }
 
+    /// <summary>
+    /// Comprueba si faltan atlas o material en el TMP Font Asset.
+    /// </summary>
     private static bool IsBroken(TMP_FontAsset fontAsset)
     {
         if (fontAsset == null) return false;
@@ -36,6 +41,9 @@ public static class AscensionTmpFontAssetRepair
         return false;
     }
 
+    /// <summary>
+    /// Reconstruye atlas y material y los asigna al TMP Font Asset.
+    /// </summary>
     public static void Repair(TMP_FontAsset fontAsset)
     {
         if (fontAsset == null) return;

@@ -7,11 +7,17 @@ using UnityEngine;
 public class FixEnemyPhysics : EditorWindow
 {
     [MenuItem("Ascension/Debug/Fix Enemy Physics")]
+    /// <summary>
+    /// Ejecuta la corrección de física de enemigos.
+    /// </summary>
     static void ShowWindow()
     {
         FixAllEnemyPrefabs();
     }
 
+    /// <summary>
+    /// Configura Rigidbody2D y Collider2D en prefabs de enemigos.
+    /// </summary>
     private static void FixAllEnemyPrefabs()
     {
         string[] prefabPaths = {
@@ -41,7 +47,6 @@ public class FixEnemyPhysics : EditorWindow
             if (rb == null)
             {
                 rb = instance.AddComponent<Rigidbody2D>();
-                Debug.Log($"✅ Rigidbody2D añadido a {prefab.name}");
             }
 
             // Configurar propiedades óptimas para enemigos top-down
@@ -60,28 +65,24 @@ public class FixEnemyPhysics : EditorWindow
             {
                 col = instance.AddComponent<CircleCollider2D>();
                 col.radius = 0.4f; // Radio razonable para enemigo
-                Debug.Log($"✅ CircleCollider2D añadido a {prefab.name}");
             }
 
             // Guardar cambios
             PrefabUtility.SaveAsPrefabAsset(instance, path);
             PrefabUtility.UnloadPrefabContents(instance);
 
-            Debug.Log($"✅ {prefab.name}: Rigidbody2D configurado (FreezeRotation, gravityScale=0, Interpolate)");
             fixedCount++;
         }
 
         AssetDatabase.SaveAssets();
 
-        string message = $"✅ {fixedCount} prefabs de enemigos configurados:\n\n" +
-                        "- Rigidbody2D: Dynamic\n" +
-                        "- Gravity: 0 (top-down)\n" +
-                        "- Freeze Rotation: activado\n" +
-                        "- Interpolation: Interpolate\n" +
-                        "- Collision Detection: Continuous\n\n" +
-                        "Esto evita rebotes y rotaciones no deseadas.";
-
-        Debug.Log(message);
+        string message = $"Se han configurado {fixedCount} prefabs de enemigos.\n\n" +
+                "Ajustes aplicados:\n" +
+                "- Rigidbody2D en modo dinámico\n" +
+                "- Gravedad desactivada\n" +
+                "- Rotación bloqueada\n" +
+                "- Interpolación activada\n" +
+                "- Detección de colisiones continua.";
 
         EditorUtility.DisplayDialog(
             "Física de Enemigos Corregida",

@@ -11,27 +11,27 @@ public class ProjectSettingsAutoFix
 {
 #if UNITY_EDITOR
     [MenuItem("Tools/Ascension/Configurar Tags, Layers y Física")]
+    /// <summary>
+    /// Configura tags, layers y gravedad para el proyecto.
+    /// </summary>
     public static void ConfigureProjectSettings()
     {
-        Debug.Log("╔════════════════════════════════════════════════════════════════╗");
-        Debug.Log("║        CONFIGURANDO TAGS, LAYERS Y FÍSICA AUTOMÁTICAMENTE      ║");
-        Debug.Log("╚════════════════════════════════════════════════════════════════╝\n");
-
         AddTags();
         AddLayers();
         SetGravity();
 
-        Debug.Log("\n╔════════════════════════════════════════════════════════════════╗");
-        Debug.Log("║              CONFIGURACIÓN COMPLETADA                          ║");
-        Debug.Log("╚════════════════════════════════════════════════════════════════╝");
-        Debug.Log("\n✅ Tags, Layers y Gravedad configurados correctamente");
-        Debug.Log("✅ Ahora ejecuta el juego y todo debería funcionar");
+        EditorUtility.DisplayDialog(
+            "Configuración completada",
+            "Tags, layers y gravedad configurados.\n\n" +
+            "Se recomienda validar la configuración en Project Settings.",
+            "OK");
     }
 
+    /// <summary>
+    /// Añade tags necesarios al proyecto.
+    /// </summary>
     static void AddTags()
     {
-        Debug.Log("\n【 CONFIGURANDO TAGS 】");
-        
         // Tags necesarios para el proyecto
         string[] tagsToAdd = { "Wall" };
 
@@ -48,7 +48,6 @@ public class ProjectSettingsAutoFix
                 if (t.stringValue.Equals(tag))
                 {
                     found = true;
-                    Debug.Log($"  ℹ️  Tag '{tag}' ya existe");
                     break;
                 }
             }
@@ -59,7 +58,6 @@ public class ProjectSettingsAutoFix
                 tagsProp.InsertArrayElementAtIndex(tagsProp.arraySize);
                 SerializedProperty newTag = tagsProp.GetArrayElementAtIndex(tagsProp.arraySize - 1);
                 newTag.stringValue = tag;
-                Debug.Log($"  ✅ Tag '{tag}' añadido");
             }
         }
 
@@ -68,8 +66,6 @@ public class ProjectSettingsAutoFix
 
     static void AddLayers()
     {
-        Debug.Log("\n【 CONFIGURANDO LAYERS 】");
-
         // Layers necesarios: nombre → número de layer deseado
         // Layers 0-7 están reservados por Unity, usamos 8-15
         var layersToAdd = new System.Collections.Generic.Dictionary<string, int>
@@ -96,16 +92,11 @@ public class ProjectSettingsAutoFix
             if (string.IsNullOrEmpty(currentLayerName))
             {
                 layerSP.stringValue = layerName;
-                Debug.Log($"  ✅ Layer '{layerName}' asignado a Layer {layerIndex}");
-            }
-            else if (currentLayerName == layerName)
-            {
-                Debug.Log($"  ℹ️  Layer '{layerName}' ya existe en Layer {layerIndex}");
             }
             else
             {
-                Debug.LogWarning($"  ⚠️  Layer {layerIndex} ya está ocupado por '{currentLayerName}', no se pudo asignar '{layerName}'");
-                Debug.LogWarning($"     Asígnalo manualmente a otro User Layer disponible");
+                Debug.LogWarning($"Layer {layerIndex} ya está ocupado por '{currentLayerName}', no se pudo asignar '{layerName}'.");
+                Debug.LogWarning("Se recomienda asignar el layer manualmente en Project Settings.");
             }
         }
 
@@ -114,13 +105,11 @@ public class ProjectSettingsAutoFix
 
     static void SetGravity()
     {
-        Debug.Log("\n【 CONFIGURANDO GRAVEDAD 】");
-
         // Acceder a Physics2D settings
         var physics2DSettings = AssetDatabase.LoadAssetAtPath<Object>("ProjectSettings/Physics2DSettings.asset");
         if (physics2DSettings == null)
         {
-            Debug.LogWarning("  ⚠️  No se pudo acceder a Physics2DSettings");
+            Debug.LogWarning("No se pudo acceder a Physics2DSettings.");
             return;
         }
 
@@ -135,25 +124,21 @@ public class ProjectSettingsAutoFix
             {
                 gravityProp.vector2Value = new Vector2(0, 0);
                 serializedSettings.ApplyModifiedProperties();
-                Debug.Log($"  ✅ Gravedad cambiada de {currentGravity} a (0, 0)");
-            }
-            else
-            {
-                Debug.Log($"  ℹ️  Gravedad ya está en (0, 0)");
             }
         }
         else
         {
-            Debug.LogWarning("  ⚠️  No se encontró la propiedad m_Gravity");
+            Debug.LogWarning("No se encontró la propiedad m_Gravity.");
         }
     }
 
     // Método adicional para configurar la matriz de colisiones (opcional)
     [MenuItem("Tools/Ascension/Configurar Matriz de Colisiones")]
+    /// <summary>
+    /// Configura la matriz de colisiones para el modo Play actual.
+    /// </summary>
     public static void ConfigureCollisionMatrix()
     {
-        Debug.Log("\n【 CONFIGURANDO MATRIZ DE COLISIONES 】");
-
         int playerLayer = LayerMask.NameToLayer("Player");
         int enemyLayer = LayerMask.NameToLayer("Enemy");
         int wallLayer = LayerMask.NameToLayer("Wall");
@@ -169,37 +154,35 @@ public class ProjectSettingsAutoFix
             {
                 Physics2D.IgnoreLayerCollision(floorLayer, i, true);
             }
-            Debug.Log("  ✅ Floor: No colisiona con nada");
         }
 
         // Player colisiona con Wall y Enemy
         if (playerLayer != -1 && wallLayer != -1)
         {
             Physics2D.IgnoreLayerCollision(playerLayer, wallLayer, false);
-            Debug.Log("  ✅ Player ↔ Wall: Colisiona");
         }
         if (playerLayer != -1 && enemyLayer != -1)
         {
             Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, false);
-            Debug.Log("  ✅ Player ↔ Enemy: Colisiona");
         }
 
         // Enemy colisiona con Wall
         if (enemyLayer != -1 && wallLayer != -1)
         {
             Physics2D.IgnoreLayerCollision(enemyLayer, wallLayer, false);
-            Debug.Log("  ✅ Enemy ↔ Wall: Colisiona");
         }
 
         // Entities colisiona con Wall
         if (entitiesLayer != -1 && wallLayer != -1)
         {
             Physics2D.IgnoreLayerCollision(entitiesLayer, wallLayer, false);
-            Debug.Log("  ✅ Entities ↔ Wall: Colisiona");
         }
 
-        Debug.Log("\n  ⚠️  NOTA: Esta configuración solo afecta al Play Mode actual");
-        Debug.Log("  Para hacer cambios permanentes, ve a Edit → Project Settings → Physics 2D");
+        EditorUtility.DisplayDialog(
+            "Matriz de colisiones",
+            "La configuración se ha aplicado para el modo Play actual.\n\n" +
+            "Para cambios permanentes, revisar Project Settings > Physics 2D.",
+            "OK");
     }
 #endif
 }

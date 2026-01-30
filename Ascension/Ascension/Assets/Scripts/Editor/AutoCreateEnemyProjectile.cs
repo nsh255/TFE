@@ -8,11 +8,17 @@ using System.IO;
 [InitializeOnLoad]
 public class AutoCreateEnemyProjectile
 {
+    /// <summary>
+    /// Programa la verificación al cargar el editor.
+    /// </summary>
     static AutoCreateEnemyProjectile()
     {
         EditorApplication.delayCall += CheckAndCreateProjectile;
     }
 
+    /// <summary>
+    /// Crea el prefab del proyectil enemigo si no existe.
+    /// </summary>
     private static void CheckAndCreateProjectile()
     {
         string prefabPath = "Assets/Prefabs/Enemies/EnemyProjectile.prefab";
@@ -23,8 +29,6 @@ public class AutoCreateEnemyProjectile
             return;
         }
 
-        Debug.Log("[AutoCreateEnemyProjectile] Proyectil no encontrado, creándolo automáticamente...");
-        
         // Asegurar que existe la carpeta
         if (!AssetDatabase.IsValidFolder("Assets/Prefabs"))
         {
@@ -89,10 +93,11 @@ public class AutoCreateEnemyProjectile
         
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        
-        Debug.Log($"✅ [AutoCreateEnemyProjectile] Proyectil creado en: {prefabPath}");
     }
 
+    /// <summary>
+    /// Genera una textura circular y la guarda como sprite en disco.
+    /// </summary>
     private static void CreateCircleTexture()
     {
         string texturePath = "Assets/Sprites/EnemyProjectile_Circle.png";
@@ -152,6 +157,9 @@ public class AutoCreateEnemyProjectile
         }
     }
 
+    /// <summary>
+    /// Asigna el prefab de proyectil a los slimes configurados.
+    /// </summary>
     private static void AssignToSlimes(GameObject projectilePrefab)
     {
         string[] slimePaths = new string[]
@@ -171,7 +179,6 @@ public class AutoCreateEnemyProjectile
             if (slime != null)
             {
                 slime.projectilePrefab = projectilePrefab;
-                Debug.Log($"✓ {prefab.name}: Proyectil asignado");
             }
             
             PrefabUtility.SaveAsPrefabAsset(instance, path);
