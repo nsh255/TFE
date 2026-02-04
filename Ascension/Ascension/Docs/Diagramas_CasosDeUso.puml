@@ -1,0 +1,67 @@
+@startuml Ascension_Use_Cases
+!theme plain
+left to right direction
+
+actor Jugador as "Jugador"
+
+rectangle Ascension {
+
+    usecase UC1 as "Seleccionar clase"
+    usecase UC2 as "Iniciar partida"
+    usecase UC3 as "Moverse"
+    usecase UC4 as "Atacar enemigo"
+    usecase UC5 as "Ataque cuerpo a cuerpo"
+    usecase UC6 as "Disparo de proyectiles"
+    usecase UC7 as "Esquivar"
+    usecase UC8 as "Recibir daño"
+    usecase UC9 as "Morir"
+    usecase UC10 as "Generar salas"
+    usecase UC11 as "Gestionar IA de enemigos"
+    usecase UC12 as "Persecución"
+    usecase UC13 as "Ataque a distancia"
+    usecase UC14 as "Ataque por salto"
+    usecase UC15 as "Derrotar jefe"
+    usecase UC16 as "Avanzar salas"
+    usecase UC17 as "Victoria"
+    usecase UC18 as "Derrota"
+    usecase UC19 as "Ver puntuación"
+    usecase UC20 as "Aplicar efectos de tiles"
+}
+
+Jugador --> UC1
+Jugador --> UC2
+Jugador --> UC3
+Jugador --> UC4
+Jugador --> UC7
+Jugador --> UC15
+Jugador --> UC16
+Jugador --> UC19
+
+UC4 ..> UC5 : <<include>>
+UC4 ..> UC6 : <<include>>
+
+UC2 ..> UC10 : <<include>>
+UC16 ..> UC10 : <<include>>
+
+UC10 ..> UC11 : <<include>>
+UC11 ..> UC12 : <<include>>
+UC11 ..> UC13 : <<include>>
+UC11 ..> UC14 : <<include>>
+
+UC8 --> UC9
+UC9 ..> UC18 : <<include>>
+UC15 ..> UC17 : <<include>>
+
+UC3 ..> UC20 : <<include>>
+
+note right of UC7
+  Puede ejecutarse
+  durante el movimiento
+end note
+
+note right of Jugador
+  Interacción mediante
+  teclado y ratón
+end note
+
+@enduml
