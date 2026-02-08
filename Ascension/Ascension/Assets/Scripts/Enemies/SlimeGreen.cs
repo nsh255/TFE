@@ -192,6 +192,17 @@ public class SlimeGreen : Enemy
     private float CapToPlayerSpeed(float desiredSpeed)
     {
         if (playerController != null)
+        {
+            float playerSpeed = playerController.CurrentSpeed;
+            if (playerSpeed > 0f)
+            {
+                return Mathf.Min(desiredSpeed, playerSpeed);
+            }
+        }
+
+        return desiredSpeed;
+    }
+
     /// <summary>
     /// Dispara un proyectil hacia el jugador.
     /// </summary>
@@ -202,7 +213,7 @@ public class SlimeGreen : Enemy
             Debug.LogWarning("[SlimeGreen] No hay projectilePrefab asignado!");
             return;
         }
-        
+
         Vector2 direction = (player.position - shootPoint.position).normalized;
         
         GameObject projectile = Instantiate(
@@ -230,10 +241,6 @@ public class SlimeGreen : Enemy
         
         if (animator != null)
         {
-            animator.SetTrigger("Shoot");
-        }
-        
-        nextShootTime = Time.time + shootCooldown
             animator.SetTrigger("Shoot");
         }
         
