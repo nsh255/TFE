@@ -1,0 +1,71 @@
+
+
+\documentclass[11pt,twoside]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{graphicx}
+\usepackage{xurl}
+\usepackage{eso-pic}
+\usepackage{ragged2e}
+\usepackage{float}
+\usepackage[print,doble]{UAL}
+\usepackage{codigo}
+\usepackage{rotating}
+
+% Bibliografía
+\usepackage[numbers,square]{natbib}
+\bibliographystyle{IEEEtran}
+
+\author{Naoufal Saidi Hassani}
+\titulo{Desarrollo de un videojuego roguelike 2D con generación procedural en Unity}
+\subTitulo{DEPARTAMENTO DE INFORMÁTICA\\ ÁREA DE LENGUAJES Y SISTEMAS INFORMÁTICOS}
+\estudios{Grado en Informática}
+\universidad{UNIVERSIDAD DE ALMERÍA}
+\director{Nicolás Padilla Soriano}
+\curso{2025/2026}
+
+\pagestyle{cab}
+
+\begin{document}
+
+% ========= FRONTMATTER =========
+\frontmatter
+
+\portada
+
+\begin{dedicatoria}
+Dedicado a mi familia, por su apoyo incondicional y su amor constante, que han sido mi fuerza motriz en cada paso de este viaje académico.
+\end{dedicatoria}
+
+\input{indicesyrefe}
+
+\addcontentsline{toc}{chapter}{Resumen y Abstract}
+\chapter*{Resumen y Abstract}
+\input{resumentexto}
+
+% ========= CUERPO =========
+\mainmatter
+\marcagua
+
+\input{introduccion}
+\input{estado_del_arte}
+\input{planificacion_temporal}
+\input{metodologia}
+\input{resultados}
+\input{conclusion}
+
+% ========= BIBLIOGRAFÍA =========
+\addcontentsline{toc}{section}{Bibliografía}
+\bibliography{referencias}
+
+% ========= ANEXOS =========
+\appendix
+\input{apendice}
+
+% ========= CONTRAPORTADA =========
+\backmatter
+\input{contra}
+
+\end{document}

@@ -1,0 +1,52 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% TABLA DE CONTENIDOS, ÍNDICES Y ABREVIATURAS %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%---------------------------------------------------------------------------
+% Configuración de profundidad
+%---------------------------------------------------------------------------
+
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+%---------------------------------------------------------------------------
+% Tabla de contenidos
+%---------------------------------------------------------------------------
+
+\addtocontents{toc}{~\hfill\small{Página}\par}
+\addtocontents{toc}{\vspace{2pt} \hrule \vspace{5mm} \par}
+
+\tableofcontents
+\clearpage
+
+%---------------------------------------------------------------------------
+% Índices
+%---------------------------------------------------------------------------
+
+\listoffigures
+\clearpage
+
+%---------------------------------------------------------------------------
+% Relación de abreviaturas y acrónimos
+%---------------------------------------------------------------------------
+
+\section*{ABREVIATURAS}
+\addcontentsline{toc}{section}{ABREVIATURAS}
+
+\vspace{0.3cm}
+
+\begin{tabular}{ l | l }
+    & \\
+    AI   & Artificial Intelligence \\
+    ESI  & Escuela Superior de Ingeniería \\
+    GPC  & Generación Procedural de Contenido \\
+    IA   & Inteligencia Artificial \\
+    InSo & Ingeniería del Software \\
+    PNJ  & Personaje No Jugador \\
+    SBSE & Search Based Software Engineering \\
+    TFG  & Trabajo Fin de Grado \\
+    UAL  & Universidad de Almería \\
+    & \\
+\end{tabular}
+
+\clearpage
