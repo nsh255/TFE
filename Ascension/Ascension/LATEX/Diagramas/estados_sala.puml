@@ -1,0 +1,23 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+[*] --> Inactiva
+
+Inactiva --> Activa : El jugador entra\nen la sala
+
+state "Activa" as Activa : Aparición de enemigos\n(EnemyManager genera oleada)
+Activa --> Combate : Oleada generada
+
+state "Combate" as Combate : Escaleras bloqueadas\nEnemigos activos\nJugador combatiendo
+Combate --> Completada : Todos los enemigos\neliminados
+
+state "Completada" as Completada : Escaleras habilitadas\nEscaleras accesibles\n(colocadas durante la generación)\nEl jugador puede avanzar
+Completada --> NuevaSala : El jugador interactúa\ncon las escaleras
+
+state "Nueva sala generada" as NuevaSala
+NuevaSala --> Activa : Enemigos generados
+@enduml

@@ -49,7 +49,8 @@ public class Projectile : MonoBehaviour
     /// </summary>
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        // Ignorar jugador y armas (proyectiles del jugador no chocan con sus propias armas)
+        if (other.CompareTag("Player") || other.CompareTag("Weapon") || other.GetComponent<Weapon>() != null)
         {
             return;
         }

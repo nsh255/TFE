@@ -1,0 +1,109 @@
+﻿@startuml
+title Figura 4.5 - Jerarquía de clases de enemigos (patrón Template Method)
+
+class Enemy {
+  + enemyData : EnemyData
+  + currentHealth : int
+  + isDead : bool
+  - tileSpeedMultiplier : float
+  + damageRate : float = 1
+  - contactDamageGraceSeconds : float = 0.75
+  - aiGraceSeconds : float = 0.75
+  # player : Transform
+  # rb : Rigidbody2D
+  # animator : Animator
+  # spriteRenderer : SpriteRenderer
+  # playerController : PlayerController
+  - hasAnimDieTrigger : bool
+  - hasAnimIsAttacking : bool
+  # IsAIEnabled : bool <<property>>
+  + TileSpeedMultiplier : float <<property>>
+  # HasAnimatorController : bool <<property>>
+  __
+  # {virtual} Awake()
+  # {virtual} Start()
+  # {virtual} Update()
+  + {virtual} TakeDamage(amount : int)
+  # {virtual} Die()
+  # UpdateFacingToPlayer()
+  # SetAnimatorDirection(direction : Vector2)
+  # SetAnimatorAttacking(attacking : bool)
+  - UpdateAnimatorSpeed()
+  - FlashDamage() <<coroutine>>
+  # {virtual} OnCollisionStay2D(collision : Collision2D)
+  + SetTileSpeedMultiplier(multiplier : float)
+  + ResetTileSpeedMultiplier()
+}
+
+class SlimeGreen <<francotirador>> {
+  + escapeDistance : float = 4
+  + maxDistance : float = 12
+  + optimalShootDistance : float = 8
+  + shootCooldown : float = 2
+  + projectilePrefab : GameObject
+  + moveSpeed : float = 2
+  + projectileSpeed : float = 5
+  - projectileSpeedMultiplier : float = 1.15
+  - projectileScaleMultiplier : float = 0.8
+  - minProjectileBaseSpeed : float = 5
+  __
+  # Update()  ── evalúa distancia
+  - Escape()
+  - Approach()
+  - StopMoving()
+  - Shoot()
+  - CapToPlayerSpeed(desiredSpeed : float) : float
+  - BounceFromWall(collision : Collision2D)
+  - UpdateFallbackAnimation()
+}
+
+class SlimeRed <<perseguidor>> {
+  + moveSpeed : float = 3
+  + minDistance : float = 0.5
+  - attackEnterDistance : float = 1.1
+  - attackExitDistance : float = 1.4
+  __
+  # Update()
+  - ChasePlayer()
+  - FlipSprite()
+}
+
+class SlimeBlue <<saltador>> {
+  + dashSpeed : float = 12
+  + dashDuration : float = 0.4
+  + dashCooldown : float = 2
+  + minDashDistance : float = 3
+  + maxDashDistance : float = 10
+  - isDashing : bool
+  - dashDirection : Vector2
+  __
+  # Update()
+  - FixedUpdate()
+  - StartDash()
+  - EndDash()
+  - ApplyDashFacing()
+}
+
+class EnemyData <<ScriptableObject>> {
+  + enemyName : string
+  + maxHealth : int = 3
+  + damage : int = 1
+  + speed : float = 2
+  + sprite : Sprite
+  + enemyCost : int
+}
+
+Enemy <|-- SlimeGreen
+Enemy <|-- SlimeRed
+Enemy <|-- SlimeBlue
+Enemy *-- EnemyData : configuración
+
+note right of Enemy
+  Enemy es una clase concreta con
+  métodos virtual (no abstract).
+  Las subclases sobrescriben
+  Update() con su IA específica
+  (patrón Template Method).
+end note
+
+@enduml

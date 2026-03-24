@@ -1,0 +1,115 @@
+﻿\chapter{Conclusiones y trabajo futuro}
+
+
+El presente capítulo recoge las conclusiones del trabajo realizado, evaluando el grado de cumplimiento de los objetivos establecidos, identificando las limitaciones del proyecto y proponiendo líneas de trabajo futuro.
+
+
+
+\section{Cumplimiento de objetivos}
+
+
+A continuación se evalúa el grado de cumplimiento de cada uno de los objetivos específicos definidos en la introducción.
+
+\textbf{OE-1. Diseñar e implementar una arquitectura modular basada en patrones de diseño.} Se considera cumplido. La arquitectura del proyecto aplica patrones de diseño de forma consistente, en particular \textit{Singleton}, \textit{Observer}, \textit{Strategy} y \textit{Template Method}. Adicionalmente, se emplean mecanismos propios de Unity (sistema de componentes) y una máquina de estados para la coordinación del flujo del juego. La modularidad y la separación entre lógica y presentación se verificaron inicialmente de forma manual durante el desarrollo y, posteriormente, mediante el análisis estático automatizado, que confirmó la presencia de los cuatro \textit{Singletons} documentados, las cuatro declaraciones de eventos \textit{Observer} y las cinco clases \texttt{ScriptableObject} previstas.
+
+\textbf{OE-2. Diseñar e implementar un sistema de generación procedural de salas.} Se considera cumplido. Se ha desarrollado el componente \texttt{RoomGenerator}, que genera salas de $26 \times 12$ tiles con muros perimetrales, tiles normales con variantes visuales y tiles especiales distribuidos mediante un algoritmo de expansión por \textit{clusters}. La generación introduce variabilidad en la disposición de elementos entre partidas.
+
+\textbf{OE-3. Desarrollar una inteligencia artificial diferenciada para al menos tres tipos de enemigo.} Se considera cumplido. Se han implementado tres tipos de enemigo con comportamientos distintos: el slime verde (ataque a distancia con mantenimiento de distancia objetivo), el slime rojo (persecución directa) y el slime azul (aproximación por saltos, desplazamientos rápidos o \textit{dash}). Los tres tipos aplican un periodo de gracia tras su aparición y reaccionan a tiles que modifican la velocidad. Asimismo, se ha implementado un sistema de enemigos especiales con atributos escalados que actúan como jefes periódicos. Su diseño e implementación incluyen la formalización de estados y transiciones (FSM) y fragmentos de código del bucle de IA. La comprobación funcional se realizó en \textit{Play Mode} (editor de Unity) observando transiciones de estado, ventanas de gracia y reacción a tiles; adicionalmente, el \textit{stress test} aporta evidencia de estabilidad del subsistema bajo alta carga de instanciación y destrucción de enemigos.
+
+\textbf{OE-4. Crear un sistema de armas con mecánicas de combate cuerpo a cuerpo y a distancia.} Se considera cumplido. El sistema de armas, basado en el patrón \textit{Strategy}, ofrece dos modalidades de combate diferenciadas: \texttt{MeleeWeapon} (ataque de barrido con animación procedural sinusoidal) y \texttt{RangedWeapon} (disparo de proyectiles dirigidos hacia el cursor). La implementación abarca la clase base \texttt{Weapon}, las subclases, los proyectiles, los datos \texttt{WeaponData} y el flujo de daño hasta la puntuación. La verificación se realizó de forma manual en el editor de Unity, comprobando: activación del ataque, generación de proyectiles, colisiones/hitboxes, \textit{cooldowns} y aplicación de daño. De forma complementaria, los escenarios de estrés ejercitan el uso intensivo de instanciación/destrucción asociada a proyectiles y enemigos.
+
+\textbf{OE-5. Implementar un sistema de tiles con efectos que modifiquen la jugabilidad.} Se considera cumplido. Se han desarrollado cuatro tipos de tiles con efectos: hielo (incrementa velocidad), lodo (reduce velocidad), curación (restaura vida) y potenciación (incrementa daño). Los efectos se configuran mediante \textit{ScriptableObjects} y afectan tanto al jugador como a los enemigos. La distribución se realiza mediante el algoritmo de expansión por \textit{clusters} con probabilidades configurables. Su comprobación se realizó verificando manualmente en el editor de Unity (aplicación/retirada de efectos durante la partida).
+
+\textbf{OE-6. Implementar un sistema de persistencia de puntuaciones y estadísticas.} Se considera cumplido. El \texttt{ScoreManager} gestiona la puntuación en tiempo real, el registro de estadísticas por partida y la persistencia del historial mediante \texttt{PlayerPrefs} (almacenamiento local clave–valor) y serialización JSON (formato de texto estructurado). El diseño y la implementación abarcan la persistencia y estructura del historial, y se muestra el consumo de estos datos en la interfaz del menú principal. El historial almacena hasta 30 entradas con puntuación, clase, salas completadas, enemigos eliminados, resultado y marca de tiempo. Su comprobación se realizó de forma manual, ejecutando partidas consecutivas y verificando la persistencia de los datos entre ejecuciones del juego.
+
+\textbf{OE-7. Documentar el proceso de desarrollo y las decisiones técnicas adoptadas.} Se considera cumplido. La memoria describe los requisitos, la arquitectura, los módulos implementados, los patrones de diseño aplicados, los resultados obtenidos, las limitaciones y las líneas de trabajo futuro, apoyándose en diagramas y fragmentos de código. La trazabilidad se apoya en la relación entre los objetivos, las historias de usuario y los criterios de aceptación definidos y la valoración del cumplimiento recogida en este capítulo.
+
+\section{Valoración del trabajo realizado}
+
+
+El proyecto \textit{Ascension} ha permitido aplicar de forma integrada los conocimientos adquiridos durante el Grado en Ingeniería Informática en áreas como la ingeniería del software, la programación orientada a objetos, la algoritmia y el diseño de sistemas interactivos.
+
+Desde el punto de vista cuantitativo, a fecha de redacción de esta memoria, el directorio \texttt{Assets/Scripts/} contiene \textbf{85} scripts C\# de proyecto con un total de \textbf{12.565} líneas de código. La aportación técnica del trabajo se fundamenta en la implementación e integración de sistemas como la generación procedural de contenido, la inteligencia artificial de los enemigos con tres comportamientos diferenciados y la arquitectura guiada por patrones de diseño.
+
+La utilización de \textit{ScriptableObjects} como mecanismo de separación entre datos y lógica ha permitido iterar sobre el equilibrado del juego -- estadísticas de clases, datos de enemigos, efectos de tiles -- sin recompilar el código fuente en cada modificación.
+
+El proceso de desarrollo ha requerido ciclos de prueba funcional y depuración, con especial atención a la coherencia entre subsistemas (generación procedural, combate, IA, interfaz y persistencia) y a la estabilidad del flujo de juego.
+
+
+
+\section{Limitaciones del proyecto}
+
+
+A pesar de los resultados obtenidos, se han identificado las siguientes limitaciones:
+
+\begin{enumerate}
+\item \textbf{Ausencia de sistema de audio.} El proyecto no incluye un sistema de gestión de efectos de sonido ni música. La implementación de un \texttt{AudioManager} centralizado con mezcla de canales constituye una mejora necesaria para proporcionar una experiencia completa.
+\item \textbf{Variedad limitada de contenido.} El juego dispone de tres tipos de enemigo y un conjunto reducido de armas. La generación procedural de armas con sistema de rareza (\texttt{WeaponGenerator}) está implementada a nivel de código pero no integrada en el flujo de juego; en consecuencia, su funcionamiento dentro de una partida completa no se ha verificado de forma consistente.
+\item \textbf{Sistema de jefes no integrado.} El \texttt{BossController} implementa un sistema de dos fases con patrones de ataque diferenciados, pero no se encuentra integrado en el flujo de juego de la versión actual. En consecuencia, su funcionamiento dentro de una partida completa no ha podido verificarse de forma consistente.
+\item \textbf{Ausencia de reutilización de objetos (\textit{object pooling}).} Los proyectiles y efectos visuales se crean y destruyen mediante \texttt{Instantiate} y \texttt{Destroy}, lo que puede generar presión sobre el recolector de basura en situaciones con alto volumen de proyectiles. La implementación de un sistema de reutilización de objetos (\textit{object pooling}) mejoraría el rendimiento en estos escenarios.
+\item \textbf{Cobertura de pruebas.} El proyecto no dispone de una suite formal de pruebas unitarias ni de integración con cobertura sistemática de todos los módulos. La implementación de un marco de pruebas más completo mejoraría la detección temprana de regresiones.
+\end{enumerate}
+
+\section{Líneas de trabajo futuro}
+
+
+A partir de las limitaciones identificadas y de las oportunidades de extensión detectadas durante el desarrollo, se proponen las siguientes líneas de trabajo futuro:
+
+\subsection{Integración del sistema de jefes con fases múltiples}
+
+
+El componente \texttt{BossController} implementa un sistema de dos fases con transición automática al 50 \% de vida. La primera fase presenta ataques moderados con cadencia lenta, mientras que la segunda fase introduce ráfagas de proyectiles a mayor velocidad. La integración completa de este sistema implica:
+\begin{itemize}
+\item Diseño de patrones de ataque variados para cada fase
+\item Equilibrado de las estadísticas del jefe en relación con la profundidad de la partida
+\item Implementación de retroalimentación visual y auditiva para la transición de fase
+\item Integración con el sistema de puntuación con bonificaciones específicas por derrotar jefes
+\end{itemize}
+
+\subsection{Integración del sistema de generación procedural de armas}
+
+
+El componente \texttt{WeaponGenerator} implementa a nivel de código un sistema de cuatro niveles de rareza (Común con multiplicador $\times 1{,}0$; Poco Común con $\times 1{,}3$; Raro con $\times 1{,}6$; Legendario con $\times 2{,}0$) y escalado de estadísticas basado en la profundidad (+10 \% por nivel). Dado que el sistema no se encuentra integrado en el flujo de juego, su validación se considera pendiente. La integración completa implica:
+\begin{itemize}
+\item Aparición de armas como objetos recogibles en las salas
+\item Sistema de interfaz para comparar armas y decidir si equipar la nueva
+\item Retroalimentación visual diferenciada según la rareza del arma
+\item Equilibrado de las probabilidades de aparición por profundidad
+\end{itemize}
+
+\subsection{Ampliación del contenido}
+
+
+\begin{itemize}
+\item Nuevos tipos de enemigo con comportamientos diferenciados
+\item Nuevos tipos de tiles con efectos adicionales (veneno, teletransporte)
+\item Nuevos tipos de sala (salas de tesoro, salas de tienda, salas trampa)
+\item Sistemas de progresión permanente entre partidas (\textit{meta-progression})
+\end{itemize}
+
+\subsection{Mejoras técnicas}
+
+
+\begin{itemize}
+\item Implementación de \textit{object pooling} para proyectiles y efectos visuales
+\item Sistema de gestión de audio centralizado
+\item Creación de pruebas unitarias y de integración con cobertura sistemática
+\item Optimización de rendimiento mediante perfilado con \textit{Unity Profiler}
+\item Sistema de guardado y carga del progreso de partida
+\end{itemize}
+
+\section{Reflexión final}
+
+
+El desarrollo del videojuego \textit{Ascension} ha constituido un ejercicio integrador que ha permitido abordar, en un marco práctico, retos técnicos propios del desarrollo de software con múltiples subsistemas: diseño arquitectónico, implementación de algoritmos, aplicación de patrones de diseño y gestión de la calidad del código.
+
+El subgénero \textit{roguelike} constituye un contexto adecuado para la demostración de competencias de ingeniería del software, ya que exige la integración de múltiples subsistemas -- generación procedural, inteligencia artificial, gestión de estados e interacción con el entorno -- en un sistema cohesionado y funcional.
+
+La arquitectura modular adoptada, fundamentada en patrones de diseño de la ingeniería del software y en mecanismos propios de Unity (\textit{ScriptableObjects} y sistema de componentes), permite extender el sistema mediante la incorporación de nuevos subsistemas. En particular, se han implementado estructuras para un sistema de jefes con fases y para la generación procedural de armas, cuya integración en el flujo de juego se identifica como trabajo futuro.
+
+
+
+
+
+
+

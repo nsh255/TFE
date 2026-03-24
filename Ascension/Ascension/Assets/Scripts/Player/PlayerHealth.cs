@@ -28,6 +28,8 @@ public class PlayerHealth : MonoBehaviour
     [Tooltip("Parpadeo blanco mientras es invulnerable")]
     [SerializeField] private bool flashWhiteOnDamage = true;
     [SerializeField, Min(1f)] private float blinkFrequencyHz = 12f;
+    [Tooltip("Alterna visibilidad en cada pulso para que el parpadeo se note más")]
+    [SerializeField] private bool visibilityBlinkOnDamage = true;
     
     private PlayerController playerController;
     private bool isInitialized = false;
@@ -140,6 +142,7 @@ public class PlayerHealth : MonoBehaviour
         float blinkPeriod = blinkFrequencyHz > 0f ? (1f / blinkFrequencyHz) : 0.1f;
         float nextToggle = 0f;
         bool white = true;
+        bool visible = true;
 
         while (Time.time < end)
         {
@@ -149,6 +152,7 @@ public class PlayerHealth : MonoBehaviour
                 {
                     nextToggle = Time.time + blinkPeriod;
                     white = !white;
+                    visible = !visible;
                 }
 
                 for (int i = 0; i < spriteRenderers.Length; i++)
@@ -156,6 +160,8 @@ public class PlayerHealth : MonoBehaviour
                     var sr = spriteRenderers[i];
                     if (sr == null) continue;
                     var baseColor = (originalColors != null && i < originalColors.Length) ? originalColors[i] : sr.color;
+
+                    sr.enabled = visibilityBlinkOnDamage ? visible : true;
 
                     if (white)
                     {
@@ -181,6 +187,7 @@ public class PlayerHealth : MonoBehaviour
                 {
                     sr.color = originalColors[i];
                 }
+                sr.enabled = true;
             }
         }
 
@@ -232,16 +239,53 @@ public class PlayerHealth : MonoBehaviour
     }
 
     /// <summary>
-    /// Procesa la muerte del jugador notificando al GameManager.
+    /// Procesa la muerte del jugador con parpadeo rojo antes de notificar al GameManager.
     /// </summary>
     void Die()
     {
+        if (damageCoroutine != null)
+        {
+            StopCoroutine(damageCoroutine);
+            damageCoroutine = null;
+        }
+        isInvulnerable = true;
+        StartCoroutine(DeathBlinkCoroutine());
+    }
+
+    /// <summary>
+    /// Parpadeo rojo rápido justo antes de morir para dar feedback visual de muerte.
+    /// </summary>
+    private System.Collections.IEnumerator DeathBlinkCoroutine()
+    {
+        if (spriteRenderers == null || spriteRenderers.Length == 0)
+            CacheSpriteRenderers();
+
+        int blinks = 5;
+        float interval = 0.08f;
+
+        for (int i = 0; i < blinks; i++)
+        {
+            SetSpriteRenderersColor(Color.red);
+            yield return new WaitForSeconds(interval);
+            SetSpriteRenderersColor(Color.white);
+            yield return new WaitForSeconds(interval);
+        }
+
+        // Restaurar colores originales
+        RestoreOriginalColors();
+
+        // Proceder con GameOver
         var gm = GameManager.Instance;
         if (gm == null)
         {
             Debug.LogWarning("[PlayerHealth] GameManager no encontrado. Creando uno en runtime...");
             new GameObject("GameManager").AddComponent<GameManager>();
             gm = GameManager.Instance;
+
+            if (gm != null && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == gm.gameScene)
+            {
+                gm.ChangeState(GameState.Playing);
+            }
         }
 
         if (gm != null)
@@ -251,6 +295,25 @@ public class PlayerHealth : MonoBehaviour
         else
         {
             Debug.LogError("[PlayerHealth] No se pudo crear/encontrar GameManager. No se hará GameOver.");
+        }
+    }
+
+    private void SetSpriteRenderersColor(Color color)
+    {
+        if (spriteRenderers == null) return;
+        foreach (var sr in spriteRenderers)
+        {
+            if (sr != null) sr.color = color;
+        }
+    }
+
+    private void RestoreOriginalColors()
+    {
+        if (spriteRenderers == null) return;
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            if (spriteRenderers[i] != null && originalColors != null && i < originalColors.Length)
+                spriteRenderers[i].color = originalColors[i];
         }
     }
 }

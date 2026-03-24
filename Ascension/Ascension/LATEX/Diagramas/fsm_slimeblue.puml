@@ -1,0 +1,15 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+[*] --> Idle
+
+state "Espera (Idle)\nvelocidad = 0" as Idle
+state "Salto (Dash)\nvelocidad = dashSpeed" as Dash
+
+Idle -right-> Dash : dist ∈ [3, 10] u\nAND cooldown cumplido
+Dash -left-> Idle : dashTimer ≤ 0
+@enduml

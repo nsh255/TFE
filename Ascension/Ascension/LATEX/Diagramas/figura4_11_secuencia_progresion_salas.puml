@@ -1,0 +1,49 @@
+﻿@startuml
+title Figura 4.11 - Secuencia: ciclo de progresión entre salas
+
+autonumber
+actor Jugador as Player
+participant "RoomController" as RC
+participant "Stairs" as Stairs
+participant "EnemyManager" as EM
+participant "GameManager" as GM
+participant "ScoreManager" as SM
+participant "RoomFlowController" as RFC
+participant "RoomGenerator" as RG
+
+== Entrada en la sala ==
+Player -> RC : OnTriggerEnter2D()
+RC -> RC : BlockStairs()  ── itera\nStairs.Close() en cada escalera
+RC -> EM : SpawnByCost(area, maxCost, depth)
+
+== Combate ==
+loop mientras quedan enemigos
+  Player -> EM : elimina enemigos
+  EM -> EM : PruneTracked()  ── eliminar\nreferencias a enemigos destruidos
+end
+
+== Sala completada (RC autónomo) ==
+RC -> RC : CheckIfRoomCleared()\n──spawnedEnemies.RemoveAll(dead)
+RC -> RC : spawnedEnemies.Count == 0
+RC -> RC : OnRoomCleared() <<private>>
+RC -> RC : UnblockStairs()  ── itera\nStairs.Open() en cada escalera
+RC -> GM : NotifyRoomCleared()
+GM -> SM : Add(100)  ── 100 puntos por sala
+GM --> GM : OnRoomCleared?.Invoke(roomNumber)
+
+note over RC
+  Las escaleras ya están colocadas
+  en el tilemap desde la generación
+  (RoomGenerator.PlaceStairsTile).
+end note
+
+== Transición a siguiente sala ==
+Player -> RFC : Interactuar con escaleras\n→ FloorTileManager detecta el tile\n→ RFC.TryAdvanceToNextRoom()
+RFC -> GM : NotifyRoomCleared()
+GM -> SM : Add(100)  ── 100 puntos por avance
+RFC -> RG : RegenerateFloorKeepWalls()
+RG --> RFC : sala lista
+RFC -> RFC : StartRoom()
+RFC -> EM : SpawnByCost(area, cost, depth)  ── nueva oleada
+
+@enduml

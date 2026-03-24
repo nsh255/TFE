@@ -1,0 +1,50 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+skinparam ActivityBorderColor #333333
+title Flujo completo de daño: del ataque a la puntuación
+
+|Entrada|
+start
+:Input.GetMouseButton(0);
+
+split
+  |Cuerpo a cuerpo|
+  :MeleeWeapon.Attack();
+  :Activa hitbox + barrido\nsinusoidal (0,3 s);
+  :OnTriggerEnter2D\ndetecta tag "Enemy";
+split again
+  |A distancia|
+  :RangedWeapon.Attack();
+  :Instantiate(bulletPrefab);
+  :Projectile.Start()\ndamage = DamageBoostManager\n.GetBoostedDamage(baseDamage)\nrb.linearVelocity = dir × speed;
+  :Projectile.OnTriggerEnter2D\ndetecta tag "Enemy";
+end split
+
+|Enemigo|
+:Enemy.TakeDamage(damage);
+:currentHealth -= amount;
+:FlashDamage() → sprite rojo 0,1 s;
+
+if (currentHealth ≤ 0?) then (Sí)
+  :Die();
+  |GameManager|
+  :scoreValue = enemyData != null\n? enemyData.damage × 5 : 10;
+  :NotifyEnemyKilled(scoreValue);
+  :enemiesKilled++;
+  |ScoreManager|
+  :Add(scoreValue);
+  |GameManager|
+  :OnEnemyKilled?.Invoke();
+  |Enemigo|
+  if (hasAnimDieTrigger?) then (Sí)
+    :Animator.SetTrigger("Die");
+    :Destroy(gameObject, 0,5 s);
+  else (No)
+    :Destroy(gameObject);
+  endif
+else (No)
+  :Continúa combate;
+endif
+
+stop
+@enduml

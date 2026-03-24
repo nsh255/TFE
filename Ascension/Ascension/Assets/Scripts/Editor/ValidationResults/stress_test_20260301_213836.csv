@@ -1,0 +1,5 @@
+﻿Test,Resultado,Detalle,Tiempo_ms
+RapidRegen,FAIL,Tiles: 3/312, Tiempo: 34,5 ms,34,54
+HighDensity,PASS,Enemigos spawneados: 47, Tiempo: 8,8 ms,8,82
+FullLoop,FAIL,Salas: 30, Enemigos totales: 7151, Limpieza final: LEAK, Tiempo: 134,8 ms,134,84
+ClearAll,PASS,Antes: 584, Después (pendientes Destroy): 584,0

@@ -1,0 +1,73 @@
+@startuml
+title Figura 3.1 - Arquitectura general del sistema (componentes)
+
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+
+package "Capa de lógica de juego" {
+  [GameManager\n(Singleton)] as gm
+  [RoomFlowController\n(Singleton)] as rfc
+  [RoomGenerator] as rg
+  [EnemyManager] as em
+  [ScoreManager\n(Singleton)] as sm
+  [DamageBoostManager\n(Singleton)] as dbm
+  [FloorTileManager] as ftm
+  [PlayerSpawner] as ps
+  [PlayerController] as pc
+  [PlayerHealth] as ph
+  [Weapon] as w
+  [RoomController] as rc
+  [Stairs] as stairs
+}
+
+package "Datos (ScriptableObjects)" {
+  [PlayerClass] as so_pc
+  [WeaponData] as so_wd
+  [EnemyData] as so_ed
+  [TileEffect] as so_te
+}
+
+package "Capa de presentación (UI)" {
+  [HeartDisplay] as ui_hearts
+  [ScoreDisplay] as ui_score
+  [PauseMenu] as ui_pause
+  [GameOverScreen] as ui_go
+  [VictoryScreen] as ui_v
+  [ScoreboardMenuUI] as ui_board
+}
+
+' Dependencias de gestores centrales
+gm --> sm : crea si no existe
+gm --> rfc
+rfc --> rg
+rfc --> em
+rc --> em
+rc --> stairs
+
+' Sistema del jugador
+ps --> pc : instancia y configura
+pc --> ph
+pc --> w
+pc ..> so_pc : lee estadísticas
+w ..> so_wd : lee datos de arma
+
+' Sistema de enemigos
+em ..> so_ed : lee datos de enemigo
+
+' Sistema de tiles
+rg ..> so_te : asigna efectos a tiles
+ftm --> pc : aplica efectos de velocidad
+ftm --> dbm : aplica bonificación de daño
+
+' Comunicación por eventos (Observer)
+gm ..> ui_pause : <<OnGameStateChanged>>
+gm ..> ui_go : <<OnGameStateChanged>>
+gm ..> ui_v : <<OnGameStateChanged>>
+gm ..> ui_score : <<OnRoomCleared / OnEnemyKilled>>
+rc ..> gm : NotifyRoomCleared()
+
+' Referencia directa
+ph --> ui_hearts : actualización de vida
+ui_board --> sm : historial / consulta
+
+@enduml

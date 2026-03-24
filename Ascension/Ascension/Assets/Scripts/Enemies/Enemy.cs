@@ -31,6 +31,12 @@ public class Enemy : MonoBehaviour
     private bool hasAnimMoveY;
     private bool hasAnimLookX;
     private bool hasAnimLookY;
+    private bool hasAnimSpeed;
+    private bool hasAnimIsAttacking;
+    private bool hasAnimDieTrigger;
+    private Vector3 lastFramePosition;
+
+    protected bool HasAnimatorController => animator != null && animator.runtimeAnimatorController != null;
     
     [Header("Daño al Jugador")]
     public float damageRate = 1f;
@@ -50,6 +56,16 @@ public class Enemy : MonoBehaviour
     [Header("Tile Effects")]
     [SerializeField, Min(0.1f)] private float tileSpeedMultiplier = 1f;
     public float TileSpeedMultiplier => tileSpeedMultiplier;
+
+    [Header("Facing")]
+    [Tooltip("Si está activo, también aplica flipX por dir.x aunque el animator sea direccional.")]
+    [SerializeField] private bool mirrorFlipWhenDirectional = true;
+    [Tooltip("Si está activo, para direcciones izquierda usa |X| en animator y deja el espejo a flipX.")]
+    [SerializeField] private bool useMirroredRightAnimationsForLeft = true;
+
+    [Header("Debug")]
+    [SerializeField] private bool debugFacing = true;
+    private string lastFacingDebugKey;
 
     /// <summary>
     /// Establece el multiplicador de velocidad por efectos de tiles.
@@ -103,7 +119,7 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        if (animator != null)
+        if (animator != null && animator.runtimeAnimatorController != null)
         {
             foreach (var p in animator.parameters)
             {
@@ -114,6 +130,19 @@ public class Enemy : MonoBehaviour
                 else if (p.name == "MoveY") hasAnimMoveY = true;
                 else if (p.name == "LookX") hasAnimLookX = true;
                 else if (p.name == "LookY") hasAnimLookY = true;
+                else if (p.name == "Speed") hasAnimSpeed = true;
+            }
+
+            foreach (var p in animator.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Bool && p.name == "IsAttacking")
+                {
+                    hasAnimIsAttacking = true;
+                }
+                else if (p.type == AnimatorControllerParameterType.Trigger && p.name == "Die")
+                {
+                    hasAnimDieTrigger = true;
+                }
             }
         }
     }
@@ -140,6 +169,8 @@ public class Enemy : MonoBehaviour
         {
             playerController = player.GetComponent<PlayerController>();
         }
+
+        lastFramePosition = transform.position;
         
         bool animatorHasController = animator != null && animator.runtimeAnimatorController != null;
         if (spriteRenderer != null && enemyData.sprite != null && !animatorHasController)
@@ -187,21 +218,62 @@ public class Enemy : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+
+        // Congelar al enemigo: sin movimiento ni animaciones durante el parpadeo
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+        if (animator != null)
+            animator.enabled = false;
         
         if (GameManager.Instance != null)
         {
             int scoreValue = enemyData != null ? enemyData.damage * 5 : 10;
             GameManager.Instance.NotifyEnemyKilled(scoreValue);
         }
-        
-        if (animator != null)
+
+        StartCoroutine(DeathBlinkCoroutine());
+    }
+
+    /// <summary>
+    /// Parpadeo rojo rápido justo antes de morir para dar feedback visual de muerte.
+    /// </summary>
+    private System.Collections.IEnumerator DeathBlinkCoroutine()
+    {
+        if (allSpriteRenderers == null || allSpriteRenderers.Length == 0)
+            allSpriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        int blinks = 4;
+        float interval = 0.08f;
+
+        for (int i = 0; i < blinks; i++)
         {
+            SetSpriteRenderersColor(Color.red);
+            yield return new WaitForSeconds(interval);
+            SetSpriteRenderersColor(Color.white);
+            yield return new WaitForSeconds(interval);
+        }
+
+        if (animator != null && animator.runtimeAnimatorController != null && hasAnimDieTrigger)
+        {
+            animator.enabled = true;
             animator.SetTrigger("Die");
             Destroy(gameObject, 0.5f);
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void SetSpriteRenderersColor(Color color)
+    {
+        if (allSpriteRenderers == null) return;
+        foreach (var sr in allSpriteRenderers)
+        {
+            if (sr != null) sr.color = color;
         }
     }
 
@@ -223,6 +295,7 @@ public class Enemy : MonoBehaviour
         }
 
         UpdateFacingToPlayer();
+        UpdateAnimatorSpeed();
     }
 
     /// <summary>
@@ -236,7 +309,11 @@ public class Enemy : MonoBehaviour
         if (toPlayer.sqrMagnitude < 0.0001f) return;
         Vector2 dir = toPlayer.normalized;
 
-        if (allSpriteRenderers != null && allSpriteRenderers.Length > 0)
+        bool hasDirectionalAnimator = hasAnimHorizontal || hasAnimVertical || hasAnimMoveX || hasAnimMoveY || hasAnimLookX || hasAnimLookY;
+
+        bool applyFlip = !hasDirectionalAnimator || mirrorFlipWhenDirectional;
+
+        if (applyFlip && allSpriteRenderers != null && allSpriteRenderers.Length > 0)
         {
             bool flipX;
             const float deadzone = 0.05f;
@@ -256,15 +333,88 @@ public class Enemy : MonoBehaviour
             MirrorNamedChildPoints(flipX);
         }
 
-        if (animator != null)
+        SetAnimatorDirection(dir);
+
+        if (debugFacing)
         {
-            if (hasAnimHorizontal) animator.SetFloat("Horizontal", dir.x);
-            if (hasAnimVertical) animator.SetFloat("Vertical", dir.y);
-            if (hasAnimMoveX) animator.SetFloat("MoveX", dir.x);
-            if (hasAnimMoveY) animator.SetFloat("MoveY", dir.y);
-            if (hasAnimLookX) animator.SetFloat("LookX", dir.x);
-            if (hasAnimLookY) animator.SetFloat("LookY", dir.y);
+            string bucket;
+            if (dir.x < -0.35f && dir.y > 0.35f) bucket = "UL";
+            else if (dir.x < -0.35f && dir.y < -0.35f) bucket = "DL";
+            else if (dir.x > 0.35f && dir.y > 0.35f) bucket = "UR";
+            else if (dir.x > 0.35f && dir.y < -0.35f) bucket = "DR";
+            else if (dir.x < -0.35f) bucket = "L";
+            else if (dir.x > 0.35f) bucket = "R";
+            else if (dir.y > 0.35f) bucket = "U";
+            else if (dir.y < -0.35f) bucket = "D";
+            else bucket = "C";
+
+            float h = (HasAnimatorController && hasAnimHorizontal) ? animator.GetFloat("Horizontal") : float.NaN;
+            float v = (HasAnimatorController && hasAnimVertical) ? animator.GetFloat("Vertical") : float.NaN;
+            bool firstFlip = (allSpriteRenderers != null && allSpriteRenderers.Length > 0 && allSpriteRenderers[0] != null) ? allSpriteRenderers[0].flipX : false;
+
+            string key = $"{bucket}|{Mathf.Sign(dir.x)}|{Mathf.Sign(dir.y)}|{firstFlip}|{applyFlip}";
+            if (key != lastFacingDebugKey)
+            {
+                lastFacingDebugKey = key;
+                Debug.Log($"[EnemyFacing:{name}] bucket={bucket} dir=({dir.x:F2},{dir.y:F2}) H={h:F2} V={v:F2} flipX={firstFlip} directional={hasDirectionalAnimator} applyFlip={applyFlip}");
+            }
         }
+    }
+
+    protected void SetAnimatorDirection(Vector2 dir)
+    {
+        if (!HasAnimatorController) return;
+
+        float x = dir.x;
+        float y = dir.y;
+
+        bool hasDirectionalAnimator = hasAnimHorizontal || hasAnimVertical || hasAnimMoveX || hasAnimMoveY || hasAnimLookX || hasAnimLookY;
+        if (hasDirectionalAnimator && useMirroredRightAnimationsForLeft)
+        {
+            x = Mathf.Abs(x);
+        }
+
+        if (hasAnimHorizontal) animator.SetFloat("Horizontal", x);
+        if (hasAnimVertical) animator.SetFloat("Vertical", y);
+        if (hasAnimMoveX) animator.SetFloat("MoveX", x);
+        if (hasAnimMoveY) animator.SetFloat("MoveY", y);
+        if (hasAnimLookX) animator.SetFloat("LookX", x);
+        if (hasAnimLookY) animator.SetFloat("LookY", y);
+    }
+
+    protected void SetAnimatorAttacking(bool attacking)
+    {
+        if (!HasAnimatorController || !hasAnimIsAttacking) return;
+        animator.SetBool("IsAttacking", attacking);
+    }
+
+    private void UpdateAnimatorSpeed()
+    {
+        if (!HasAnimatorController)
+        {
+            lastFramePosition = transform.position;
+            return;
+        }
+
+        if (!hasAnimSpeed)
+        {
+            lastFramePosition = transform.position;
+            return;
+        }
+
+        float speed = 0f;
+        if (rb != null)
+        {
+            speed = rb.linearVelocity.magnitude;
+        }
+        else
+        {
+            float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
+            speed = ((transform.position - lastFramePosition) / deltaTime).magnitude;
+        }
+
+        animator.SetFloat("Speed", speed);
+        lastFramePosition = transform.position;
     }
 
     /// <summary>
@@ -312,6 +462,13 @@ public class Enemy : MonoBehaviour
         
         if (collision.gameObject.CompareTag("Player"))
         {
+            // No hacer daño si el jugador está en roll
+            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+            if (playerController != null && playerController.IsRolling)
+            {
+                return;
+            }
+
             if (Time.time < contactDamageEnabledTime) return;
 
             if (Time.time >= lastDamageTime + damageRate)
@@ -325,4 +482,5 @@ public class Enemy : MonoBehaviour
             }
         }
     }
+
 }

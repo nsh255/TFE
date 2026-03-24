@@ -1,0 +1,48 @@
+\babel@toc {spanish}{}\relax 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Diagrama de Gantt con la distribución temporal y la dedicación en horas de las ocho fases del proyecto (elaboración propia).}}{10}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Captura de pantalla del videojuego original \textit {Rogue} (1980), mostrando la interfaz basada en caracteres ASCII y la disposición procedural de las salas. \textit {Fuente: captura histórica del juego.}}}{14}{}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Gráfico que muestra la evolución del número de títulos \textit {roguelike} publicados en Steam por año (2006–2026). \textit {Fuente: SteamDB}}}{16}{}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Captura de pantalla de \textit {The Binding of Isaac: Rebirth} en la que se observa la perspectiva cenital, la estructura de sala cerrada con puertas y la interfaz de vida mediante corazones en la esquina superior izquierda. \textit {Fuente: captura del juego en Steam.}}}{22}{}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Captura de pantalla de \textit {Enter the Gungeon} en la que se muestra la mecánica de esquiva (\textit {dodge roll}) durante el combate y la variedad de proyectiles en pantalla. \textit {Fuente: captura del juego en Steam.}}}{23}{}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Captura de pantalla de \textit {Hades} en la que se aprecia el sistema de combate en tiempo real con arma cuerpo a cuerpo, la variedad de enemigos simultáneos y la interfaz de estado del personaje. \textit {Fuente: captura del juego en Steam.}}}{24}{}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Captura de pantalla de \textit {Dead Cells} en la que se observa el combate lateral con armas cuerpo a cuerpo, el escalonamiento de dificultad y los indicadores de interfaz. \textit {Fuente: captura del juego en Steam.}}}{25}{}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Captura de pantalla de \textit {Ascension} durante una partida, mostrando la perspectiva cenital, la sala generada proceduralmente con tiles especiales visibles (hielo, lodo), enemigos activos y la interfaz de corazones y puntuación. \textit {Elaboración propia.}}}{26}{}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Captura de pantalla de \textit {Ascension} mostrando la pantalla de selección de clase. \textit {Elaboración propia.}}}{27}{}%
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Captura de la interfaz de LibreSprite durante la edición de un \textit {sprite} del juego \textit {Ascension}, mostrando la paleta de colores y el lienzo de edición. \textit {Elaboración propia.}}}{32}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Diagrama de componentes de la arquitectura general del sistema. \textit {Elaboración propia.} }}{41}{}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagrama del flujo de escenas. \textit {Elaboración propia.} }}{42}{}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Diagrama de dependencias entre los módulos del sistema. \textit {Elaboración propia.} }}{43}{}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Configuración de importación de un \textit {sprite} en el inspector de Unity, mostrando los parámetros PPU, filtrado y compresión. \textit {Elaboración propia.}}}{44}{}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Vista del inspector de Unity mostrando los componentes configurados en el \textit {GameObject} del jugador: \textit {SpriteRenderer}, \textit {Rigidbody2D}, \textit {BoxCollider2D}, scripts y \textit {Animator}. \textit {Elaboración propia.}}}{45}{}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Vista del inspector de Unity mostrando los componentes de un enemigo \textit {Slime Verde}, con detalle del \textit {CircleCollider2D} y sus dimensiones. \textit {Elaboración propia.}}}{46}{}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Editor de \textit {tilemaps} de Unity mostrando las dos capas (muros y suelo). \textit {Elaboración propia.}}}{47}{}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Controlador de animación (\textit {Animator Controller}) del jugador en Unity, mostrando los estados y las transiciones entre animaciones de reposo, movimiento y esquiva. \textit {Elaboración propia.}}}{48}{}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Diagrama de la composición del jugador. \textit {Elaboración propia.} }}{50}{}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Diagrama de los estados del juego. \textit {Elaboración propia.} }}{51}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Diagrama de estados UML del \texttt {GameManager}. \textit {Elaboración propia.} }}{57}{}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Diagrama de la coordinación entre gestores al iniciar una nueva partida. \textit {Elaboración propia.} }}{59}{}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Diagrama del flujo de completar una sala. \textit {Elaboración propia.} }}{60}{}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Captura de pantalla del menú principal de \textit {Ascension}, mostrando las opciones de nueva partida, tabla de puntuaciones y salir. \textit {Elaboración propia.}}}{60}{}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Diagrama del ciclo de funcionamiento de generación de salas. \textit {Elaboración propia.} }}{61}{}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Diagrama del funcionamiento de la esquiva. \textit {Elaboración propia.} }}{64}{}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Ciclo de vida del jugador. \textit {Elaboración propia.} }}{67}{}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Diagrama de la FSM del SlimeGreen. \textit {Elaboración propia.} }}{72}{}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Diagrama de la FSM del SlimeBlue. \textit {Elaboración propia.} }}{76}{}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Captura de pantalla de \textit {Ascension} durante un encuentro con un enemigo jefe, mostrando el incremento visual de tamaño respecto a los enemigos estándar y los proyectiles de mayor escala. \textit {Elaboración propia.}}}{78}{}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Diagrama de flujo de decisión de la IA por tipo de enemigo. \textit {Elaboración propia.} }}{82}{}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces Diagrama de clases UML de la jerarquía de enemigos. \textit {Elaboración propia.} }}{83}{}%
+\contentsline {figure}{\numberline {4.13}{\ignorespaces Diagrama de secuencia UML del flujo de combate. \textit {Elaboración propia.} }}{84}{}%
+\contentsline {figure}{\numberline {4.14}{\ignorespaces Diagrama de flujo del sistema de daño. \textit {Elaboración propia.} }}{89}{}%
+\contentsline {figure}{\numberline {4.15}{\ignorespaces Diagrama de clases UML del sistema de armas. \textit {Elaboración propia.} }}{90}{}%
+\contentsline {figure}{\numberline {4.16}{\ignorespaces Diagrama de secuencia UML de la generación procedural de una sala. \textit {Elaboración propia.} }}{93}{}%
+\contentsline {figure}{\numberline {4.17}{\ignorespaces Diagrama de secuencia UML del ciclo de progresión entre salas. \textit {Elaboración propia.} }}{98}{}%
+\contentsline {figure}{\numberline {4.18}{\ignorespaces Captura de pantalla del menú de pausa de \textit {Ascension}, mostrando las opciones de reanudar y menú principal. \textit {Elaboración propia.}}}{101}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {A.1}{\ignorespaces Diagrama de clases del sistema}}{129}{}%
+\contentsline {figure}{\numberline {A.2}{\ignorespaces Diagrama de casos de uso del sistema}}{131}{}%

@@ -1,0 +1,41 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+skinparam ActivityBorderColor #333333
+
+|Jugador|
+start
+:Pulsa "Nueva Partida"
+(MainMenu / GameOverScreen);
+
+|GameManager|
+:StartNewRun();
+:currentLevel = 1
+roomsCleared = 0
+enemiesKilled = 0;
+
+|RoomFlowController|
+:ResetRunProgress()
+roomDepth = 1, bossesDefeated = 0
+isBossRoom = false, lastBossName = null;
+
+|ScoreManager|
+:ResetScore()
+currentScore = 0;
+
+|DamageBoostManager|
+:ResetBoost()
+globalDamageBoost = 0;
+
+|GameManager|
+:ChangeState(Playing);
+:OnGameStateChanged?.Invoke(Playing);
+
+|Sistema de UI|
+fork
+  :PauseMenu → oculta panel;
+fork again
+  :GameOverScreen → oculta panel;
+end fork
+
+stop
+@enduml

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Instancia al jugador en el punto de spawn de la escena con la clase seleccionada previamente.
@@ -18,6 +19,8 @@ public class PlayerSpawner : MonoBehaviour
     /// </summary>
     void Start()
     {
+        EnsureGameManagerReady();
+
         if (ClassSelectionManager.SelectedClass == null)
         {
             Debug.LogError("No se ha seleccionado ninguna clase. Volviendo al menú...");
@@ -46,6 +49,23 @@ public class PlayerSpawner : MonoBehaviour
         else
         {
             Debug.LogError("PlayerController no encontrado en el prefab del jugador!");
+        }
+    }
+
+    private void EnsureGameManagerReady()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null)
+        {
+            Debug.LogWarning("[PlayerSpawner] GameManager no encontrado al iniciar partida. Creando uno.");
+            new GameObject("GameManager").AddComponent<GameManager>();
+            gm = GameManager.Instance;
+        }
+
+        if (gm != null && SceneManager.GetActiveScene().name == gm.gameScene)
+        {
+            gm.ChangeState(GameState.Playing);
+            Debug.Log("[PlayerSpawner] GameManager listo en estado Playing.");
         }
     }
 }

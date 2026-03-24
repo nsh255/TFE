@@ -184,11 +184,18 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   damageRate: 1
+  contactDamageGraceSeconds: 0.75
+  aiGraceSeconds: 0.75
+  tileSpeedMultiplier: 1
+  mirrorFlipWhenDirectional: 1
+  useMirroredRightAnimationsForLeft: 1
+  debugFacing: 1
   dashSpeed: 12
   dashDuration: 0.4
   dashCooldown: 2
   minDashDistance: 3
   maxDashDistance: 10
+  debugCombat: 0
 --- !u!58 &2680931932317026550
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -235,7 +242,7 @@ Animator:
   m_GameObject: {fileID: 5558527097889017035}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c5e34cfad06977344999e2c7d7bf3d78, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

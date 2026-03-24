@@ -1,0 +1,25 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+state "Instanciación\n(PlayerSpawner)" as Init
+state "Activo\n(movimiento libre)" as Activo
+state "Esquivando\n(invulnerable, vel × rollSpeedMultiplier)" as Esquivando
+state "Dañado + Parpadeo\n(invulnerabilidad temporal, 12 Hz)" as Danado
+state "Muerte\nDie() → GameManager\n.ChangeState(GameOver)" as Muerte
+
+[*] --> Init
+Init --> Activo : Instantiate +\nInitialize()
+
+Activo --> Esquivando : Tecla Espacio\n+ canRoll
+Esquivando --> Activo : clipLength s → fin roll
+
+Activo --> Danado : TakeDamage(amount)\nAND !isInvulnerable
+Danado --> Activo : invulnerableTime\nexpirado
+Danado --> Muerte : currentHealth ≤ 0
+
+Muerte --> [*]
+@enduml

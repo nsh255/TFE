@@ -1,0 +1,22 @@
+@startuml
+skinparam rectangleBackgroundColor #F5F5F5
+skinparam rectangleBorderColor #333333
+
+rectangle "Jugador (GameObject)" {
+  component [PlayerController] as PC
+  component [PlayerHealth] as PH
+  component [Rigidbody2D] as RB
+  component [SpriteRenderer] as SR
+  component [Animator] as Anim
+  component [BoxCollider2D] as BC
+  component [Weapon] as W
+
+  note right of PC : movimiento
+  note right of PH : vida
+  note right of RB : física
+  note right of SR : visual
+  note right of Anim : animación
+  note right of BC : colisión
+  note right of W : arma equipada
+}
+@enduml

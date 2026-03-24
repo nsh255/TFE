@@ -448,9 +448,9 @@ public class RoomFlowController : MonoBehaviour
         var slimeGreen = enemy.GetComponent<SlimeGreen>();
         if (slimeGreen != null)
         {
-            float projScale = Mathf.Clamp(1.0f + (bossScaleMultiplier - 1f) * 0.5f, 1.2f, 2.5f);
-            slimeGreen.BossProjectileScale = projScale;
-            slimeGreen.projectileSpeed *= 1.25f;
+            // Mantener tuning global del shooter (velocidad/escala del proyectil)
+            // y evitar sobreescrituras por tamaño de boss.
+            slimeGreen.BossProjectileScale = 1f;
             slimeGreen.projectileDamage = Mathf.Max(slimeGreen.projectileDamage, 1) + 1;
         }
 

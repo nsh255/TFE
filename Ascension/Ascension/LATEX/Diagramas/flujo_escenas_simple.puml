@@ -1,0 +1,16 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+state "MainMenu" as MM
+state "ClassSelection" as CS
+state "GameScene" as GS
+
+[*] --> MM
+MM -right-> CS : Iniciar partida
+CS -right-> GS : Clase seleccionada
+GS -left-> MM : Fin de partida /\nVolver al menú
+@enduml

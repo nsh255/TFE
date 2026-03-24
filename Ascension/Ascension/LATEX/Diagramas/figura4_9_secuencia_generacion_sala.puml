@@ -1,0 +1,40 @@
+﻿@startuml
+title Figura 4.9 - Secuencia: generación procedural de una sala
+
+autonumber
+participant "RoomFlowController" as RFC
+participant "RoomGenerator" as RG
+participant "Tilemap (Muros)" as TM_W
+participant "Tilemap (Suelo)" as TM_F
+participant "TilemapCollider2D" as TMC
+
+RFC -> RG : GenerateRoom()
+
+== Paso 1: Limpieza ==
+RG -> TM_W : wallTilemap.ClearAllTiles()
+RG -> TM_F : floorTilemap.ClearAllTiles()
+
+== Paso 2: Suelo normal + tiles especiales en clusters ==
+loop para cada posición en roomWidth × roomHeight
+  RG -> TM_F : SetTile(pos, GetRandomNormalFloorTile())
+end
+RG -> RG : PlaceSpecialTilesClustered()\n──hielo, lodo, curación, potenciación
+loop para cada cluster
+  RG -> TM_F : SetTile() en posiciones\ndel cluster (4-9 tiles)
+end
+
+== Paso 3: Escaleras (siempre) ==
+RG -> RG : PlaceStairsTile()
+RG -> TM_F : SetTile() en posición\naleatoria con margen respecto a bordes
+
+== Paso 4: Muros perimetrales ==
+RG -> TM_W : SetTile() en perímetro\n(rejilla 26×12 + borde configurable)
+
+== Paso 5: Colisionadores ==
+RG -> RG : RefreshWallColliders()
+RG -> RG : EnsureBoundaryCollidersSetup()
+RG -> TMC : regenerar TilemapCollider2D
+
+RG --> RFC : sala lista
+
+@enduml

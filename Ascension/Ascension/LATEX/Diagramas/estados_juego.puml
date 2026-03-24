@@ -1,0 +1,18 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+[*] --> Menu
+Menu -right-> CharacterSelection
+CharacterSelection -right-> Playing
+Playing -right-> Paused
+Paused -left-> Playing
+Paused -up-> Menu : Salir al menú
+Playing -down-> GameOver
+Playing -down-> Victory
+GameOver -left-> Menu
+Victory -left-> Menu
+@enduml

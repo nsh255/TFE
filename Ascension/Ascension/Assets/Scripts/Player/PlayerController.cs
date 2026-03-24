@@ -277,6 +277,9 @@ public class PlayerController : MonoBehaviour
             SetInvulnerable(true);
         }
 
+        // Desactivar colisiones con enemigos y proyectiles durante el roll
+        EnablePhaseThrough(true);
+
         float elapsed = 0f;
         while (elapsed < clipLength)
         {
@@ -285,6 +288,9 @@ public class PlayerController : MonoBehaviour
             elapsed += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
+
+        // Reactivar colisiones
+        EnablePhaseThrough(false);
 
         if (invulnerableDuringRoll)
         {
@@ -296,6 +302,44 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(rollCooldown);
         canRoll = true;
+    }
+
+    /// <summary>
+    /// Activa o desactiva la capacidad de atravesar enemigos durante el roll.
+    /// </summary>
+    /// <param name="enable">True para atravesar enemigos, false para colisiones normales.</param>
+    private void EnablePhaseThrough(bool enable)
+    {
+        Collider2D playerCollider = GetComponent<Collider2D>();
+        if (playerCollider == null) return;
+
+        // Ignorar colisiones con todos los enemigos activos
+        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        foreach (Enemy enemy in enemies)
+        {
+            if (enemy != null)
+            {
+                Collider2D enemyCollider = enemy.GetComponent<Collider2D>();
+                if (enemyCollider != null)
+                {
+                    Physics2D.IgnoreCollision(playerCollider, enemyCollider, enable);
+                }
+            }
+        }
+
+        // Ignorar colisiones con proyectiles enemigos
+        EnemyProjectile[] projectiles = FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None);
+        foreach (EnemyProjectile projectile in projectiles)
+        {
+            if (projectile != null)
+            {
+                Collider2D projectileCollider = projectile.GetComponent<Collider2D>();
+                if (projectileCollider != null)
+                {
+                    Physics2D.IgnoreCollision(playerCollider, projectileCollider, enable);
+                }
+            }
+        }
     }
 
     /// <summary>

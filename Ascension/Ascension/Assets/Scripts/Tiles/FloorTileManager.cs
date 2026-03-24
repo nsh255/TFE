@@ -247,9 +247,7 @@ public class FloorTileManager : MonoBehaviour
         }
         
         if (currentEffect != null)
-        {
-            Debug.Log($"[FloorTileManager] Jugador pisó tile: {currentEffect.tileName} ({currentEffect.effectType})");
-            
+        {            
             // Aplicar efecto inmediato
             ApplyEffect(currentEffect);
             lastEffectTime = Time.time;
@@ -265,6 +263,14 @@ public class FloorTileManager : MonoBehaviour
                 if (vfx.GetComponentInChildren<Animator>(true) == null && vfx.GetComponentInChildren<PulseVFX>(true) == null)
                 {
                     vfx.AddComponent<PulseVFX>();
+                }
+
+                // Agregar VFXFollower para que siga al jugador
+                if (playerTransform != null)
+                {
+                    var follower = vfx.AddComponent<VFXFollower>();
+                    Vector3 offset = spawnPos - playerTransform.position;
+                    follower.SetTarget(playerTransform, offset);
                 }
 
                 // Mantener el VFX vivo ~persistEffectSeconds para que se vea el efecto.

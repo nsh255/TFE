@@ -1,0 +1,57 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+skinparam ActivityBorderColor #333333
+title Flujo de decisión de la IA por tipo de enemigo (por fotograma)
+
+start
+:Enemy.Update()
+[clase base común];
+
+if (isDead?) then (Sí)
+  :No ejecutar IA;
+  stop
+endif
+
+if (IsAIEnabled?) then (No)
+  :Esperar gracia (0,75 s);
+  stop
+endif
+
+split
+  :SlimeRed;
+  :ChasePlayer (siempre)
+rb.linearVelocity = dir × speed;
+split again
+  :SlimeGreen;
+  :Calcular distancia al jugador;
+  if (dist < 4 u?) then (Sí)
+    :Escape()
+huir del jugador;
+  elseif (dist > 12 u?) then (Sí)
+    :Approach()
+acercarse al jugador;
+  else (4 u ≤ dist ≤ 12 u)
+    :Stop + Shoot()
+disparar proyectil;
+  endif
+split again
+  :SlimeBlue;
+  if (isDashing?) then (Sí)
+    :dashTimer -= deltaTime;
+    if (timer ≤ 0?) then (Sí)
+      :EndDash();
+    else (No)
+      :FixedUpdate()
+aplica velocidad;
+    endif
+  else (No)
+    if (dist ∈ [3,10] u\nAND cooldown?) then (Sí)
+      :StartDash();
+    else (No)
+      :Quieto (linearVelocity = 0);
+    endif
+  endif
+end split
+
+stop
+@enduml

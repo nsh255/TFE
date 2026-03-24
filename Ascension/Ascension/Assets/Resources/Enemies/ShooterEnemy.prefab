@@ -184,15 +184,28 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   damageRate: 1
+  contactDamageGraceSeconds: 0.75
+  aiGraceSeconds: 0.75
+  tileSpeedMultiplier: 1
+  mirrorFlipWhenDirectional: 1
+  useMirroredRightAnimationsForLeft: 1
+  debugFacing: 1
   optimalShootDistance: 8
   escapeDistance: 4
   maxDistance: 12
   moveSpeed: 2
+  wallLayer: 10
+  wallBounceAttempts: 2
   projectilePrefab: {fileID: 7193666752851270459, guid: c6be637ad76609b458595a7e8b2f6809, type: 3}
   shootPoint: {fileID: 0}
   projectileSpeed: 0.3125
+  minProjectileBaseSpeed: 5
   shootCooldown: 2
   projectileDamage: 1
+  projectileSpeedMultiplier: 1.15
+  projectileScaleMultiplier: 0.8
+  debugCombat: 0
+  bossProjectileScale: 1
 --- !u!58 &2502680423286383213
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -239,7 +252,7 @@ Animator:
   m_GameObject: {fileID: 4190685607962587739}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 17ec433734005124f9838785f7a4880f, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

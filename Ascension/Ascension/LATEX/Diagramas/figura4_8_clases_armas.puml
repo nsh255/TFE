@@ -1,0 +1,105 @@
+﻿@startuml
+title Figura 4.8 - Sistema de armas (patrón Strategy)
+
+class Weapon {
+  + weaponData : WeaponData
+  + camera : Camera
+  - attackWhileHeld : bool
+  - spriteRenderer : SpriteRenderer
+  - isInitialized : bool
+  __
+  # {virtual} Start()
+  # {virtual} Update()
+  + {virtual} Attack()
+  + Initialize()
+  - OrbitAroundPlayer()
+  - RotateTowardsMouse()
+}
+
+class MeleeWeapon {
+  + hitbox : Collider2D
+  + attackCooldown : float = 0.5
+  + swingAngle : float  ── 180° (asignado en Awake)
+  + swingDuration : float  ── 0.3 s (asignado en Awake)
+  - weaponHitboxes : WeaponHitbox[]
+  - weaponTrail : WeaponTrail
+  - isSwinging : bool
+  - hitboxesActive : bool
+  + IsSwinging : bool <<property>>
+  + IsHitboxActive : bool <<property>>
+  __
+  - Awake()  ── valores por defecto
+  # Start()
+  # Update()  ── swing + cancel por soltar ratón
+  + Attack()  ── barrido con arco sinusoidal
+  - StopSwinging()  ── centraliza limpieza
+  - OnTriggerEnter2D(other : Collider2D)
+  - EnableHitbox()
+  - DisableHitbox()
+  - OnDisable()
+}
+
+class WeaponHitbox {
+  - meleeWeapon : MeleeWeapon
+  - col : Collider2D
+  __
+  - Awake()
+  - OnEnable()
+  - OnTriggerEnter2D(other : Collider2D)
+  + EnableHitbox()
+  + DisableHitbox()
+}
+
+class RangedWeapon {
+  + spawner : Transform
+  + attackCooldown : float = 0.3
+  - lastAttackTime : float
+  __
+  + Attack()  ── instancia proyectil
+}
+
+class Projectile {
+  + damage : int = 1
+  + speed : float = 10
+  + lifetime : float = 3
+  - rb : Rigidbody2D
+  __
+  - Start()  ── consulta DamageBoostManager
+  - OnTriggerEnter2D(other : Collider2D)
+}
+
+class WeaponData <<ScriptableObject>> {
+  + weaponName : string
+  + damage : int
+  + atackSpeed : float
+  + sprite : Sprite
+  + bulletPrefab : GameObject
+  + weaponPrefab : GameObject
+}
+
+class DamageBoostManager <<Singleton>> {
+  + {static} Instance : DamageBoostManager
+  + globalDamageBoost : int = 0
+  __
+  + GetBoostedDamage(baseDamage : int) : int
+  + AddDamageBoost(amount : int)
+  + AddDamageBoostTimed(amount : int, duration : float)
+  + ResetBoost()
+}
+
+Weapon <|-- MeleeWeapon
+Weapon <|-- RangedWeapon
+Weapon *-- WeaponData : configuración
+MeleeWeapon *-- WeaponHitbox : hitboxes hijos
+RangedWeapon --> Projectile : instancia
+Projectile ..> DamageBoostManager : consulta daño
+
+note right of Weapon
+  Weapon es una clase concreta
+  con Attack() virtual (cuerpo vacío).
+  PlayerController interactúa
+  con la interfaz común Attack()
+  sin conocer el tipo concreto.
+end note
+
+@enduml

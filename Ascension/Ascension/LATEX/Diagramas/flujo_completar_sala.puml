@@ -1,0 +1,54 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+
+|EnemyManager|
+start
+:Update() detecta 0 enemigos;
+:OnRoomCleared.Invoke();
+
+fork
+  |RoomFlowController|
+  :HandleRoomCleared() (suscriptor);
+  if (isBossRoom?) then (Sí)
+    :bossesDefeated++;
+    if (bossesDefeated ≥ bossesToWin?) then (Sí)
+      :GameManager.Victory();
+    endif
+  endif
+fork again
+  |RoomController|
+  :CheckIfRoomCleared();
+  :spawnedEnemies.Count == 0;
+  :UnblockStairs() ── itera
+  Stairs.Open() en cada escalera;
+  |GameManager|
+  :NotifyRoomCleared();
+  :roomsCleared++;
+  :ScoreManager.Add(100);
+  :OnRoomCleared?.Invoke();
+end fork
+
+note
+  Las escaleras ya están colocadas
+  desde la generación de la sala
+  (RoomGenerator.PlaceStairsTile).
+end note
+
+|Jugador|
+:Interactúa con escaleras;
+
+|RoomFlowController|
+:TryAdvanceToNextRoom();
+:roomDepth++;
+
+|RoomGenerator|
+:RegenerateFloorKeepWalls();
+
+|RoomFlowController|
+:StartRoom();
+
+|EnemyManager|
+:SpawnByCost() → nueva oleada;
+
+stop
+@enduml

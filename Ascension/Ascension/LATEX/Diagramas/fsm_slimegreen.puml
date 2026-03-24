@@ -1,0 +1,20 @@
+@startuml
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+[*] --> Approach
+
+state "Acercamiento\n(Approach)" as Approach
+state "Huida\n(Escape)" as Escape
+state "Disparo\n(Shoot)" as Shoot
+
+Approach -right-> Escape : dist < 4 u
+Approach --> Shoot : 4 u ≤ dist ≤ 12 u
+Escape -left-> Approach : dist > 12 u
+Escape -right-> Shoot : 4 u ≤ dist ≤ 12 u
+Shoot -left-> Escape : dist < 4 u
+Shoot --> Approach : dist > 12 u
+@enduml

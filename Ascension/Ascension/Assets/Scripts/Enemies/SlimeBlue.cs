@@ -26,6 +26,7 @@ public class SlimeBlue : Enemy
     private float dashTimer = 0f;
     private float lastDashTime = -999f;
     private Vector2 dashDirection;
+    [SerializeField] private bool debugCombat = false;
 
     /// <summary>
     /// Inicializa el slime azul y establece valores por defecto.
@@ -36,6 +37,7 @@ public class SlimeBlue : Enemy
         
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>(true);
         
         if (dashSpeed == 0) dashSpeed = 12f;
         if (dashDuration == 0) dashDuration = 0.4f;
@@ -61,6 +63,8 @@ public class SlimeBlue : Enemy
 
         if (isDashing)
         {
+            SetAnimatorDirection(dashDirection);
+            ApplyDashFacing();
             dashTimer -= Time.deltaTime;
             if (dashTimer <= 0f)
             {
@@ -110,9 +114,13 @@ public class SlimeBlue : Enemy
         
         dashDirection = (player.position - transform.position).normalized;
         
-        if (animator != null)
+        SetAnimatorDirection(dashDirection);
+        ApplyDashFacing();
+        SetAnimatorAttacking(true);
+
+        if (debugCombat)
         {
-            animator.SetTrigger("Jump");
+            Debug.Log($"[SlimeBlue] Dash attack dir={dashDirection} speed={(dashSpeed * TileSpeedMultiplier):F2}");
         }
     }
 
@@ -123,6 +131,24 @@ public class SlimeBlue : Enemy
     {
         isDashing = false;
         rb.linearVelocity = Vector2.zero;
+        SetAnimatorAttacking(false);
+    }
+
+    private void ApplyDashFacing()
+    {
+        if (allSpriteRenderers == null || allSpriteRenderers.Length == 0) return;
+
+        bool? flip = null;
+        if (dashDirection.x > 0.1f) flip = false;
+        else if (dashDirection.x < -0.1f) flip = true;
+
+        if (!flip.HasValue) return;
+
+        foreach (var sr in allSpriteRenderers)
+        {
+            if (sr == null) continue;
+            sr.flipX = flip.Value;
+        }
     }
 
     /// <summary>

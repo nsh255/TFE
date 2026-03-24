@@ -7,6 +7,8 @@ using UnityEngine;
 public class MeleeWeapon : Weapon
 {
     public Collider2D hitbox;
+    private WeaponHitbox[] weaponHitboxes;
+    private bool hitboxesActive;
 
     public float attackCooldown = 0.5f;
     private float lastAttackTime = -999f;
@@ -24,12 +26,15 @@ public class MeleeWeapon : Weapon
     private WeaponTrail weaponTrail;
 
     public bool IsSwinging => isSwinging;
+    public bool IsHitboxActive => hitboxesActive;
 
     /// <summary>
     /// Inicializa valores por defecto de animación si no están configurados.
     /// </summary>
     void Awake()
     {
+        weaponHitboxes = GetComponentsInChildren<WeaponHitbox>(true);
+
         if (swingAngle == 0f)
         {
             swingAngle = 180f;
@@ -46,11 +51,24 @@ public class MeleeWeapon : Weapon
     protected override void Start()
     {
         base.Start();
-        
-        if (hitbox != null)
+
+        if (hitbox == null)
         {
-            hitbox.enabled = false;
+            var selfCollider = GetComponent<Collider2D>();
+            var childColliders = GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < childColliders.Length; i++)
+            {
+                var candidate = childColliders[i];
+                if (candidate == null || candidate == selfCollider) continue;
+                if (candidate.GetComponentInParent<WeaponHitbox>() != null)
+                {
+                    hitbox = candidate;
+                    break;
+                }
+            }
         }
+        
+        DisableHitbox();
         
         weaponTrail = GetComponent<WeaponTrail>();
         if (weaponTrail == null)
@@ -70,15 +88,11 @@ public class MeleeWeapon : Weapon
     {
         base.Update();
 
+        // Detener swing si sueltas el botón
         if (!Input.GetMouseButton(0) && isSwinging)
         {
-            isSwinging = false;
-            DisableHitbox();
-
-            if (weaponTrail != null)
-            {
-                weaponTrail.DisableTrail();
-            }
+            StopSwinging();
+            return;
         }
         
         if (isSwinging)
@@ -88,16 +102,12 @@ public class MeleeWeapon : Weapon
             
             if (progress >= 1f)
             {
-                isSwinging = false;
-                DisableHitbox();
-                
-                if (weaponTrail != null)
-                {
-                    weaponTrail.DisableTrail();
-                }
+                // Swing completado
+                StopSwinging();
             }
             else
             {
+                // Animar el swing
                 float smoothProgress = Mathf.Sin(progress * Mathf.PI);
                 float currentSwingOffset = Mathf.Lerp(-swingAngle / 2, swingAngle / 2, smoothProgress);
                 
@@ -106,9 +116,30 @@ public class MeleeWeapon : Weapon
                 transform.localRotation = Quaternion.Euler(currentRotation);
             }
         }
-        else
+    }
+
+    /// <summary>
+    /// Detiene el swing y desactiva inmediatamente la hitbox.
+    /// </summary>
+    private void StopSwinging()
+    {
+        isSwinging = false;
+        DisableHitbox();
+
+        if (weaponTrail != null)
         {
-            DisableHitbox();
+            weaponTrail.DisableTrail();
+        }
+    }
+
+    private void OnDisable()
+    {
+        isSwinging = false;
+        DisableHitbox();
+
+        if (weaponTrail != null)
+        {
+            weaponTrail.DisableTrail();
         }
     }
 
@@ -139,13 +170,18 @@ public class MeleeWeapon : Weapon
             return;
         }
 
+        // Limpiar estado previo
+        hitboxesActive = false;
+        DisableHitbox();
+
         lastAttackTime = Time.time;
         
         isSwinging = true;
         swingTimer = 0f;
         swingStartAngle = transform.localEulerAngles.z;
         
-        hitbox.enabled = true;
+        // Activar hitbox solo después de limpiar
+        EnableHitbox();
         
         if (weaponTrail != null)
         {
@@ -158,9 +194,47 @@ public class MeleeWeapon : Weapon
     /// </summary>
     private void DisableHitbox()
     {
+        hitboxesActive = false;
+
+        // Desactivar collider principal
         if (hitbox != null)
         {
             hitbox.enabled = false;
+        }
+
+        // Desactivar todos los WeaponHitbox children
+        if (weaponHitboxes != null)
+        {
+            for (int i = 0; i < weaponHitboxes.Length; i++)
+            {
+                if (weaponHitboxes[i] == null) continue;
+                weaponHitboxes[i].DisableHitbox();
+            }
+        }
+        
+        // DEBUG: Log para verificar que la hitbox se desactivó
+        if (false) // Cambiar a true para debug
+        {
+            Debug.Log($"[MeleeWeapon] Hitbox desactivada. isSwinging={isSwinging}, hitboxesActive={hitboxesActive}");
+        }
+    }
+
+    private void EnableHitbox()
+    {
+        hitboxesActive = true;
+
+        if (hitbox != null)
+        {
+            hitbox.enabled = true;
+        }
+
+        if (weaponHitboxes != null)
+        {
+            for (int i = 0; i < weaponHitboxes.Length; i++)
+            {
+                if (weaponHitboxes[i] == null) continue;
+                weaponHitboxes[i].EnableHitbox();
+            }
         }
     }
 
@@ -169,8 +243,8 @@ public class MeleeWeapon : Weapon
     /// </summary>
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!isSwinging) return;
-        if (!Input.GetMouseButton(0)) return;
+        if (weaponHitboxes != null && weaponHitboxes.Length > 0) return;
+        if (!isSwinging || !hitboxesActive) return;
         if (hitbox == null || !hitbox.enabled) return;
 
         if (other.CompareTag("Enemy") && weaponData != null)

@@ -1,0 +1,26 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+start
+:Tecla Espacio presionada;
+if (canRoll?) then (sí)
+  :Inicio del roll;
+  fork
+    :Velocidad × rollSpeedMultiplier
+durante clipLength
+(duración del clip de animación);
+  fork again
+    :Invulnerabilidad activada;
+  fork again
+    :EnablePhaseThrough(true)
+Colisiones desactivadas con
+Enemy[] y EnemyProjectile[];
+  end fork
+  :Fin del roll:\nrestaurar velocidad,
+vulnerabilidad y colisiones;
+  :Cooldown configurable
+antes del siguiente roll;
+else (no)
+  :Ignorar entrada;
+endif
+stop
+@enduml

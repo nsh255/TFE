@@ -110,11 +110,18 @@ public class EnemyTileEffectReceiver : MonoBehaviour
         // VFX al lado del enemigo
         if (effect.vfxPrefab != null)
         {
-            var vfx = Instantiate(effect.vfxPrefab, GetVfxSpawnPosNearActor(transform), Quaternion.identity);
+            Vector3 spawnPos = GetVfxSpawnPosNearActor(transform);
+            var vfx = Instantiate(effect.vfxPrefab, spawnPos, Quaternion.identity);
             if (vfx.GetComponentInChildren<Animator>(true) == null && vfx.GetComponentInChildren<PulseVFX>(true) == null)
             {
                 vfx.AddComponent<PulseVFX>();
             }
+            
+            // Agregar VFXFollower para que siga al enemigo
+            var follower = vfx.AddComponent<VFXFollower>();
+            Vector3 offset = spawnPos - transform.position;
+            follower.SetTarget(transform, offset);
+            
             if (persistEffectSeconds > 0f)
             {
                 Destroy(vfx, persistEffectSeconds);

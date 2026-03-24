@@ -1,0 +1,51 @@
+@startuml
+skinparam packageBackgroundColor #F5F5F5
+skinparam packageBorderColor #333333
+skinparam defaultTextAlignment center
+
+package "GameManager (Singleton)" as GM {
+
+  package "RoomFlowController (Singleton)" as RFC {
+    [RoomGenerator]
+    [EnemyManager]
+  }
+  [RoomGenerator] ..> [Tilemap (Unity)]
+  [RoomGenerator] ..> [VariantTile]
+  [RoomGenerator] ..> [TileEffect] <<ScriptableObject>>
+  [EnemyManager] ..> [Enemy (clase base)]
+  [Enemy (clase base)] <|-- [SlimeGreen]
+  [Enemy (clase base)] <|-- [SlimeRed]
+  [Enemy (clase base)] <|-- [SlimeBlue]
+  [Enemy (clase base)] ..> [EnemyData] <<ScriptableObject>>
+
+  package "PlayerSpawner" as PS {
+    [PlayerController]
+  }
+  [PlayerController] ..> [PlayerClass] <<ScriptableObject>>
+  [PlayerController] ..> [PlayerHealth]
+  [PlayerHealth] ..> [HeartDisplay]
+  [PlayerController] ..> [Weapon (clase base)]
+  [Weapon (clase base)] ..> [WeaponData] <<ScriptableObject>>
+  [Weapon (clase base)] <|-- [MeleeWeapon]
+  [Weapon (clase base)] <|-- [RangedWeapon]
+  [RangedWeapon] ..> [Projectile]
+
+  package "Sistema de UI" as UI {
+    [PauseMenu]
+    [GameOverScreen]
+    [VictoryScreen]
+    [ScoreDisplay]
+    [ScoreboardMenuUI]
+  }
+}
+
+package "FloorTileManager" as FTM {
+  [Tilemap (Unity) ] as TM2
+  [TileEffect ] <<ScriptableObject>> as TE2
+  [DamageBoostManager] <<Singleton>>
+}
+
+[ScoreManager] <<Singleton>>
+GM ..> [ScoreManager] : crea si no existe
+[ScoreboardMenuUI] ..> [ScoreManager] : consulta historial
+@enduml

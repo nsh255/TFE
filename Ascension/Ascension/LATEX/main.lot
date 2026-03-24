@@ -1,0 +1,34 @@
+\babel@toc {spanish}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}Comparativa entre \textit {roguelike} clásico y \textit {roguelite}. }{16}{}%
+\contentsline {table}{\numberline {2.2}Comparativa de técnicas de generación procedural y su adecuación al proyecto. }{19}{}%
+\contentsline {table}{\numberline {2.3}Comparativa de técnicas de IA para enemigos en videojuegos 2D. }{20}{}%
+\contentsline {table}{\numberline {2.4}Comparativa entre referencias comerciales y el proyecto \textit {Ascension}. }{25}{}%
+\contentsline {table}{\numberline {2.5}Comparativa de motores de desarrollo de videojuegos. }{29}{}%
+\contentsline {table}{\numberline {2.6}Correspondencia entre funcionalidades de Unity/C\# utilizadas en el proyecto y sus equivalentes en motores alternativos. }{30}{}%
+\contentsline {table}{\numberline {2.7}Herramientas complementarias utilizadas en el desarrollo. }{31}{}%
+\contentsline {table}{\numberline {2.8}Comparativa de herramientas para producción de gráficos 2D. }{31}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{Glosario de términos técnicos utilizados en este capítulo.}}{35}{}%
+\contentsline {table}{\numberline {3.2}Resumen cuantitativo de las historias de usuario por subsistema. }{40}{}%
+\contentsline {table}{\numberline {3.3}Gestores centrales del sistema. }{42}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}Eventos del \texttt {GameManager}. }{58}{}%
+\contentsline {table}{\numberline {4.2}Estados, transiciones y acciones de la FSM del SlimeGreen. }{71}{}%
+\contentsline {table}{\numberline {4.3}Estados y transiciones de la FSM del SlimeBlue. }{76}{}%
+\contentsline {table}{\numberline {4.4}Comparativa de comportamiento, parámetros y rol táctico de los tres tipos de enemigo. }{81}{}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Probabilidades y formato de distribución de tiles especiales.}}{93}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Bloques de validación del proyecto.}}{105}{}%
+\contentsline {table}{\numberline {5.2}Resultados de la validación procedural ($n = 100$ iteraciones). }{107}{}%
+\contentsline {table}{\numberline {5.3}Distribución de tiles por tipo en las salas generadas. }{108}{}%
+\contentsline {table}{\numberline {5.4}Tiempos de ejecución de las operaciones críticas ($n = 100$ iteraciones). }{110}{}%
+\contentsline {table}{\numberline {5.5}Asignaciones de memoria por operación. }{110}{}%
+\contentsline {table}{\numberline {5.6}Resultados de las pruebas de estrés. }{113}{}%
+\contentsline {table}{\numberline {5.7}Métricas globales del código fuente. }{115}{}%
+\contentsline {table}{\numberline {5.8}Componentes Unity detectados. }{116}{}%
+\contentsline {table}{\numberline {5.9}Patrones de diseño verificados. }{116}{}%
+\contentsline {table}{\numberline {5.10}Distribución de líneas de código por módulo. }{116}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }

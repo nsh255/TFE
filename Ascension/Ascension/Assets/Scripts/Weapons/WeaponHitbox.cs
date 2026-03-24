@@ -29,17 +29,44 @@ public class WeaponHitbox : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (col == null)
+        {
+            col = GetComponent<Collider2D>();
+        }
+
+        if (col != null)
+        {
+            col.isTrigger = true;
+            col.enabled = false;
+        }
+    }
+
     /// <summary>
     /// Detecta colisiones con enemigos y aplica daño cuando la hitbox está activa.
     /// </summary>
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (meleeWeapon == null || !meleeWeapon.IsSwinging || !Input.GetMouseButton(0))
+        // Validaciones básicas
+        if (meleeWeapon == null)
+        {
+            return;
+        }
+
+        // La hitbox debe estar activa TANTO en MeleeWeapon como en el collider
+        if (!meleeWeapon.IsSwinging || !meleeWeapon.IsHitboxActive)
         {
             return;
         }
         
         if (!col.enabled)
+        {
+            return;
+        }
+        
+        // Si hay WeaponHitbox children, evitar double-hit
+        if (meleeWeapon.GetComponentsInChildren<WeaponHitbox>(true).Length > 1)
         {
             return;
         }

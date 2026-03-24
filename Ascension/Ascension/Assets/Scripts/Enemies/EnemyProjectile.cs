@@ -15,6 +15,9 @@ public class EnemyProjectile : MonoBehaviour
     public LayerMask playerLayer;
     [Header("Escala Pixel Consistente")]
     [Tooltip("Tamaño objetivo en píxeles para proyectil enemigo (ancho)")] public int desiredPixelSize = 6;
+    [Tooltip("Multiplicador adicional de escala aplicado por el enemigo que dispara")]
+    public float externalScaleMultiplier = 1f;
+    [SerializeField] private bool debugProjectile = false;
 
     private void Start()
     {
@@ -33,9 +36,22 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // Ignorar armas (dejar pasar proyectiles)
+        if (collision.GetComponent<Weapon>() != null)
+        {
+            return;
+        }
+
         // Si impacta al jugador
         if (collision.CompareTag("Player"))
         {
+            // Ignorar si el jugador está haciendo roll
+            PlayerController playerController = collision.GetComponent<PlayerController>();
+            if (playerController != null && playerController.IsRolling)
+            {
+                return;
+            }
+
             PlayerHealth playerHealth = collision.GetComponent<PlayerHealth>();
             
             if (playerHealth != null)
@@ -56,9 +72,22 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        // Ignorar armas (dejar pasar proyectiles)
+        if (collision.gameObject.CompareTag("Weapon") || collision.gameObject.GetComponent<Weapon>() != null)
+        {
+            return;
+        }
+
         // Si impacta al jugador
         if (collision.gameObject.CompareTag("Player"))
         {
+            // Ignorar si el jugador está haciendo roll
+            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+            if (playerController != null && playerController.IsRolling)
+            {
+                return;
+            }
+
             PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
             
             if (playerHealth != null)
@@ -88,8 +117,12 @@ public class EnemyProjectile : MonoBehaviour
         if (ppu > 64f) ppu = 16f; // Fallback para PPU anómalos
         float targetScale = desiredPixelSize / ppu; // p.ej. 6 / 16 = 0.375
         targetScale = Mathf.Max(targetScale, 0.0625f);
+        targetScale *= Mathf.Max(0.05f, externalScaleMultiplier);
         transform.localScale = new Vector3(targetScale, targetScale, 1f);
-        Debug.Log($"[EnemyProjectile] Escala fijada por pixels → {targetScale} (desiredPixelSize={desiredPixelSize}, ppu={ppu})");
+        if (debugProjectile)
+        {
+            Debug.Log($"[EnemyProjectile] Escala final -> {targetScale:F4} (desiredPixelSize={desiredPixelSize}, ppu={ppu}, externalScaleMultiplier={externalScaleMultiplier:F3})");
+        }
 
         Camera cam = Camera.main;
         if (cam != null)
@@ -98,7 +131,10 @@ public class EnemyProjectile : MonoBehaviour
             float pixelsPerWorldUnit = Screen.height / worldVisibleHeight;
             float worldHeightUnits = (sr.sprite.rect.height / ppu) * targetScale;
             float onScreenPixelHeight = worldHeightUnits * pixelsPerWorldUnit;
-            Debug.Log($"[EnemyProjectileSizeDebug] sprite={sr.sprite.name}, targetScale={targetScale:F4}, screenPixels≈{onScreenPixelHeight:F1}");
+            if (debugProjectile)
+            {
+                Debug.Log($"[EnemyProjectileSizeDebug] sprite={sr.sprite.name}, targetScale={targetScale:F4}, screenPixels≈{onScreenPixelHeight:F1}");
+            }
         }
     }
 }

@@ -1,5 +1,3 @@
-
-
 \documentclass[11pt,twoside]{book}
 
 \usepackage[utf8]{inputenc}
@@ -7,12 +5,22 @@
 \usepackage[spanish,es-noshorthands,es-tabla]{babel}
 \usepackage{graphicx}
 \usepackage{xurl}
+\usepackage[strings]{underscore}
 \usepackage{eso-pic}
 \usepackage{ragged2e}
 \usepackage{float}
+\usepackage{array}
+\usepackage{longtable}
 \usepackage[print,doble]{UAL}
 \usepackage{codigo}
 \usepackage{rotating}
+
+% Título de tabla fuera del entorno float: mantiene numeración y añade entrada al índice.
+\newcommand{\TablaTitulo}[1]{%
+	\refstepcounter{table}%
+	\addcontentsline{lot}{table}{\protect\numberline{\thetable}#1}%
+	\textbf{Tabla \thetable.} #1%
+}
 
 % Bibliografía
 \usepackage[numbers,square]{natbib}
@@ -24,9 +32,11 @@
 \estudios{Grado en Informática}
 \universidad{UNIVERSIDAD DE ALMERÍA}
 \director{Nicolás Padilla Soriano}
+\direct{Javier Criado Rodríguez}
 \curso{2025/2026}
 
 \pagestyle{cab}
+\raggedbottom
 
 \begin{document}
 
@@ -49,12 +59,11 @@ Dedicado a mi familia, por su apoyo incondicional y su amor constante, que han s
 \mainmatter
 \marcagua
 
-\input{introduccion}
-\input{estado_del_arte}
-\input{planificacion_temporal}
-\input{metodologia}
-\input{resultados}
-\input{conclusion}
+\input{capitulo1_introduccion}
+\input{capitulo2_estado_del_arte}
+\input{capitulo3_diseno}
+\input{capitulo4_desarrollo}
+\input{capitulo6_conclusiones}
 
 % ========= BIBLIOGRAFÍA =========
 \addcontentsline{toc}{section}{Bibliografía}

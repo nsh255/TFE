@@ -1,0 +1,25 @@
+﻿@startuml
+title Figura 4.1 - Máquina de estados del GameManager
+
+hide empty description
+skinparam state {
+  BackgroundColor #F5F5F5
+  BorderColor #333333
+}
+
+[*] --> Menu
+
+Menu --> CharacterSelection : Iniciar partida
+CharacterSelection --> Playing : Clase seleccionada
+
+Playing --> Paused : Tecla ESC
+Paused --> Playing : Reanudar
+Paused --> Menu : Menú principal
+
+Playing --> GameOver : Vida del jugador ≤ 0
+Playing --> Victory : bossesDefeated >= bossesToWin\n(RoomFlowController)
+
+GameOver --> Menu : Volver al menú\n(automático tras retardo)
+Victory --> Menu : Volver al menú
+
+@enduml

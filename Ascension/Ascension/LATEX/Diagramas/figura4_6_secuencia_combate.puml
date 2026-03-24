@@ -1,0 +1,42 @@
+﻿@startuml
+title Figura 4.6 - Secuencia: flujo de combate (melee y distancia)
+
+autonumber
+actor Jugador as Player
+participant "Weapon" as Weapon
+participant "MeleeWeapon" as Melee
+participant "WeaponHitbox" as WHB
+participant "RangedWeapon" as Ranged
+participant "Projectile" as Proj
+participant "DamageBoostManager" as DBM
+participant "Enemy" as Enemy
+participant "GameManager" as GM
+participant "ScoreManager" as SM
+
+Player -> Weapon : input de ataque (clic izquierdo)
+
+alt Arma cuerpo a cuerpo
+  Weapon -> Melee : Attack()
+  Melee -> Melee : EnableHitbox()\n(activa Collider2D trigger)
+  WHB -> WHB : OnTriggerEnter2D()\n(detecta tag "Enemy")
+  WHB -> WHB : Verifica meleeWeapon.IsSwinging\ny IsHitboxActive
+  WHB -> Enemy : TakeDamage(weaponData.damage)
+
+else Arma a distancia
+  Weapon -> Ranged : Attack()
+  Ranged -> Proj : Instantiate(bulletPrefab)
+  Proj -> DBM : GetBoostedDamage(baseDamage)
+  DBM --> Proj : daño efectivo
+  Proj -> Proj : rb.linearVelocity = dirección × speed
+  Proj -> Enemy : OnTriggerEnter2D()
+  Enemy -> Enemy : TakeDamage(boostedDamage)
+end
+
+alt vida del enemigo <= 0
+  Enemy -> Enemy : Die()
+  Enemy -> GM : NotifyEnemyKilled(scoreValue)
+  GM -> SM : Add(scoreValue)
+  GM --> GM : OnEnemyKilled?.Invoke()
+end
+
+@enduml

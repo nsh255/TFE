@@ -1,0 +1,60 @@
+@startuml
+skinparam ActivityBackgroundColor #F5F5F5
+skinparam ActivityBorderColor #333333
+title Pipeline de GenerateRoom()
+
+start
+
+partition "Paso 1: Limpieza" {
+  :wallTilemap.ClearAllTiles();
+  :floorTilemap.ClearAllTiles();
+}
+
+partition "Paso 2: Suelo + Tiles especiales" {
+  :for(x, y) →\nfloorTilemap.SetTile(pos,\nGetRandomNormalFloorTile());
+  note right
+    VariantTile.GetTileData()
+    hash determinista basado en (seed, x, y)
+    (mezcla con multiplicadores 31/17 y XOR)
+    index = abs(hash) % variants.Length
+  end note
+  :PlaceSpecialTilesClustered();
+  :CollectSpecialTiles() →\ncategoriza por TileEffectType;
+  :PaintCluster(center, maxRadius)\npor cada tipo;
+  note right
+    Selecciona centro aleatorio
+    BFS-like: expande a adyacentes
+    (Manhattan ≤ maxRadius)
+    Probabilidades:
+    · Hielo 12 %
+    · Lodo 12 %
+    · PowerUp 18 %
+    · Heal 2 %
+  end note
+}
+
+partition "Paso 3: Escaleras" {
+  :PlaceStairsTile();
+  note right
+    x ∈ [padding, roomWidth - 1 - padding]
+    y ∈ [padding, roomHeight - 1 - padding]
+  end note
+}
+
+partition "Paso 4: Muros perimetrales" {
+  :for(perímetro) →\nwallTilemap.SetTile(pos, wallTile);
+  note right
+    grosor = wallBorderThicknessTiles
+    (configurable)
+  end note
+}
+
+partition "Paso 5: Colisionadores" {
+  :RefreshWallColliders();
+  :TilemapCollider2D.ProcessTilemapChanges();
+  :CompositeCollider2D.GenerateGeometry();
+  :EnsureBoundaryCollidersSetup()\n4 × BoxCollider2D (respaldo en bordes);
+}
+
+stop
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+title Figura 3.2 - Flujo de escenas del proyecto
+
+[*] --> MainMenu
+
+MainMenu --> ClassSelection : Iniciar partida
+ClassSelection --> GameScene : Confirmar clase
+ClassSelection --> MainMenu : Volver
+
+GameScene --> MainMenu : Menú principal\n(desde Pausa, GameOver o Victoria)
+
+@enduml

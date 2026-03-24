@@ -1,24 +1,33 @@
 \appendix
 \chapter{Artefactos software}
 
-Este apéndice recoge los principales artefactos software generados durante el desarrollo del Trabajo de Fin de Grado. Su inclusión tiene como objetivo complementar la memoria principal sin sobrecargar el cuerpo del documento con detalles técnicos excesivamente específicos.
+Este apéndice recoge los principales artefactos software generados durante el desarrollo del Trabajo de Fin de Grado. Su inclusión complementa la memoria principal con una vista técnica de los entregables reales del proyecto.
 
 \section{Estructura del proyecto}
 
-El proyecto ha sido desarrollado utilizando el motor de videojuegos Unity, siguiendo una organización modular basada en la separación de responsabilidades. La estructura general del proyecto se divide en los siguientes bloques principales:
+El proyecto se ha desarrollado en Unity con una organización modular orientada a responsabilidades. A nivel práctico, los artefactos más relevantes del repositorio son:
 
 \begin{itemize}
-    \item \textbf{Scripts}: contiene la lógica principal del juego implementada en C\#.
-    \item \textbf{Prefabs}: almacena los objetos reutilizables del juego, como enemigos, salas y elementos interactivos.
-    \item \textbf{Scenes}: incluye las distintas escenas que conforman el flujo del juego.
-    \item \textbf{Assets gráficos}: recursos visuales utilizados en el desarrollo.
+    \item \textbf{Assets/Scripts}: lógica principal del juego en C\#, organizada por subsistemas (Core, Player, Enemies, Weapons, UI, Tiles y LevelGeneration).
+    \item \textbf{Assets/Prefabs}: objetos reutilizables del juego (jugador, enemigos, armas, escaleras y elementos de sala).
+    \item \textbf{Assets/Scenes}: escenas del flujo completo (menú principal, selección de clase y escena principal de juego).
+    \item \textbf{Docs/Definitivo/Diagramas}: fuentes PlantUML de los diagramas técnicos utilizados en la memoria.
+    \item \textbf{LATEX}: memoria final, bibliografía y figuras integradas para compilación del documento.
 \end{itemize}
 
-Esta organización facilita el mantenimiento del código y la escalabilidad del proyecto.
+Esta estructura ha permitido mantener bajo acoplamiento entre módulos y facilitar la iteración de mecánicas.
 
 \section{Arquitectura del sistema}
 
-La arquitectura del videojuego se basa en un enfoque modular, donde cada subsistema se implementa de forma independiente. Entre los principales subsistemas destacan la gestión del jugador, la generación procedural de niveles, el control de enemigos y la gestión del flujo de juego.
+La arquitectura del videojuego se basa en un enfoque modular con patrones \textit{Singleton}, \textit{Observer}, \textit{Strategy} y \textit{Template Method}. Entre los subsistemas implementados destacan:
+
+\begin{itemize}
+    \item Gestión de estado global de partida (\texttt{GameManager}).
+    \item Progresión de salas y coordinación de oleadas (\texttt{RoomFlowController} y \texttt{EnemyManager}).
+    \item Generación procedural de salas y tiles con efectos (\texttt{RoomGenerator} y \texttt{FloorTileManager}).
+    \item Sistema de jugador, combate y armas (cuerpo a cuerpo y a distancia).
+    \item Interfaz de usuario y persistencia de puntuaciones.
+\end{itemize}
 
 Con el objetivo de aportar una visión estructural del sistema, en el siguiente apartado se incluyen los diagramas UML utilizados durante el diseño.
 
@@ -28,10 +37,11 @@ La Figura \ref{fig:clases} muestra el diagrama de clases del sistema, en el que 
 
 \clearpage
 \begin{sidewaysfigure}
-    \centering
-    \includegraphics[width=\textheight]{Figuras/Diagrama_clases}
+    \begin{center}
+    \includegraphics[width=\textheight]{Figuras/Diagrama_Clases.png}
     \caption{Diagrama de clases del sistema}
     \label{fig:clases}
+    \end{center}
 \end{sidewaysfigure}
 \clearpage
 
@@ -39,48 +49,11 @@ Por otro lado, la Figura \ref{fig:casosuso} presenta el diagrama de casos de uso
 
 \clearpage
 \begin{sidewaysfigure}
-    \centering
-    \includegraphics[width=\textheight]{Figuras/Diagrama_casos_uso}
+    \begin{center}
+    \includegraphics[width=\textheight]{Figuras/Diagrama_Casos_Uso.png}
     \caption{Diagrama de casos de uso del sistema}
     \label{fig:casosuso}
+    \end{center}
 \end{sidewaysfigure}
 \clearpage
 
-\section{Planificación temporal}
-
-La planificación del desarrollo del proyecto se ha representado mediante un diagrama de Gantt, que permite visualizar de forma clara las distintas fases del trabajo y su distribución temporal. La Figura \ref{fig:gantt} recoge dicha planificación, mostrando la secuencia de tareas y su duración aproximada.
-
-\clearpage
-\begin{sidewaysfigure}
-    \centering
-    \includegraphics[width=\textheight]{Figuras/Diagrama_Gantt}
-    \caption{Diagrama de Gantt con la planificación temporal del proyecto}
-    \label{fig:gantt}
-\end{sidewaysfigure}
-\clearpage
-
-\section{Capturas del sistema}
-
-Con el objetivo de ilustrar visualmente el resultado final del sistema desarrollado, se incluyen a continuación algunas capturas representativas del videojuego en ejecución.
-
-La Figura \ref{fig:menu} muestra el menú principal del juego, desde el cual el jugador puede iniciar una nueva partida y acceder a las opciones básicas del sistema.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{Figuras/Main_Menu}
-    \caption{Menú principal del juego}
-    \label{fig:menu}
-\end{figure}
-
-En la Figura \ref{fig:combate} se observa una situación de combate, en la que el jugador interactúa con enemigos generados proceduralmente, poniendo en funcionamiento las mecánicas principales del sistema.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{Figuras/Combate}
-    \caption{Ejemplo de combate con enemigos}
-    \label{fig:combate}
-\end{figure}
-
-\section{Limitaciones del apéndice}
-
-Por motivos de claridad y extensión, no se incluyen en este apéndice todos los scripts ni recursos del proyecto. Elementos como configuraciones detalladas, modelos completos o documentación interna del código pueden consultarse directamente en el repositorio del proyecto.

@@ -35,10 +35,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool returnToMainMenuOnGameOver = true;
     [SerializeField, Min(0f)] private float returnToMainMenuDelaySeconds = 0.75f;
 
+    [Header("Debug")]
+    [SerializeField] private bool debugPauseInput = true;
+
+    [Header("UI Global")]
+    [SerializeField] private bool enforceMainMenuFontEveryScene = true;
+    [SerializeField] private string preferredMainMenuFontName = "VCR_OSD_MONO";
+
+    private TMP_FontAsset cachedMainMenuTmpFont;
+    private Font cachedMainMenuLegacyFont;
+
     private bool isPaused = false;
     private bool runResultRecorded;
     private Coroutine returnToMenuCoroutine;
     private GameObject deathOverlayInstance;
+    private int lastPauseToggleFrame = -1;
 
     public delegate void GameStateChanged(GameState newState);
     public static event GameStateChanged OnGameStateChanged;
@@ -63,12 +74,23 @@ public class GameManager : MonoBehaviour
                 new GameObject("ScoreManager").AddComponent<ScoreManager>();
             }
             DontDestroyOnLoad(gameObject);
+            Debug.Log($"[GameManager] Awake OK. object='{name}', activeScene='{SceneManager.GetActiveScene().name}', debugPauseInput={debugPauseInput}");
         }
         else
         {
             Destroy(gameObject);
             return;
         }
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     /// <summary>
@@ -109,6 +131,87 @@ public class GameManager : MonoBehaviour
         {
             ChangeState(GameState.Playing);
         }
+
+        Debug.Log($"[GameManager] Start scene='{sceneName}' state={currentState} timeScale={Time.timeScale} debugPauseInput={debugPauseInput}");
+        ApplyMainMenuFontToSceneUI();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ApplyMainMenuFontToSceneUI();
+    }
+
+    private void ApplyMainMenuFontToSceneUI()
+    {
+        if (!enforceMainMenuFontEveryScene) return;
+
+        ResolvePreferredFonts();
+
+        if (cachedMainMenuTmpFont != null)
+        {
+            var tmpTexts = FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None);
+            for (int i = 0; i < tmpTexts.Length; i++)
+            {
+                var t = tmpTexts[i];
+                if (t == null) continue;
+                if (t.font != cachedMainMenuTmpFont)
+                {
+                    t.font = cachedMainMenuTmpFont;
+                }
+            }
+        }
+
+        if (cachedMainMenuLegacyFont != null)
+        {
+            var uiTexts = FindObjectsByType<Text>(FindObjectsSortMode.None);
+            for (int i = 0; i < uiTexts.Length; i++)
+            {
+                var t = uiTexts[i];
+                if (t == null) continue;
+                if (t.font != cachedMainMenuLegacyFont)
+                {
+                    t.font = cachedMainMenuLegacyFont;
+                }
+            }
+        }
+    }
+
+    private void ResolvePreferredFonts()
+    {
+        if (cachedMainMenuTmpFont == null)
+        {
+            var tmpFonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+            for (int i = 0; i < tmpFonts.Length; i++)
+            {
+                var f = tmpFonts[i];
+                if (f == null) continue;
+                if (!string.IsNullOrEmpty(preferredMainMenuFontName) && f.name.IndexOf(preferredMainMenuFontName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    cachedMainMenuTmpFont = f;
+                    break;
+                }
+            }
+
+            if (cachedMainMenuTmpFont == null && tmpFonts.Length > 0)
+            {
+                cachedMainMenuTmpFont = tmpFonts[0];
+            }
+        }
+
+        if (cachedMainMenuLegacyFont == null)
+        {
+            var fonts = Resources.FindObjectsOfTypeAll<Font>();
+            for (int i = 0; i < fonts.Length; i++)
+            {
+                var f = fonts[i];
+                if (f == null) continue;
+                if (!string.IsNullOrEmpty(preferredMainMenuFontName) && f.name.IndexOf(preferredMainMenuFontName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    cachedMainMenuLegacyFont = f;
+                    break;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -118,9 +221,15 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            Debug.Log($"[GameManager] ESC detectado. state={currentState}, isPaused={isPaused}, timeScale={Time.timeScale}, scene={SceneManager.GetActiveScene().name}");
+
             if (currentState == GameState.Playing || currentState == GameState.Paused)
             {
                 TogglePause();
+            }
+            else
+            {
+                Debug.LogWarning($"[GameManager] ESC ignorado porque state={currentState} (solo Playing/Paused alternan pausa).");
             }
         }
     }
@@ -157,6 +266,32 @@ public class GameManager : MonoBehaviour
         }
 
         OnGameStateChanged?.Invoke(newState);
+        SyncPauseMenuVisibility(newState);
+
+        Debug.Log($"[GameManager] ChangeState {previousState} -> {newState} (timeScale={Time.timeScale})");
+    }
+
+    private void SyncPauseMenuVisibility(GameState state)
+    {
+        if (SceneManager.GetActiveScene().name != gameScene) return;
+
+        var pauseMenu = FindFirstObjectByType<PauseMenu>();
+        if (pauseMenu == null)
+        {
+            var go = new GameObject("PauseMenuRuntime");
+            pauseMenu = go.AddComponent<PauseMenu>();
+            pauseMenu.EnsureRuntimeUIIfMissing();
+            Debug.LogWarning("[GameManager] PauseMenu no encontrado. Se creó uno en runtime.");
+        }
+
+        if (state == GameState.Paused)
+        {
+            pauseMenu.Show();
+        }
+        else
+        {
+            pauseMenu.Hide();
+        }
     }
 
     /// <summary>
@@ -164,6 +299,15 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void TogglePause()
     {
+        if (lastPauseToggleFrame == Time.frameCount)
+        {
+            Debug.LogWarning("[GameManager] TogglePause duplicado en el mismo frame. Ignorado.");
+            return;
+        }
+
+        lastPauseToggleFrame = Time.frameCount;
+        Debug.Log($"[GameManager] TogglePause llamado desde state={currentState}");
+
         if (currentState == GameState.Playing)
         {
             ChangeState(GameState.Paused);
@@ -171,6 +315,10 @@ public class GameManager : MonoBehaviour
         else if (currentState == GameState.Paused)
         {
             ChangeState(GameState.Playing);
+        }
+        else
+        {
+            Debug.LogWarning($"[GameManager] TogglePause ignorado en state={currentState}");
         }
     }
 

@@ -33,12 +33,19 @@ public class SlimeGreen : Enemy
     
     [Tooltip("Velocidad del proyectil")]
     public float projectileSpeed = 5f;
+    [SerializeField, Min(0.1f)] private float minProjectileBaseSpeed = 5f;
     
     [Tooltip("Tiempo entre disparos")]
     public float shootCooldown = 2f;
     
     [Tooltip("Daño del proyectil")]
     public int projectileDamage = 1;
+
+    [Tooltip("Multiplicador de velocidad de las bolas (1.15 = +15%)")]
+    [SerializeField] private float projectileSpeedMultiplier = 1.15f;
+    [Tooltip("Multiplicador de escala de las bolas (0.8 = -20%)")]
+    [SerializeField] private float projectileScaleMultiplier = 0.8f;
+    [SerializeField] private bool debugCombat = false;
 
     [Header("Boss Tweaks")]
     [Tooltip("Escala extra aplicada al proyectil instanciado (solo afecta a esta instancia, útil para boss grande).")]
@@ -49,6 +56,10 @@ public class SlimeGreen : Enemy
     private Vector2 lastMoveDirection;
     private float lastAppliedMoveSpeed;
     private bool isMoving;
+    private bool warnedMissingAnimatorController;
+    private Transform visualTransform;
+    private Vector3 baseVisualScale;
+    private float fallbackShootPulseUntil;
 
     /// <summary>
     /// Inicializa el slime verde y establece valores por defecto.
@@ -64,8 +75,17 @@ public class SlimeGreen : Enemy
         if (maxDistance == 0) maxDistance = 12f;
         if (moveSpeed == 0) moveSpeed = enemyData != null ? enemyData.speed : 2f;
         if (shootCooldown == 0) shootCooldown = 2f;
-        if (projectileSpeed == 0) projectileSpeed = 5f;
+        if (projectileSpeed <= 0f) projectileSpeed = 5f;
         if (projectileDamage == 0) projectileDamage = 1;
+
+        if (projectileSpeed < minProjectileBaseSpeed)
+        {
+            if (debugCombat)
+            {
+                Debug.LogWarning($"[SlimeGreen] projectileSpeed demasiado baja ({projectileSpeed:F2}) en '{name}'. Se normaliza a {minProjectileBaseSpeed:F2}.");
+            }
+            projectileSpeed = minProjectileBaseSpeed;
+        }
         
         if (shootPoint == null)
         {
@@ -74,6 +94,15 @@ public class SlimeGreen : Enemy
             sp.transform.localPosition = new Vector3(0.5f, 0, 0);
             shootPoint = sp.transform;
         }
+
+        if (animator != null && !HasAnimatorController && !warnedMissingAnimatorController)
+        {
+            warnedMissingAnimatorController = true;
+            Debug.LogWarning($"[SlimeGreen] Animator sin AnimatorController en '{name}'. Usando animación fallback por código.");
+        }
+
+        visualTransform = (spriteRenderer != null) ? spriteRenderer.transform : transform;
+        baseVisualScale = visualTransform.localScale;
     }
 
     /// <summary>
@@ -110,6 +139,8 @@ public class SlimeGreen : Enemy
                 Shoot();
             }
         }
+
+        UpdateFallbackAnimation();
     }
 
     /// <summary>
@@ -134,10 +165,7 @@ public class SlimeGreen : Enemy
             transform.position += (Vector3)direction * cappedSpeed * Time.deltaTime;
         }
         
-        if (animator != null)
-        {
-            animator.SetBool("IsMoving", true);
-        }
+        SetAnimatorMoving(true);
     }
 
     /// <summary>
@@ -162,10 +190,7 @@ public class SlimeGreen : Enemy
             transform.position += (Vector3)direction * cappedSpeed * Time.deltaTime;
         }
         
-        if (animator != null)
-        {
-            animator.SetBool("IsMoving", true);
-        }
+        SetAnimatorMoving(true);
     }
 
     /// <summary>
@@ -180,10 +205,7 @@ public class SlimeGreen : Enemy
 
         isMoving = false;
         
-        if (animator != null)
-        {
-            animator.SetBool("IsMoving", false);
-        }
+        SetAnimatorMoving(false);
     }
 
     /// <summary>
@@ -222,31 +244,86 @@ public class SlimeGreen : Enemy
             Quaternion.identity
         );
 
-        if (bossProjectileScale != 1f)
-        {
-            projectile.transform.localScale = projectile.transform.localScale * bossProjectileScale;
-        }
+        float finalScaleMultiplier = projectileScaleMultiplier * bossProjectileScale;
+        projectile.transform.localScale = projectile.transform.localScale * finalScaleMultiplier;
         
         Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
+        float safeBaseSpeed = Mathf.Max(projectileSpeed, minProjectileBaseSpeed);
+        float finalProjectileSpeed = safeBaseSpeed * projectileSpeedMultiplier;
         if (projRb != null)
         {
-            projRb.linearVelocity = direction * projectileSpeed;
+            projRb.linearVelocity = direction * finalProjectileSpeed;
         }
         
         EnemyProjectile projScript = projectile.GetComponent<EnemyProjectile>();
         if (projScript != null)
         {
             projScript.damage = projectileDamage;
+            projScript.externalScaleMultiplier = finalScaleMultiplier;
         }
+
+        SetAnimatorDirection(direction);
         
-        if (animator != null)
-        {
-            animator.SetTrigger("Shoot");
-        }
+        TriggerShootAnimation();
         
         nextShootTime = Time.time + shootCooldown;
         
-        Debug.Log($"[SlimeGreen] Disparó hacia el jugador");
+        if (debugCombat)
+        {
+            float speedNow = projRb != null ? projRb.linearVelocity.magnitude : -1f;
+            Debug.Log($"[SlimeGreen] Shoot dir={direction} speed={finalProjectileSpeed:F2} (rb={speedNow:F2}) scaleMul={finalScaleMultiplier:F2} dist={Vector2.Distance(transform.position, player.position):F2}");
+        }
+    }
+
+    private void SetAnimatorMoving(bool moving)
+    {
+        isMoving = moving;
+    }
+
+    private void TriggerShootAnimation()
+    {
+        if (HasAnimatorController && animator != null)
+        {
+            SetAnimatorAttacking(true);
+            CancelInvoke(nameof(ClearAttackFlag));
+            Invoke(nameof(ClearAttackFlag), 0.18f);
+            return;
+        }
+
+        fallbackShootPulseUntil = Time.time + 0.12f;
+    }
+
+    private void UpdateFallbackAnimation()
+    {
+        if (HasAnimatorController || visualTransform == null) return;
+
+        Vector3 targetScale = baseVisualScale;
+
+        if (isMoving)
+        {
+            float wobble = Mathf.Sin(Time.time * 16f) * 0.06f;
+            targetScale = new Vector3(
+                baseVisualScale.x * (1f + wobble),
+                baseVisualScale.y * (1f - wobble * 0.8f),
+                baseVisualScale.z
+            );
+        }
+
+        if (Time.time < fallbackShootPulseUntil)
+        {
+            targetScale = new Vector3(
+                targetScale.x * 1.14f,
+                targetScale.y * 1.14f,
+                targetScale.z
+            );
+        }
+
+        visualTransform.localScale = Vector3.Lerp(visualTransform.localScale, targetScale, 18f * Time.deltaTime);
+    }
+
+    private void ClearAttackFlag()
+    {
+        SetAnimatorAttacking(false);
     }
 
     public float BossProjectileScale
