@@ -1,5 +1,6 @@
 @startuml
 hide empty description
+skinparam dpi 300
 skinparam state {
   BackgroundColor #F5F5F5
   BorderColor #333333

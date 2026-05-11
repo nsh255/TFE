@@ -2,6 +2,7 @@
 title Figura 3.1 - Arquitectura general del sistema (componentes)
 
 skinparam componentStyle rectangle
+skinparam dpi 300
 skinparam defaultFontSize 11
 
 package "Capa de lógica de juego" {

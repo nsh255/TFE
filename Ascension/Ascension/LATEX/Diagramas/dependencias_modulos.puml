@@ -1,4 +1,5 @@
 @startuml
+skinparam dpi 300
 skinparam packageBackgroundColor #F5F5F5
 skinparam packageBorderColor #333333
 skinparam defaultTextAlignment center

@@ -8,8 +8,9 @@ El presente capítulo describe el diseño del videojuego \textit{Ascension}. Se 
 
 Antes de abordar los aspectos técnicos del desarrollo, se definen los términos específicos del dominio de los videojuegos y del motor Unity que se utilizan a lo largo de este capítulo:
 
-\small
+{\small
 \begin{longtable}{|p{0.46\textwidth}|p{0.46\textwidth}|}
+\caption{Glosario de términos técnicos utilizados en este capítulo.} \\
 \hline
 \textbf{Término} & \textbf{Definición} \\ \hline
 \endfirsthead
@@ -40,7 +41,7 @@ Antes de abordar los aspectos técnicos del desarrollo, se definen los términos
 \textit{Gizmos} & Elementos gráficos de depuración visibles únicamente durante el desarrollo (no en el juego final). Se utilizan para visualizar rangos de ataque, áreas de aparición y otros parámetros de diseño. \\ \hline
 PPU (\textit{Pixels Per Unit}) & Número de píxeles del \textit{sprite} que equivalen a una unidad del mundo del juego. En \textit{Ascension}, el valor es dieciséis, lo que significa que un tile de $16 \times 16$ píxeles ocupa exactamente una unidad en el mundo. \\ \hline
 \end{longtable}
-\TablaTitulo{Glosario de términos técnicos utilizados en este capítulo.}
+}
 
 
 \section{Requisitos funcionales: historias de usuario}
@@ -91,6 +92,8 @@ Los criterios de aceptación se utilizan como especificación de requisitos. En 
 
 \textbf{HU-010: Enemigos con inteligencia artificial diferenciada.}
 \textit{Como} jugador, \textit{quiero} enfrentar enemigos con comportamientos diferenciados, \textit{para} experimentar variedad en los desafíos de combate. Criterios: existen tres arquetipos de enemigo (francotirador, perseguidor, saltador); cada arquetipo tiene un patrón de movimiento único; los enemigos no atacan inmediatamente tras aparecer (0,75 s de gracia); los enemigos respetan la física del entorno. Prioridad: crítica. Estimación: trece puntos.
+
+\textbf{Aclaración terminológica:} en este documento, el término \textit{inteligencia artificial} hace referencia a la lógica de control desarrollada específicamente para los enemigos (scripts en C\# basados en máquinas de estados finitos (FSM) y eventos). Unity proporciona el entorno de ejecución (ciclo \texttt{Update()}, físicas y colisiones), pero no se utiliza un sistema de IA \textit{integrado} del motor.
 
 \textbf{HU-011: Sistema de aparición de enemigos.}
 \textit{Como} desarrollador, \textit{quiero} que los enemigos aparezcan de forma segura y equilibrada en cada sala, \textit{para} favorecer una experiencia de juego justa. Criterios: los enemigos nunca aparecen a menos de 2,5 unidades del jugador; el sistema realiza 25 intentos de posicionamiento antes de utilizar una posición de respaldo; el número de enemigos escala con la profundidad de la sala; se soportan modos de aparición por cantidad fija o por presupuesto de coste. Prioridad: alta. Estimación: ocho puntos.
@@ -152,7 +155,7 @@ Los criterios de aceptación se utilizan como especificación de requisitos. En 
 \subsection{Visión general de la arquitectura}
 
 
-La arquitectura del sistema se fundamenta en el paradigma de programación orientada a componentes proporcionado por Unity Engine, combinado con patrones de diseño de la ingeniería del software clásica (\textit{Singleton}, \textit{Observer}, \textit{Strategy}, \textit{Template Method}). Se seleccionó esta combinación frente a una arquitectura puramente basada en herencia porque el sistema de componentes de Unity favorece la composición: cada entidad del juego se define como un \texttt{GameObject} al que se agregan componentes independientes, lo que permite reutilizar funcionalidades sin crear jerarquías de herencia profundas. Los patrones de diseño complementan esta arquitectura proporcionando soluciones probadas para problemas recurrentes -- acceso global a gestores (\textit{Singleton}), desacoplamiento entre lógica y presentación (\textit{Observer}), intercambiabilidad de algoritmos (\textit{Strategy}) y reutilización de comportamiento base (\textit{Template Method}) -- que el sistema de componentes por sí solo no resuelve.
+La arquitectura del sistema se fundamenta en el paradigma de programación orientada a componentes proporcionado por Unity Engine, combinado con patrones de diseño de la ingeniería del software clásica (\textit{Singleton}, \textit{Observer}, \textit{Strategy}, \textit{Template Method}). Se seleccionó esta combinación frente a una arquitectura puramente basada en herencia porque el sistema de componentes de Unity favorece la composición: cada entidad del juego se define como un \texttt{GameObject} al que se agregan componentes independientes, lo que permite reutilizar funcionalidades sin crear jerarquías de herencia profundas. Los patrones de diseño complementan esta arquitectura proporcionando soluciones probadas para problemas recurrentes (acceso global a gestores (\textit{Singleton}), desacoplamiento entre lógica y presentación (\textit{Observer}), intercambiabilidad de algoritmos (\textit{Strategy}) y reutilización de comportamiento base (\textit{Template Method})) que el sistema de componentes por sí solo no resuelve.
 
 La estructura resultante se organiza en dos capas diferenciadas:
 
@@ -161,17 +164,18 @@ La estructura resultante se organiza en dos capas diferenciadas:
 \item \textbf{Capa de presentación.} Contiene los componentes de interfaz: \texttt{HeartDisplay} (visualización de vida mediante iconos de corazones), \texttt{ScoreDisplay} (puntuación en tiempo real), \texttt{PauseMenu} (menú de pausa con opciones de navegación), \texttt{GameOverScreen} y \texttt{VictoryScreen} (pantallas de fin de partida con estadísticas), y \texttt{ScoreboardMenuUI} (historial de puntuaciones con hasta treinta entradas). Estos componentes se suscriben a eventos emitidos por la capa de lógica y reaccionan a los cambios de estado sin que la capa de lógica conozca su existencia.
 \end{itemize}
 
-La comunicación entre ambas capas se realiza principalmente mediante el patrón \textit{Observer}: los gestores centrales (\textit{managers}) exponen eventos C\# (definidos mediante delegados con nombre) a los que los componentes de presentación se suscriben durante su inicialización. Por ejemplo, cuando el \texttt{GameManager} cambia su estado a \texttt{Paused}, emite el evento \texttt{OnGameStateChanged}; el \texttt{PauseMenu}, suscrito a este evento, activa su panel de interfaz y la escala de tiempo del juego se detiene. Para actualizaciones de interfaz muy concretas y de baja complejidad -- como la visualización de corazones -- se emplea una referencia directa (\texttt{PlayerHealth} -> \texttt{HeartDisplay}) por simplicidad, evitando introducir infraestructura de eventos adicional para un caso puntual.
+La comunicación entre ambas capas se realiza principalmente mediante el patrón \textit{Observer}: los gestores centrales (\textit{managers}) exponen eventos C\# (definidos mediante delegados con nombre) a los que los componentes de presentación se suscriben durante su inicialización. Por ejemplo, cuando el \texttt{GameManager} cambia su estado a \texttt{Paused}, emite el evento \texttt{OnGameStateChanged}; el \texttt{PauseMenu}, suscrito a este evento, activa su panel de interfaz y la escala de tiempo del juego se detiene. Para actualizaciones de interfaz muy concretas y de baja complejidad (como la visualización de corazones) se emplea una referencia directa (\texttt{PlayerHealth} -> \texttt{HeartDisplay}) por simplicidad, evitando introducir infraestructura de eventos adicional para un caso puntual.
 
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=0.95\textwidth]{Figuras/figura3_1_arquitectura_componentes.png}
+\clearpage
+\begin{sidewaysfigure}
+\centering
+\includegraphics[width=\textheight,keepaspectratio]{Figuras/figura3_1_arquitectura_componentes.png}
 \caption{
 Diagrama de componentes de la arquitectura general del sistema. \textit{Elaboración propia.}
 }
 \label{fig:placeholder-1}
-\end{center}
-\end{figure}
+\end{sidewaysfigure}
+\clearpage
 
 
 \subsection{Flujo de escenas}
@@ -187,7 +191,7 @@ El proyecto se estructura en tres escenas de Unity que representan las fases del
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=0.95\textwidth]{Figuras/flujo_escenas_simple.png}
+\includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/flujo_escenas_simple.png}
 \caption{
 Diagrama del flujo de escenas. \textit{Elaboración propia.}
 }
@@ -202,8 +206,8 @@ Diagrama del flujo de escenas. \textit{Elaboración propia.}
 El sistema utiliza cuatro gestores centrales que implementan el patrón \textit{Singleton}. Tres de ellos (\texttt{GameManager}, \texttt{ScoreManager} y \texttt{DamageBoostManager}) persisten entre cambios de escena mediante \texttt{DontDestroyOnLoad} (directiva que evita que Unity destruya el objeto al cargar otra escena); el \texttt{RoomFlowController} opera como \textit{Singleton} de escena, re-instanciándose en cada escena de juego y re-enlazándose a los componentes necesarios mediante el evento \texttt{SceneManager.sceneLoaded}:
 
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.46\textwidth}|p{0.46\textwidth}|}
 \hline
 Gestor & Responsabilidad \\ \hline
@@ -212,26 +216,25 @@ Gestor & Responsabilidad \\ \hline
 \texttt{RoomFlowController} & Control del bucle de generación y progresión de salas \\ \hline
 \texttt{DamageBoostManager} & Gestión de bonificaciones temporales de daño \\ \hline
 \end{tabular}
-\end{center}
+}
+\caption{Gestores centrales del sistema.}
 \end{table}
-
-
-\TablaTitulo{Gestores centrales del sistema.}
 
 \subsection{Diagrama de dependencias}
 
 
 La estructura de dependencias entre los módulos principales del sistema se organiza de la siguiente forma. El diagrama muestra la relación jerárquica entre componentes: cada nodo depende de los nodos situados debajo de él en la jerarquía. Las flechas indican dependencias de creación, referencia directa o suscripción a eventos. Los nodos marcados con \textit{(ScriptableObject)} representan activos de datos configurables desde el inspector de Unity.
 
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=0.95\textwidth]{Figuras/dependencias_modulos.png}
+\clearpage
+\begin{sidewaysfigure}
+\centering
+\includegraphics[width=\textheight,keepaspectratio]{Figuras/dependencias_modulos.png}
 \caption{
 Diagrama de dependencias entre los módulos del sistema. \textit{Elaboración propia.}
 }
 \label{fig:placeholder-4}
-\end{center}
-\end{figure}
+\end{sidewaysfigure}
+\clearpage
 
 
 \subsection{Flujo de producción: del activo gráfico al juego}
@@ -453,7 +456,7 @@ public class RangedWeapon : Weapon {
 \end{lstlisting}
 
 
-El \texttt{PlayerController} interactúa con cualquier arma a través de la interfaz común \texttt{Weapon.Attack()}, sin necesidad de conocer el tipo concreto. Añadir un nuevo tipo de arma solo requiere crear una nueva subclase sin modificar el código existente.
+El \texttt{PlayerController} interactúa con cualquier arma con la interfaz \texttt{Weapon.Attack()}, sin necesidad de conocer el tipo concreto. Añadir un nuevo tipo de arma solo requiere crear una nueva subclase sin modificar el código existente.
 
 \subsection{Patrón \textit{Template Method}}
 
@@ -523,7 +526,7 @@ Como se introdujo en el análisis del estado del arte, el \texttt{GameManager} i
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=0.95\textwidth]{Figuras/estados_juego.png}
+\includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/estados_juego.png}
 \caption{
 Diagrama de los estados del juego. \textit{Elaboración propia.}
 }
@@ -542,10 +545,10 @@ Los patrones descritos en las secciones anteriores no operan de forma aislada, s
 \subsubsection{Flujo 1: Muerte de un enemigo (\textit{Template Method} + \textit{Observer} + \textit{Singleton})}
 
 
-Cuando un enemigo es eliminado, intervienen tres patrones en cadena. El patrón \textit{Template Method} proporciona el método \texttt{Die()} en la clase base \texttt{Enemy}, que todas las subclases heredan sin sobrescribir. Este método invoca al \texttt{GameManager} -- accesible globalmente mediante el patrón \textit{Singleton} -- a través del método \texttt{NotifyEnemyKilled()}. A su vez, el \texttt{GameManager} emite el evento \texttt{OnEnemyKilled} del patrón \textit{Observer}, al que están suscritos los componentes de interfaz de usuario.
+Cuando un enemigo es eliminado, intervienen tres patrones en cadena. El patrón \textit{Template Method} proporciona el método \texttt{Die()} en la clase base \texttt{Enemy}, que todas las subclases heredan sin sobrescribir. Este método invoca al \texttt{GameManager} (accesible globalmente mediante el patrón \textit{Singleton}) a través del método \texttt{NotifyEnemyKilled()}. A su vez, el \texttt{GameManager} emite el evento \texttt{OnEnemyKilled} del patrón \textit{Observer}, al que están suscritos los componentes de interfaz de usuario.
 
 \begin{lstlisting}
-// (1) Template Method: Enemy.Die() -- heredado por SlimeGreen, SlimeRed, SlimeBlue
+// (1) Template Method: Enemy.Die(), heredado por SlimeGreen, SlimeRed, SlimeBlue
 protected virtual void Die() {
     if (isDead) return;
     isDead = true;
@@ -578,7 +581,7 @@ La cadena completa es: \textbf{Template Method} (el esqueleto de \texttt{Die()} 
 \subsubsection{Flujo 2: Ataque del jugador (\textit{Strategy} + \textit{ScriptableObject} + \textit{Singleton})}
 
 
-Cuando el jugador ataca, intervienen el patrón \textit{Strategy}, el sistema de \textit{ScriptableObjects} y el patrón \textit{Singleton}. El \texttt{PlayerController} invoca \texttt{weapon.Attack()} a través de la interfaz común de la clase base \texttt{Weapon} (\textit{Strategy}), sin conocer si el arma es cuerpo a cuerpo o a distancia. La implementación concreta -- definida en \texttt{MeleeWeapon} o \texttt{RangedWeapon} -- consulta los parámetros del \textit{ScriptableObject} \texttt{WeaponData} para obtener el daño base y, en el caso de las armas a distancia, el prefab del proyectil. El proyectil, a su vez, consulta al \texttt{DamageBoostManager} (\textit{Singleton}) para aplicar las bonificaciones de daño de los tiles de potenciación.
+Cuando el jugador ataca, intervienen el patrón \textit{Strategy}, el sistema de \textit{ScriptableObjects} y el patrón \textit{Singleton}. El \texttt{PlayerController} invoca \texttt{weapon.Attack()} a través de la interfaz común de la clase base \texttt{Weapon} (\textit{Strategy}), sin conocer si el arma es cuerpo a cuerpo o a distancia. La implementación concreta (definida en \texttt{MeleeWeapon} o \texttt{RangedWeapon}) consulta los parámetros del \textit{ScriptableObject} \texttt{WeaponData} para obtener el daño base y, en el caso de las armas a distancia, el prefab del proyectil. El proyectil, a su vez, consulta al \texttt{DamageBoostManager} (\textit{Singleton}) para aplicar las bonificaciones de daño de los tiles de potenciación.
 
 \begin{lstlisting}
 // (1) Strategy: el PlayerController no distingue entre tipos de arma
@@ -600,7 +603,7 @@ void Start() {
 \subsubsection{Flujo 3: Cambio de estado del juego (\textit{State Machine} + \textit{Observer} + \textit{Singleton})}
 
 
-La transición de estado del juego ejemplifica la interacción entre la máquina de estados, el patrón \textit{Observer} y el patrón \textit{Singleton}. Cuando el jugador pulsa la tecla de pausa, el \texttt{PauseMenu} accede al \texttt{GameManager} mediante el \textit{Singleton} y solicita un cambio de estado. La máquina de estados del \texttt{GameManager} procesa la transición (modifica \texttt{Time.timeScale}, actualiza la variable \texttt{currentState}) y emite el evento \texttt{OnGameStateChanged} del patrón \textit{Observer}. Todos los componentes suscritos -- incluido el propio \texttt{PauseMenu} que originó la petición -- reaccionan al evento de forma independiente.
+La transición de estado del juego ejemplifica la interacción entre la máquina de estados, el patrón \textit{Observer} y el patrón \textit{Singleton}. Cuando el jugador pulsa la tecla de pausa, el \texttt{PauseMenu} accede al \texttt{GameManager} mediante el \textit{Singleton} y solicita un cambio de estado. La máquina de estados del \texttt{GameManager} procesa la transición (modifica \texttt{Time.timeScale}, actualiza la variable \texttt{currentState}) y emite el evento \texttt{OnGameStateChanged} del patrón \textit{Observer}. Todos los componentes suscritos (incluido el propio \texttt{PauseMenu} que originó la petición) reaccionan al evento de forma independiente.
 
 \begin{lstlisting}
 // (1) Singleton: acceso al gestor central desde cualquier componente
@@ -629,4 +632,4 @@ private void OnGameStateChanged(GameState state) {
 \end{lstlisting}
 
 
-Esta interacción demuestra una propiedad arquitectónica: el emisor del evento (\texttt{GameManager}) no conoce ni la cantidad ni la identidad de los suscriptores, lo que permite añadir nuevos componentes reactivos -- por ejemplo, un futuro sistema de audio que silencie la música al pausar -- sin modificar el código del \texttt{GameManager} ni de los suscriptores existentes.
+Esta interacción demuestra una propiedad arquitectónica: el emisor del evento (\texttt{GameManager}) no conoce ni la cantidad ni la identidad de los suscriptores, lo que permite añadir nuevos componentes reactivos (por ejemplo, un futuro sistema de audio que silencie la música al pausar) sin modificar el código del \texttt{GameManager} ni de los suscriptores existentes.

@@ -12,6 +12,10 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 
+# Allow committing the prebuilt Windows build shipped with this repository
+!Build/
+!Build/**
+
 # MemoryCaptures puede aparecer cuando uses el Profiler
 /[Mm]emoryCaptures/
 

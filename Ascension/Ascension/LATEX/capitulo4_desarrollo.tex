@@ -1,19 +1,19 @@
 ﻿\chapter{Desarrollo de Ascension}
 
 
-El presente capítulo constituye el núcleo técnico de la memoria y describe la implementación detallada de cada subsistema del videojuego \textit{Ascension}. Partiendo del diseño presentado previamente -- requisitos, arquitectura y patrones de diseño --, se documenta cada módulo con sus correspondientes fragmentos de código, explicaciones línea por línea y diagramas de interacción. Al final del capítulo se describen dos sistemas desarrollados pero pendientes de integración completa en el flujo de juego.
+El presente capítulo constituye el núcleo técnico de la memoria y describe la implementación detallada de cada subsistema del videojuego \textit{Ascension}. Partiendo del diseño presentado previamente (requisitos, arquitectura y patrones de diseño), se documenta cada módulo con sus correspondientes fragmentos de código, explicaciones línea por línea y diagramas de interacción. Al final del capítulo se describen dos sistemas desarrollados pero pendientes de integración completa en el flujo de juego.
 
 El desarrollo de cada subsistema siguió la metodología iterativa e incremental descrita en la introducción. Las secciones de este capítulo presentan el resultado final de cada módulo tras las iteraciones realizadas; al inicio de cada sección se incluye un breve párrafo de \textbf{evolución iterativa} que documenta los cambios de diseño más relevantes que se produjeron durante el proceso de desarrollo, proporcionando trazabilidad entre la metodología adoptada y las decisiones técnicas finales.
 
 \section{Sistema de gestión central}
 
 
-\textbf{Evolución iterativa.} El sistema de gestión central atravesó tres iteraciones significativas. En la primera versión, el \texttt{GameManager} gestionaba directamente la generación de salas, la aparición de enemigos y la puntuación en una única clase monolítica de más de 500 líneas. La validación funcional reveló que esta concentración de responsabilidades dificultaba la depuración -- un error en la generación de salas afectaba a la lógica de puntuación -- y violaba el principio de responsabilidad única. En la segunda iteración se extrajeron el \texttt{RoomFlowController}, el \texttt{ScoreManager} y el \texttt{DamageBoostManager} como gestores independientes, cada uno con su propio ciclo de vida \textit{Singleton}. La tercera iteración introdujo el sistema de eventos (\texttt{OnGameStateChanged}, \texttt{OnRoomCleared}, \texttt{OnEnemyKilled}) para desacoplar la comunicación entre gestores: en la versión anterior, el \texttt{GameManager} invocaba métodos concretos de cada componente de UI, lo que obligaba a modificar el gestor central cada vez que se añadía un nuevo elemento a la interfaz.
+\textbf{Evolución iterativa.} El sistema de gestión central atravesó tres iteraciones significativas. En la primera versión, el \texttt{GameManager} gestionaba directamente la generación de salas, la aparición de enemigos y la puntuación en una única clase monolítica de más de 500 líneas. La validación funcional reveló que esta concentración de responsabilidades dificultaba la depuración (un error en la generación de salas afectaba a la lógica de puntuación) y violaba el principio de responsabilidad única. En la segunda iteración se extrajeron el \texttt{RoomFlowController}, el \texttt{ScoreManager} y el \texttt{DamageBoostManager} como gestores independientes, cada uno con su propio ciclo de vida \textit{Singleton}. La tercera iteración introdujo el sistema de eventos (\texttt{OnGameStateChanged}, \texttt{OnRoomCleared}, \texttt{OnEnemyKilled}) para desacoplar la comunicación entre gestores: en la versión anterior, el \texttt{GameManager} invocaba métodos concretos de cada componente de UI, lo que obligaba a modificar el gestor central cada vez que se añadía un nuevo elemento a la interfaz.
 
 \subsection{GameManager: controlador principal del juego}
 
 
-El \texttt{GameManager} constituye el componente central del sistema. Implementa el patrón \textit{Singleton} con el objetivo de mantener una única instancia, y gestiona el ciclo de vida completo de una partida mediante una máquina de estados finitos (FSM). Sus responsabilidades incluyen el control de estados del juego, la gestión de progresión (salas completadas, enemigos eliminados), las transiciones entre escenas y la coordinación de los subsistemas.
+El \texttt{GameManager} constituye el componente central del sistema. Implementa el patrón \textit{Singleton} con el objetivo de mantener una única instancia, y gestiona el ciclo de vida completo de una partida mediante una máquina de estados finitos (FSM). Sus responsabilidades incluyen el control de estados del juego, la gestión de progreso (salas completadas, enemigos eliminados), las transiciones entre escenas y la coordinación de los subsistemas.
 
 \textbf{Máquina de estados.} El flujo del juego se modela mediante una enumeración que define los estados válidos:
 
@@ -100,8 +100,8 @@ La comprobación \texttt{if (Instance == null)} previene la creación de instanc
 \textbf{Sistema de eventos.} El \texttt{GameManager} expone tres eventos principales que implementan el patrón \textit{Observer}:
 
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.307\textwidth}|p{0.307\textwidth}|p{0.307\textwidth}|}
 \hline
 \textbf{Evento} & \textbf{Momento de emisión} & \textbf{Suscriptores típicos} \\ \hline
@@ -109,12 +109,9 @@ La comprobación \texttt{if (Instance == null)} previene la creación de instanc
 \texttt{OnRoomCleared} & Al completar una sala & \texttt{RoomFlowController}, \texttt{ScoreDisplay} \\ \hline
 \texttt{OnEnemyKilled} & Al eliminar un enemigo & \texttt{ScoreManager}, contadores de UI \\ \hline
 \end{tabular}
-\end{center}
-\end{table}
-
-
-\TablaTitulo{Eventos del \texttt{GameManager}.
 }
+\caption{Eventos del \texttt{GameManager}.}
+\end{table}
 
 \textbf{Inicio de partida y coordinación entre gestores.} El método \texttt{StartNewRun()} constituye el punto de entrada de cada nueva partida y ejemplifica la coordinación entre los cuatro gestores \textit{Singleton} del sistema. Al iniciar una ejecución, el \texttt{GameManager} reinicia sus propios contadores y delega el reinicio de cada subsistema en el gestor correspondiente:
 
@@ -133,7 +130,7 @@ public void StartNewRun() {
 \end{lstlisting}
 
 
-La secuencia de reinicio sigue un orden específico: primero se reinician los datos del \texttt{GameManager}, después los de cada gestor dependiente y, finalmente, se cambia el estado a \texttt{Playing}. Este orden garantiza que los subsistemas estén en un estado limpio \textit{antes} de que la transición de estado notifique a los suscriptores del evento \texttt{OnGameStateChanged} -- incluida la interfaz de usuario, que al recibir la notificación de estado \texttt{Playing} consulta los contadores, que ya deben estar a cero. Si el cambio de estado se realizase antes de los reinicios, los componentes de UI mostrarían brevemente los datos de la partida anterior.
+La secuencia de reinicio sigue un orden específico: primero se reinician los datos del \texttt{GameManager}, después los de cada gestor dependiente y, finalmente, se cambia el estado a \texttt{Playing}. Este orden garantiza que los subsistemas estén en un estado limpio \textit{antes} de que la transición de estado notifique a los suscriptores del evento \texttt{OnGameStateChanged}, incluida la interfaz de usuario, que al recibir la notificación de estado \texttt{Playing} consulta los contadores, que ya deben estar a cero. Si el cambio de estado se realizase antes de los reinicios, los componentes de UI mostrarían brevemente los datos de la partida anterior.
 
 El siguiente diagrama resume la cadena de coordinación entre gestores al iniciar una nueva partida:
 
@@ -167,7 +164,7 @@ public void NotifyEnemyKilled(int scoreValue = 10) {
 \end{lstlisting}
 
 
-El flujo completo de una sala -- desde la aparición de enemigos hasta la transición a la siguiente sala -- involucra la siguiente cadena de invocaciones entre gestores:
+El flujo completo de una sala (desde la aparición de enemigos hasta la transición a la siguiente sala) involucra la siguiente cadena de invocaciones entre gestores:
 
 \begin{figure}[H]
 \begin{center}
@@ -266,8 +263,8 @@ void FixedUpdate() {
 Línea por línea:
 
 \begin{itemize}
-\item \textbf{Línea 1:} Si el jugador está ejecutando una esquiva, se ignora toda la entrada de movimiento; el \textit{roll} tiene su propia lógica de velocidad gestionada por la corutina.
-\item \textbf{Líneas 2-3:} \texttt{GetAxisRaw} devuelve -1, 0 o 1 sin suavizado de transición, lo que produce un movimiento inmediato y responsivo. Se seleccionó \texttt{GetAxisRaw} frente a \texttt{GetAxis} porque este último aplica un suavizado temporal que introduce latencia perceptible entre la pulsación de tecla y el movimiento, inadecuado para un \textit{roguelike} de acción en tiempo real donde la precisión de movimiento es crítica.
+\item \textbf{Línea 1:} Si el jugador está ejecutando una acción evasiva, se ignora toda la entrada de movimiento; el \textit{roll} tiene su propia lógica de velocidad gestionada por la corutina.
+\item \textbf{Líneas 2-3:} \texttt{GetAxisRaw} devuelve -1, 0 o 1 sin suavizado de transición, lo que produce un movimiento inmediato y reactivo. Se seleccionó \texttt{GetAxisRaw} frente a \texttt{GetAxis} porque este último aplica un suavizado temporal que introduce latencia perceptible entre la pulsación de tecla y el movimiento, inadecuado para un \textit{roguelike} de acción en tiempo real donde la precisión de movimiento es crítica.
 \item \textbf{Línea 4:} \texttt{.normalized} convierte el vector a magnitud 1 antes de multiplicar por \texttt{speed}. Esta normalización resuelve un problema clásico de los videojuegos 2D: sin ella, el movimiento diagonal (por ejemplo, W+D) tendría magnitud $\sqrt{2} \approx 1{,}41$, lo que haría al personaje un 41 \% más rápido en diagonal que en ejes cardinales.
 \item \textbf{Líneas 5-7:} La esquiva solo se activa si el jugador puede esquivar (\texttt{canRoll}) y si la tecla se pulsa (\texttt{GetKeyDown}, no \texttt{GetKey}). La dirección del \textit{roll} se calcula a partir de la entrada actual, y se inicia la corutina \texttt{DoRoll(rollDir)} que gestiona la velocidad, la invulnerabilidad y la travesía de colisiones.
 \item \textbf{Líneas 8-10:} La aplicación de movimiento se realiza en \texttt{FixedUpdate()} mediante \texttt{MovePosition}, que desplaza al jugador basándose en la velocidad calculada multiplicada por \texttt{fixedDeltaTime}. Se utiliza \texttt{MovePosition} en lugar de asignar \texttt{linearVelocity} porque este método respeta la interpolación del \texttt{Rigidbody2D} y produce un movimiento más suave. \texttt{FixedUpdate()} se ejecuta a una frecuencia fija (50 Hz de forma predeterminada) independiente de la tasa de fotogramas.
@@ -461,7 +458,7 @@ void Start() {
 \end{lstlisting}
 
 
-Si el jugador accede a la escena de juego sin haber seleccionado una clase -- por ejemplo, durante la depuración --, el sistema detecta esta situación y redirige automáticamente a la escena de selección.
+Si el jugador accede a la escena de juego sin haber seleccionado una clase (por ejemplo, durante la depuración), el sistema detecta esta situación y redirige automáticamente a la escena de selección.
 
 \subsection{PlayerClass: datos de configuración mediante \textit{ScriptableObjects}}
 
@@ -503,7 +500,7 @@ La clase \texttt{Enemy} define el comportamiento base compartido por todos los t
 
 El \textit{Template Method} resuelve este problema: la clase base \texttt{Enemy} define el esqueleto de comportamiento común, y cada subclase sobrescribe exclusivamente el método \texttt{Update()} para definir su IA específica.
 
-\textbf{Sistema de gracia al aparecer.} Para evitar que los enemigos ataquen al jugador inmediatamente tras aparecer -- lo que resultaría en una experiencia injusta --, se implementa un sistema de periodos de gracia:
+\textbf{Sistema de gracia al aparecer.} Para evitar que los enemigos ataquen al jugador inmediatamente tras aparecer (lo que resultaría en una experiencia injusta), se implementa un sistema de periodos de gracia:
 
 \begin{lstlisting}
 [SerializeField] private float contactDamageGraceSeconds = 0.75f;
@@ -605,11 +602,11 @@ La comprobación \texttt{pc.IsRolling} conecta el sistema de contacto con la mec
 
 El \texttt{SlimeGreen} implementa un comportamiento de combate a distancia. Se diseñó este arquetipo para obligar al jugador a adoptar una postura ofensiva: frente a un enemigo que huye al ser perseguido, el jugador no puede limitarse a esquivar, sino que debe cerrar la distancia activamente o utilizar armas a distancia. La alternativa descartada era crear un segundo enemigo perseguidor con estadísticas diferentes, pero esto habría reducido la variedad táctica al ofrecer el mismo tipo de desafío con números distintos.
 
-Su inteligencia artificial sigue un patrón de \textbf{máquina de estados finitos (FSM) implícita con tres estados}, evaluados en cada fotograma mediante la distancia euclidiana al jugador. Aunque los estados no se representan como una enumeración explícita en el código -- a diferencia del \texttt{GameState} del \texttt{GameManager} --, el comportamiento resultante es funcionalmente equivalente a una FSM formal. La siguiente tabla define los estados, las condiciones de transición y las acciones asociadas:
+Su inteligencia artificial sigue un patrón de \textbf{máquina de estados finitos (FSM) implícita con tres estados}, evaluados en cada fotograma mediante la distancia euclidiana al jugador. Aunque los estados no se representan como una enumeración explícita en el código (a diferencia del \texttt{GameState} del \texttt{GameManager}), el comportamiento resultante es funcionalmente equivalente a una FSM formal. La siguiente tabla define los estados, las condiciones de transición y las acciones asociadas:
 
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|}
 \hline
 \textbf{Estado} & \textbf{Condición de entrada} & \textbf{Acción ejecutada} & \textbf{Transición de salida} \\ \hline
@@ -617,18 +614,15 @@ Su inteligencia artificial sigue un patrón de \textbf{máquina de estados finit
 \textbf{Disparo} (\textit{Shoot}) & \texttt{escapeDistance <= distancia <= maxDistance} (4–12 u) & Detención completa (\texttt{rb.linearVelocity = Vector2.zero}) + disparo de proyectil si \texttt{Time.time >= nextShootTime} & -> Huida si distancia < 4 u; -> Acercamiento si distancia > 12 u \\ \hline
 \textbf{Acercamiento} (\textit{Approach}) & \texttt{distancia > maxDistance} (12 u) & Movimiento hacia el jugador a velocidad base, limitado por \texttt{CapToPlayerSpeed} & -> Disparo si distancia <= 12 u; -> Huida si distancia < 4 u \\ \hline
 \end{tabular}
-\end{center}
-\end{table}
-
-
-\TablaTitulo{Estados, transiciones y acciones de la FSM del SlimeGreen.
 }
+\caption{Estados, transiciones y acciones de la FSM del SlimeGreen.}
+\end{table}
 
 El siguiente diagrama de estados formaliza las transiciones entre los tres estados:
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/fsm_slimegreen.png}
+\includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/fsm_slimegreen.png}
 \caption{
 Diagrama de la FSM del SlimeGreen. \textit{Elaboración propia.}
 }
@@ -672,7 +666,7 @@ protected override void Update() {
 Línea por línea:
 
 \begin{itemize}
-\item \textbf{(1)} \texttt{base.Update()}: invoca el \texttt{Update()} de la clase base \texttt{Enemy}, que gestiona la interacción con tiles de velocidad y la detección de daño por contacto. Esta llamada es obligatoria en cualquier subclase que sobrescriba \texttt{Update()}, ya que sin ella los periodos de gracia y los modificadores de velocidad por tile dejarían de funcionar -- un ejemplo concreto de cómo el patrón \textit{Template Method} impone un contrato entre la clase base y las subclases.
+\item \textbf{(1)} \texttt{base.Update()}: invoca el \texttt{Update()} de la clase base \texttt{Enemy}, que gestiona la interacción con tiles de velocidad y la detección de daño por contacto. Esta llamada es obligatoria en cualquier subclase que sobrescriba \texttt{Update()}, ya que sin ella los periodos de gracia y los modificadores de velocidad por tile dejarían de funcionar, un ejemplo concreto de cómo el patrón \textit{Template Method} impone un contrato entre la clase base y las subclases.
 \item \textbf{(2)} Las guardas \texttt{isDead} y \texttt{player == null} previenen la ejecución de lógica de IA sobre enemigos ya eliminados o cuando la referencia al jugador se ha perdido (por ejemplo, durante la transición de sala).
 \item \textbf{(3)} \texttt{IsAIEnabled} es una propiedad de la clase base \texttt{Enemy} que compara \texttt{Time.time} con \texttt{aiEnabledTime}. Durante los primeros 0,75 segundos tras la aparición, esta propiedad devuelve \texttt{false}, y el enemigo permanece inactivo: esta ventana impide que el enemigo dispare al jugador en el mismo fotograma en que aparece.
 \item \textbf{(4)} \texttt{Vector2.Distance} calcula la distancia euclidiana $d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$ entre el enemigo y el jugador. Esta métrica se evalúa en cada fotograma (~60 veces por segundo con VSync activado), lo que produce transiciones de estado inmediatas cuando el jugador cruza un umbral de distancia.
@@ -682,7 +676,7 @@ Línea por línea:
 
 El comportamiento resultante es el de un enemigo que busca mantener una distancia óptima respecto al jugador: si este se acerca demasiado, el slime verde retrocede; si se aleja demasiado, el slime verde se aproxima; cuando se encuentra a la distancia ideal, se detiene y dispara proyectiles con una cadencia configurable.
 
-\textbf{Análisis de la complejidad computacional de la FSM.} La evaluación de la FSM tiene coste $O(1)$ por fotograma: una llamada a \texttt{Vector2.Distance} (una raíz cuadrada) y tres comparaciones. Para los tres tipos de enemigo simultáneamente y una oleada típica de 8-12 enemigos, el coste total por fotograma es $O(n)$ donde $n$ es el número de enemigos activos -- despreciable frente al coste del renderizado y la simulación física.
+\textbf{Análisis de la complejidad computacional de la FSM.} La evaluación de la FSM tiene coste $O(1)$ por fotograma: una llamada a \texttt{Vector2.Distance} (una raíz cuadrada) y tres comparaciones. Para los tres tipos de enemigo simultáneamente y una oleada típica de 8-12 enemigos, el coste total por fotograma es $O(n)$ donde $n$ es el número de enemigos activos, despreciable frente al coste del renderizado y la simulación física.
 
 \textbf{Sistema de disparo.} El método de disparo instancia un proyectil, le asigna una dirección calculada hacia la posición actual del jugador y le aplica una velocidad configurable. A continuación se muestra el código completo con comentarios exhaustivos:
 
@@ -733,7 +727,7 @@ private void Shoot() {
 \end{lstlisting}
 
 
-\textbf{Mecánica de rebote contra muros.} Un aspecto diferenciador del SlimeGreen es su comportamiento al colisionar con los muros perimetrales durante el estado de huida. En lugar de quedarse atascado contra el muro -- lo que lo haría trivial de eliminar --, el enemigo calcula una nueva dirección de escape mediante reflexión vectorial:
+\textbf{Mecánica de rebote contra muros.} Un aspecto diferenciador del SlimeGreen es su comportamiento al colisionar con los muros perimetrales durante el estado de huida. En lugar de quedarse atascado contra el muro (lo que lo haría trivial de eliminar), el enemigo calcula una nueva dirección de escape mediante reflexión vectorial:
 
 \begin{lstlisting}
 private void BounceFromWall(Collision2D collision) {
@@ -777,7 +771,7 @@ private void BounceFromWall(Collision2D collision) {
 
 Este algoritmo de rebote utiliza la fórmula de reflexión vectorial $\vec{r} = \vec{d} - 2(\vec{d} \cdot \vec{n})\vec{n}$, donde $\vec{d}$ es la dirección de movimiento y $\vec{n}$ es la normal de la superficie. La corrección iterativa garantiza que el enemigo no se dirija hacia el jugador tras el rebote, preservando la coherencia del comportamiento de huida.
 
-\textbf{Limitador de velocidad.} Para evitar que ningun enemigo pueda ser mas rapido que el jugador -- lo que haria imposible la evasion --, se implementa un limitador de velocidad:
+\textbf{Limitador de velocidad.} Para evitar que ningun enemigo pueda ser mas rapido que el jugador (lo que haria imposible la evasion), se implementa un limitador de velocidad:
 
 \begin{lstlisting}
 private float CapToPlayerSpeed(float desiredSpeed) {
@@ -823,24 +817,21 @@ El código contempla dos modos de movimiento: mediante \texttt{Rigidbody2D} (pre
 El \texttt{SlimeBlue} implementa un comportamiento basado en saltos rápidos (desplazamientos rápidos, \textit{dash}). A diferencia del SlimeGreen, cuya FSM tiene tres estados, el SlimeBlue implementa una \textbf{FSM de dos estados} con una separación clara entre la fase de espera y la fase de desplazamiento:
 
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|}
 \hline
 \textbf{Estado} & \textbf{Condición de entrada} & \textbf{Duración} & \textbf{Acción} \\ \hline
 \textbf{Espera} (\textit{Idle}) & \texttt{isDashing == false} & Indefinida (hasta que se cumplan condiciones) & Enemigo estático (\texttt{rb.linearVelocity = Vector2.zero}); evalúa distancia al jugador y \textit{cooldown} \\ \hline
 \textbf{Salto} (\textit{Dash}) & \texttt{minDashDistance <= dist <= maxDashDistance} AND \texttt{Time.time >= lastDashTime + dashCooldown} & Exactamente 0,4 s (\texttt{dashDuration}) & Desplazamiento rectilíneo a 12 u/s en dirección fija \\ \hline
 \end{tabular}
-\end{center}
-\end{table}
-
-
-\TablaTitulo{Estados y transiciones de la FSM del SlimeBlue.
 }
+\caption{Estados y transiciones de la FSM del SlimeBlue.}
+\end{table}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/fsm_slimeblue.png}
+\includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/fsm_slimeblue.png}
 \caption{
 Diagrama de la FSM del SlimeBlue. \textit{Elaboración propia.}
 }
@@ -936,7 +927,7 @@ private void OnDrawGizmosSelected() {
 
 El \texttt{EnemyManager} es responsable de la instanciación de enemigos en cada sala, la gestión de referencias a los enemigos activos y la detección de sala completada. Soporta dos modos de aparición:
 
-\textbf{Modo por presupuesto de coste.} El sistema dispone de un presupuesto numérico y selecciona enemigos aleatoriamente -- ponderados por peso -- hasta agotar el presupuesto. Este mecanismo implementa una curva de dificultad \textbf{emergente}: a medida que el presupuesto crece con la profundidad de la mazmorra, el sistema puede instanciar combinaciones más peligrosas (por ejemplo, dos slimes verdes y tres rojos en lugar de solo cuatro rojos), sin necesidad de tablas de dificultad codificadas manualmente.
+\textbf{Modo por presupuesto de coste.} El sistema dispone de un presupuesto numérico y selecciona enemigos aleatoriamente (ponderados por peso) hasta agotar el presupuesto. Este mecanismo implementa una curva de dificultad \textbf{emergente}: a medida que el presupuesto crece con la profundidad de la mazmorra, el sistema puede instanciar combinaciones más peligrosas (por ejemplo, dos slimes verdes y tres rojos en lugar de solo cuatro rojos), sin necesidad de tablas de dificultad codificadas manualmente.
 
 \begin{lstlisting}
 public void SpawnByCost(Rect area, int maxCost, int depth) {
@@ -1053,8 +1044,8 @@ El campo \texttt{enemyCost} merece una explicación específica: define cuánto 
 La siguiente tabla resume las diferencias de comportamiento, parámetros y rol táctico entre los tres tipos de enemigo, mostrando cómo la jerarquía basada en el patrón \textit{Template Method} permite diferenciar la IA sin duplicar la lógica base compartida:
 
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|p{0.23\textwidth}|}
 \hline
 \textbf{Aspecto} & \textbf{SlimeRed (perseguidor)} & \textbf{SlimeGreen (francotirador)} & \textbf{SlimeBlue (saltador)} \\ \hline
@@ -1069,12 +1060,9 @@ Coste de aparición & Bajo (fácil de esquivar) & Alto (peligroso a distancia) &
 Rol táctico & Presión constante, obliga a moverse & Obliga a cerrar distancia o usar arma a distancia & Requiere anticipación y esquiva \\ \hline
 Contramedida del jugador & Arma cuerpo a cuerpo y kiting & Arma a distancia o persecución rápida & Esquiva (\textit{roll}) y posicionamiento \\ \hline
 \end{tabular}
-\end{center}
-\end{table}
-
-
-\TablaTitulo{Comparativa de comportamiento, parámetros y rol táctico de los tres tipos de enemigo.
 }
+\caption{Comparativa de comportamiento, parámetros y rol táctico de los tres tipos de enemigo.}
+\end{table}
 
 La diversidad de estos tres arquetipos, combinada con el sistema de presupuesto de coste del \texttt{EnemyManager} y la variabilidad de los tiles especiales, produce situaciones de combate tácticas y diferenciadas en cada sala sin necesidad de un repertorio extenso de tipos de enemigo.
 
@@ -1107,26 +1095,27 @@ Diagrama de clases UML de la jerarquía de enemigos. \textit{Elaboración propia
 \end{figure}
 
 
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/figura4_6_secuencia_combate.png}
+\clearpage
+\begin{sidewaysfigure}
+\centering
+\includegraphics[width=\textheight,keepaspectratio]{Figuras/figura4_6_secuencia_combate.png}
 \caption{
 Diagrama de secuencia UML del flujo de combate. \textit{Elaboración propia.}
 }
 \label{fig:placeholder-14}
-\end{center}
-\end{figure}
+\end{sidewaysfigure}
+\clearpage
 
 
 \section{Sistema de armas y combate}
 
 
-\textbf{Evolución iterativa.} El sistema de armas pasó por dos rediseños. La primera versión implementaba una clase única \texttt{Weapon} con un enumerado \texttt{WeaponType} y bloques condicionales que diferenciaban el comportamiento cuerpo a cuerpo del comportamiento a distancia; esta estructura se volvió difícil de mantener al añadir los efectos visuales (\textit{weapon trail}, parpadeo de hitbox), ya que cada tipo de arma requería campos y lógica distintos dentro de la misma clase. La refactorización al patrón \textit{Strategy} -- con \texttt{Weapon} como clase base y \texttt{MeleeWeapon} / \texttt{RangedWeapon} como estrategias concretas -- resolvió este problema. La animación de barrido del arma cuerpo a cuerpo se rediseñó de interpolación lineal a sinusoidal tras observar que el movimiento uniforme transmitía una sensación mecánica carente del «peso» visual esperado en un arma.
+\textbf{Evolución iterativa.} El sistema de armas pasó por dos rediseños. La primera versión implementaba una clase única \texttt{Weapon} con un enumerado \texttt{WeaponType} y bloques condicionales que diferenciaban el comportamiento cuerpo a cuerpo del comportamiento a distancia; esta estructura se volvió difícil de mantener al añadir los efectos visuales (\textit{weapon trail}, parpadeo de hitbox), ya que cada tipo de arma requería campos y lógica distintos dentro de la misma clase. La refactorización al patrón \textit{Strategy} (con \texttt{Weapon} como clase base y \texttt{MeleeWeapon} / \texttt{RangedWeapon} como estrategias concretas) resolvió este problema. La animación de barrido del arma cuerpo a cuerpo se rediseñó de interpolación lineal a sinusoidal tras observar que el movimiento uniforme transmitía una sensación mecánica carente del «peso» visual esperado en un arma.
 
 \subsection{Weapon: clase base del sistema de armas y patrón \textit{Strategy}}
 
 
-El sistema de armas implementa el patrón \textit{Strategy}. Se seleccionó este patrón frente a la alternativa de una única clase \texttt{Weapon} con un enumerado \texttt{WeaponType} y bloques condicionales (\texttt{if (type == Melee) ... else if (type == Ranged) ...}). Esta alternativa se descartó por dos razones: en primer lugar, cada tipo de arma requiere campos específicos distintos -- \texttt{swingAngle} y \texttt{swingDuration} para las armas cuerpo a cuerpo, \texttt{bulletPrefab} y \texttt{attackCooldown} para las armas a distancia --, lo que produciría una clase con campos que solo son relevantes para uno de los tipos; en segundo lugar, añadir un tercer tipo de arma obligaría a modificar la lógica interna de la clase existente, violando el principio de apertura-cierre.
+El sistema de armas implementa el patrón \textit{Strategy}. Se seleccionó este patrón frente a la alternativa de una única clase \texttt{Weapon} con un enumerado \texttt{WeaponType} y bloques condicionales (\texttt{if (type == Melee) ... else if (type == Ranged) ...}). Esta alternativa se descartó por dos razones: en primer lugar, cada tipo de arma requiere campos específicos distintos (\texttt{swingAngle} y \texttt{swingDuration} para las armas cuerpo a cuerpo, \texttt{bulletPrefab} y \texttt{attackCooldown} para las armas a distancia), lo que produciría una clase con campos que solo son relevantes para uno de los tipos; en segundo lugar, añadir un tercer tipo de arma obligaría a modificar la lógica interna de la clase existente, violando el principio de apertura-cierre.
 
 El patrón \textit{Strategy} resuelve ambos problemas: la clase base \texttt{Weapon} define la interfaz común (\texttt{Attack()}, rotación hacia el cursor, órbita alrededor del jugador) y las subclases \texttt{MeleeWeapon} y \texttt{RangedWeapon} encapsulan únicamente los campos y la lógica relevantes para su tipo de ataque.
 
@@ -1317,7 +1306,7 @@ Línea por línea:
 
 \begin{itemize}
 \item \texttt{damage}: daño base que puede ser modificado en tiempo de ejecución por el \texttt{DamageBoostManager} cuando el jugador se encuentra sobre un tile de potenciación.
-\item \texttt{bulletPrefab}: referencia condicional -- solo las armas a distancia la utilizan; las armas cuerpo a cuerpo la dejan como \texttt{null}. El código de \texttt{RangedWeapon.Attack()} verifica esta referencia antes de instanciar proyectiles mediante el operador condicional nulo (\texttt{?.}).
+\item \texttt{bulletPrefab}: referencia condicional, solo las armas a distancia la utilizan; las armas cuerpo a cuerpo la dejan como \texttt{null}. El código de \texttt{RangedWeapon.Attack()} verifica esta referencia antes de instanciar proyectiles mediante el operador condicional nulo (\texttt{?.}).
 \item \texttt{weaponPrefab}: referencia al prefab preconfigurado que incluye el componente \texttt{MeleeWeapon} o \texttt{RangedWeapon}, los colisionadores, el \textit{SpriteRenderer} y los efectos visuales.
 \end{itemize}
 
@@ -1337,7 +1326,7 @@ Diagrama de flujo del sistema de daño. \textit{Elaboración propia.}
 \end{figure}
 \vspace{-0.5em}
 
-Este flujo evidencia la separación de responsabilidades aplicada: cada componente ejecuta exclusivamente su tarea (el arma ataca, el enemigo recibe daño, el gestor contabiliza) y la comunicación entre capas se realiza mediante invocaciones directas tipadas y eventos del patrón \textit{Observer}. La alternativa -- que el arma calculase ella misma la puntuación, o que el enemigo accediese directamente al marcador de la UI -- habría introducido dependencias transversales entre subsistemas que no comparten responsabilidad.
+Este flujo evidencia la separación de responsabilidades aplicada: cada componente ejecuta exclusivamente su tarea (el arma ataca, el enemigo recibe daño, el gestor contabiliza) y la comunicación entre capas se realiza mediante invocaciones directas tipadas y eventos del patrón \textit{Observer}. La alternativa (que el arma calculase ella misma la puntuación, o que el enemigo accediese directamente al marcador de la UI) habría introducido dependencias transversales entre subsistemas que no comparten responsabilidad.
 \vspace{-0.5em}
 \begin{figure}[H]
 \begin{center}
@@ -1381,21 +1370,47 @@ Se seleccionó un enfoque de rejilla rectangular fija frente a alternativas más
 
 \begin{lstlisting}
 public void GenerateRoom() {
+    bool clearWalls = true; // En el proyecto real, esta decisión se pasa como parámetro.
+
     // 1. Limpiar tilemaps anteriores
     if (clearWalls) wallTilemap.ClearAllTiles();
     floorTilemap.ClearAllTiles();
 
     // 2. Rellenar suelo y colocar tiles especiales en clusters
     for (int x = 0; x < roomWidth; x++)
-        for (int y = 0; y < roomHeight; y++)
+        for (int y = 0; y < roomHeight; y++) {
+            Vector3Int pos = new Vector3Int(x, y, 0) + roomOffset;
             floorTilemap.SetTile(pos, GetRandomNormalFloorTile());
+        }
     PlaceSpecialTilesClustered();   // hielo, lodo, curacion, potenciacion
 
     // 3. Colocar escaleras (en cada sala, en posicion aleatoria con margen)
     PlaceStairsTile();
 
+    if (!clearWalls) return; // Caso RegenerateFloorKeepWalls(): no se repintan muros.
+
     // 4. Generar borde de muros perimetrales (bucles inline)
-    // wallTilemap.SetTile(...) en cada posicion del perimetro
+    int wallT = Mathf.Max(1, wallBorderThicknessTiles);
+
+    // Muro inferior / superior (incluye esquinas)
+    for (int t = 1; t <= wallT; t++) {
+        int yBottom = -t;
+        int yTop = roomHeight - 1 + t;
+        for (int x = -wallT; x <= (roomWidth - 1 + wallT); x++) {
+            wallTilemap.SetTile(new Vector3Int(x, yBottom, 0) + roomOffset, wallTile);
+            wallTilemap.SetTile(new Vector3Int(x, yTop, 0) + roomOffset, wallTile);
+        }
+    }
+
+    // Muro izquierdo / derecho (sin duplicar las filas ya pintadas arriba/abajo)
+    for (int t = 1; t <= wallT; t++) {
+        int xLeft = -t;
+        int xRight = roomWidth - 1 + t;
+        for (int y = 0; y < roomHeight; y++) {
+            wallTilemap.SetTile(new Vector3Int(xLeft, y, 0) + roomOffset, wallTile);
+            wallTilemap.SetTile(new Vector3Int(xRight, y, 0) + roomOffset, wallTile);
+        }
+    }
 
     // 5. Actualizar colisionadores
     RefreshWallColliders();
@@ -1451,13 +1466,13 @@ private void PaintCluster(Vector2Int center, int targetCount, int maxRadius,
 El algoritmo comienza seleccionando una posición aleatoria como centro del \textit{cluster}. A continuación, expande el \textit{cluster} seleccionando en cada iteración una celda pintada al azar y desplazándose en una de las cuatro direcciones cardinales. La función local \texttt{InBounds} verifica que la posición candidata se encuentra dentro del margen útil del suelo (excluyendo un borde de \texttt{padding} celdas), y el \texttt{HashSet<Vector2Int> reserved} impide que una misma celda se pinte dos veces o sea reclamada por \textit{clusters} diferentes. La restricción de distancia Manhattan respecto al centro garantiza que el \textit{cluster} no se extienda más allá del radio máximo, produciendo manchas compactas de forma irregular y orgánica.
 
 
-Este \textit{pipeline} se ejecuta también -- con una variante -- cuando el jugador avanza a la siguiente sala dentro de la misma escena: \texttt{RegenerateFloorKeepWalls()} omite los pasos 4 y 5 (los muros perimetrales no cambian) y únicamente regenera el suelo, los tiles especiales y las escaleras, reduciendo el coste computacional de la transición.
+Este \textit{pipeline} se ejecuta también (con una variante) cuando el jugador avanza a la siguiente sala dentro de la misma escena: \texttt{RegenerateFloorKeepWalls()} omite los pasos 4 y 5 (los muros perimetrales no cambian) y únicamente regenera el suelo, los tiles especiales y las escaleras, reduciendo el coste computacional de la transición.
 
 \textbf{Probabilidades de aparición de tiles especiales:}
 \vspace{-0.5em}
 \begin{table}[H]
-\begin{center}
-\small
+\centering
+{\small
 \begin{tabular}{|p{0.22\textwidth}|p{0.18\textwidth}|p{0.25\textwidth}|p{0.18\textwidth}|}
 \hline
 \textbf{Tipo de tile} & \textbf{Probabilidad} & \textbf{Formato} & \textbf{Cantidad por sala} \\ \hline
@@ -1466,10 +1481,10 @@ Hielo (\textit{Ice}) & 12 \% & Cluster de 4-9 tiles & Variable \\ \hline
 Lodo (\textit{Mud}) & 12 \% & Cluster de 4-9 tiles & Variable \\ \hline
 Potenciación (\textit{PowerUp}) & 18 \% & Tile individual & 1-2 \\ \hline
 \end{tabular}
+}
+\caption{Probabilidades y formato de distribución de tiles especiales.}
 \label{tab:probabilidades-tiles}
-\end{center}
 \end{table}
-\TablaTitulo{Probabilidades y formato de distribución de tiles especiales.}
 \vspace{-0.5em}
 
 \begin{figure}[H]
@@ -1681,15 +1696,17 @@ void OnTriggerEnter2D(Collider2D other) {
 
 Al detectar la entrada del jugador mediante el sistema de \textit{triggers} de Unity, el controlador bloquea las escaleras de la sala y activa la aparición de enemigos. Las escaleras permanecen bloqueadas hasta que todos los enemigos han sido eliminados, momento en el cual se habilitan automáticamente para permitir la progresión.
 
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/figura4_11_secuencia_progresion_salas.png}
-\caption{
-Diagrama de secuencia UML del ciclo de progresión entre salas. \textit{Elaboración propia.}
-}
-\label{fig:placeholder-21}
-\end{center}
-\end{figure}
+\clearpage
+\begin{sidewaysfigure}
+    \begin{center}
+    \includegraphics[width=\textheight]{Figuras/figura4_11_secuencia_progresion_salas.png}
+    \caption{
+    Diagrama de secuencia UML del ciclo de progresión entre salas. \textit{Elaboración propia.}
+    }
+    \label{fig:placeholder-21}
+    \end{center}
+\end{sidewaysfigure}
+\clearpage
 
 
 \subsection{Stairs: lógica de escaleras}
@@ -1718,7 +1735,7 @@ La escalera alterna entre un estado bloqueado y un estado habilitado.
 \section{Sistema de interfaz de usuario}
 
 
-\textbf{Evolución iterativa.} La interfaz de usuario fue el último subsistema en integrarse con el patrón \textit{Observer}. En las primeras iteraciones, cada componente de UI consultaba directamente al \texttt{GameManager} en su método \texttt{Update()} (lectura síncrona por sondeo), lo que generaba comprobaciones redundantes en cada fotograma y acoplaba la interfaz con la implementación interna del gestor. La adopción del patrón \textit{Observer} -- suscripción al evento \texttt{OnGameStateChanged} -- eliminó esta dependencia: los paneles de pausa, derrota y victoria solo ejecutan lógica cuando reciben una notificación de cambio de estado, no en cada fotograma. El sistema de corazones evolucionó de una implementación estática (número fijo de corazones en la escena) a una generación dinámica basada en \texttt{maxHealth}, lo que permitió que las clases de personaje con distinta cantidad de vida máxima se representasen correctamente sin configuración manual.
+\textbf{Evolución iterativa.} La interfaz de usuario fue el último subsistema en integrarse con el patrón \textit{Observer}. En las primeras iteraciones, cada componente de UI consultaba directamente al \texttt{GameManager} en su método \texttt{Update()} (lectura síncrona por sondeo), lo que generaba comprobaciones redundantes en cada fotograma y acoplaba la interfaz con la implementación interna del gestor. La adopción del patrón \textit{Observer} (suscripción al evento \texttt{OnGameStateChanged}) eliminó esta dependencia: los paneles de pausa, derrota y victoria solo ejecutan lógica cuando reciben una notificación de cambio de estado, no en cada fotograma. El sistema de corazones evolucionó de una implementación estática (número fijo de corazones en la escena) a una generación dinámica basada en \texttt{maxHealth}, lo que permitió que las clases de personaje con distinta cantidad de vida máxima se representasen correctamente sin configuración manual.
 
 \subsection{HeartDisplay: representación de vida}
 
@@ -1822,7 +1839,7 @@ Ambas pantallas muestran un texto que representa el final de la partida y rediri
 \subsection{ScoreboardMenuUI: historial de puntuaciones}
 
 
-El historial de puntuaciones se genera dinámicamente a partir de los datos almacenados por el \texttt{ScoreManager}. En lugar de instanciar un \textit{prefab} por cada entrada, el componente utiliza un único campo \texttt{TextMeshProUGUI} -- un sistema de renderizado de texto de alta calidad integrado en Unity que soporta formato enriquecido, sombreado y alineación precisa a nivel de píxel -- y construye todo el listado mediante un \texttt{StringBuilder}, lo que resulta más eficiente en memoria y evita la necesidad de gestionar la destrucción de objetos instanciados:
+El historial de puntuaciones se genera dinámicamente a partir de los datos almacenados por el \texttt{ScoreManager}. En lugar de instanciar un \textit{prefab} por cada entrada, el componente utiliza un único campo \texttt{TextMeshProUGUI} (un sistema de renderizado de texto de alta calidad integrado en Unity que soporta formato enriquecido, sombreado y alineación precisa a nivel de píxel) y construye todo el listado mediante un \texttt{StringBuilder}, lo que resulta más eficiente en memoria y evita la necesidad de gestionar la destrucción de objetos instanciados:
 
 \begin{lstlisting}
 public void Refresh() {
@@ -1875,7 +1892,7 @@ Se ha desarrollado el componente \texttt{BossController} que implementa un siste
 \subsection{Generación procedural de armas con rareza}
 
 
-Se ha desarrollado el componente \texttt{WeaponGenerator} que implementa un sistema de generación procedural de armas con cuatro niveles de rareza (Común, Poco Común, Raro, Legendario) y escalado de estadísticas basado en la profundidad de la mazmorra. Al no encontrarse integrado en el flujo de juego -- aparición de armas como objetos recogibles en las salas --, su funcionamiento en una partida completa no se ha verificado de forma consistente; la integración constituye un desarrollo pendiente para futuras iteraciones del proyecto.
+Se ha desarrollado el componente \texttt{WeaponGenerator} que implementa un sistema de generación procedural de armas con cuatro niveles de rareza (Común, Poco Común, Raro, Legendario) y escalado de estadísticas basado en la profundidad de la mazmorra. Al no encontrarse integrado en el flujo de juego (aparición de armas como objetos recogibles en las salas), su funcionamiento en una partida completa no se ha verificado de forma consistente; la integración constituye un desarrollo pendiente para futuras iteraciones del proyecto.
 
 Estos dos sistemas se analizan con mayor detalle en el apartado de líneas de trabajo futuro.
 
@@ -1899,9 +1916,9 @@ La compilación del proyecto se realiza desde la ventana \textit{Build Profiles}
 \end{itemize}
 
 \begin{enumerate}
-\item \texttt{Scenes/MainMenu} (índice 0) -- menú principal.
-\item \texttt{Scenes/ClassSelection} (índice 1) -- pantalla de selección de clase.
-\item \texttt{Scenes/GameScene} (índice 2) -- escena principal de juego.
+\item \texttt{Scenes/MainMenu} (índice 0), menú principal.
+\item \texttt{Scenes/ClassSelection} (índice 1), pantalla de selección de clase.
+\item \texttt{Scenes/GameScene} (índice 2), escena principal de juego.
 \end{enumerate}
 
 \begin{itemize}

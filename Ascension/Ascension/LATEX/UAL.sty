@@ -156,7 +156,10 @@ at (current page.center)
 \node (titulo) [rectangle,text width=0.55\paperwidth,text centered, xshift=10pt] 
 at (fondo)
           {\parbox{0.71\paperwidth}{\centering 
-          \fontsize{45}{50} \selectfont \tituloTFG \\[8cm]
+          {\fontsize{45}{50} \selectfont
+          \spaceskip=0.30em plus 0.125em minus 0.075em\relax
+          \xspaceskip=0.30em plus 0.125em\relax
+          \tituloTFG} \\[8cm]
           }};
         \node [xshift=-150pt, yshift=-255-\hoffset,right] at (titulo) {\textbf{\LARGE Curso: \curso}};
         \node [xshift=-150pt, yshift=-330-\hoffset, right] at (titulo) {\textbf{\LARGE\alumno}};

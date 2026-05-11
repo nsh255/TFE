@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{xurl}
 \usepackage[strings]{underscore}
+\usepackage{expl3}
 \usepackage{eso-pic}
 \usepackage{ragged2e}
 \usepackage{float}
@@ -14,6 +15,24 @@
 \usepackage[print,doble]{UAL}
 \usepackage{codigo}
 \usepackage{rotating}
+
+% Permite saltos de línea dentro de identificadores en \texttt{...} (camelCase/PascalCase y letra<->número)
+\ExplSyntaxOn
+\cs_new_protected:Npn \asc_allowbreak_texttt:n #1
+	{
+		\tl_set:Nn \l_tmpa_tl {#1}
+		% Separa acrónimos seguidos de palabra: AIEnabled -> AI\allowbreak Enabled
+		\regex_replace_all:nnN {([A-Z])([A-Z][a-z])} {\1\c{allowbreak}\2} \l_tmpa_tl
+		% Separa límites camelCase/PascalCase: tilemapCollider -> tilemap\allowbreak Collider
+		\regex_replace_all:nnN {([a-z])([A-Z])} {\1\c{allowbreak}\2} \l_tmpa_tl
+		% Separa límites letra<->número: Collider2D -> Collider\allowbreak 2\allowbreak D
+		\regex_replace_all:nnN {([A-Za-z])([0-9])} {\1\c{allowbreak}\2} \l_tmpa_tl
+		\regex_replace_all:nnN {([0-9])([A-Za-z])} {\1\c{allowbreak}\2} \l_tmpa_tl
+		\tl_use:N \l_tmpa_tl
+	}
+\cs_new_eq:NN \asc_orig_texttt \texttt
+\protected\def\texttt#1{\asc_orig_texttt{\asc_allowbreak_texttt:n{#1}}}
+\ExplSyntaxOff
 
 % Título de tabla fuera del entorno float: mantiene numeración y añade entrada al índice.
 \newcommand{\TablaTitulo}[1]{%

@@ -35,6 +35,10 @@ sysinfo.txt
 *.aab
 *.unitypackage
 
+# Allow pushing the prebuilt Windows build for this project
+!Ascension/Ascension/Build/
+!Ascension/Ascension/Build/**
+
 # Crashlytics generated files
 crashlytics-build.properties
 
