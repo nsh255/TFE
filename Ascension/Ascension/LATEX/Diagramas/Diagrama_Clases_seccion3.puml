@@ -1,0 +1,70 @@
+@startuml Diagrama_Clases_seccion3
+!theme plain
+
+' Sección 3: Generación procedural y efectos de tiles
+
+package "Enemigos" {
+    class Enemy
+}
+
+package "Generación Procedural" {
+    class RoomGenerator {
+        - roomWidth: int
+        - roomHeight: int
+        - tilemap: Tilemap
+        - wallTile: TileBase
+        - floorTile: TileBase
+        + GenerateRoom(): Room
+        - CreateWalls()
+        - CreateFloor()
+        - CreateStairs()
+    }
+
+    class Room {
+        - width: int
+        - height: int
+        - tiles: TileBase[][]
+        - stairs: List<Stairs>
+        - enemies: List<Enemy>
+        + IsWalkable(x: int, y: int): bool
+        + GetRandomWalkablePosition(): Vector2
+    }
+
+    class Stairs {
+        - position: Vector2
+        - isOpen: bool
+        - targetRoom: Room
+        + Open()
+        + Close()
+    }
+}
+
+package "Efectos de Tiles" {
+    class TileEffect {
+        - effectType: string
+        - speedMultiplier: float
+        - damageMultiplier: float
+        + ApplyEffect(target: MonoBehaviour)
+        + RemoveEffect(target: MonoBehaviour)
+    }
+
+    class FloorTileManager {
+        - tileEffects: Dictionary<Vector2Int, TileEffect>
+        - tilemap: Tilemap
+        + GetTileEffectAt(position: Vector2): TileEffect
+        + ApplyEffectToEnemy(enemy: Enemy, position: Vector2)
+    }
+
+    class DamageBoostManager {
+        - activeTiles: Dictionary<int, TileEffect>
+        + BoostDamage(source: Transform, multiplier: float): int
+    }
+}
+
+RoomGenerator --> Room
+Room --> Stairs
+Room --> Enemy
+FloorTileManager --> TileEffect
+DamageBoostManager --> TileEffect
+
+@enduml

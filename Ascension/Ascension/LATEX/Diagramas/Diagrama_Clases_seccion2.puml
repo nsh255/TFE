@@ -1,0 +1,175 @@
+@startuml Diagrama_Clases_seccion2
+!theme plain
+
+' Sección 2: Gestión de juego, eventos y enemigos (+ datos)
+
+package "Datos (ScriptableObject)" {
+    class EnemyData {
+        - enemyName: string
+        - maxHealth: int
+        - damage: int
+        - speed: float
+        - sprite: Sprite
+        - enemyCost: int
+    }
+}
+
+package "Jugador" {
+    class PlayerController {
+        + TakeDamage(amount: int)
+        + Die()
+        + Update()
+    }
+}
+
+package "Enemigos" {
+    class Enemy {
+        - enemyData: EnemyData
+        - currentHealth: int
+        - isDead: bool
+        - player: Transform
+        - playerController: PlayerController
+        - spriteRenderer: SpriteRenderer
+        - rb: Rigidbody2D
+        - animator: Animator
+        - damageRate: float
+        - contactDamageGraceSeconds: float
+        - aiGraceSeconds: float
+        - tileSpeedMultiplier: float
+        # IsAIEnabled: bool
+        # Awake()
+        # Start()
+        + TakeDamage(amount: int)
+        # Die()
+        # Update()
+        # UpdateFacingToPlayer()
+        + SetEnemyData(data: EnemyData)
+    }
+
+    class BossController {
+        - maxHealth: int
+        - currentHealth: int
+        - phase: int
+        - projectileSpawnPoint: Transform
+        - player: Transform
+        - attackPattern: float
+        # Start()
+        # Update()
+        + ChangePhase(newPhase: int)
+        + AttackPattern1()
+        + AttackPattern2()
+    }
+
+    class EnemyManager {
+        - spawnPoints: List<Transform>
+        - maxEnemies: int
+        - currentEnemies: List<Enemy>
+        - enemyPrefabs: List<GameObject>
+        - spawnRadius: float
+        - costBudget: int
+        + SpawnEnemy(data: EnemyData, position: Vector3)
+        + CleanupRoom()
+        + SelectWeightedEnemy(): EnemyData
+        + IsSpawnLocationSafe(position: Vector3): bool
+    }
+
+    class EnemyProjectile {
+        - damage: int
+        - lifetime: float
+        - playerLayer: LayerMask
+        - desiredPixelSize: int
+        + Start()
+        + OnTriggerEnter2D(collision: Collider2D)
+        + OnCollisionEnter2D(collision: Collision2D)
+    }
+
+    class EnemyProjectileSpawner {
+        - projectilePrefab: GameObject
+        - spawnPoint: Transform
+        - fireRate: float
+        + SpawnProjectile(direction: Vector2)
+    }
+
+    class EnemyTileEffectReceiver {
+        - tileSpeedMultiplier: float
+        + ApplyTileEffect(effect: TileEffect)
+    }
+}
+
+package "Gestión de Juego" {
+    class Room
+
+    class GameManager {
+        - {static} instance: GameManager
+        - currentRoom: Room
+        - roomFlowController: RoomFlowController
+        - gameState: GameState
+        + {static} GetInstance(): GameManager
+        + LoadRoom(roomIndex: int)
+        + UnloadRoom()
+        + GameOver()
+        + Victory()
+    }
+
+    class RoomFlowController {
+        - currentRoomIndex: int
+        - totalRooms: int
+        - bossIntervalRooms: int
+        - bossCount: int
+        - maxBosses: int
+        + AdvanceToNextRoom()
+        + IsBossRoom(): bool
+        + IsGameWon(): bool
+        - SpawnBoss()
+    }
+
+    class ScoreManager {
+        - currentScore: int
+        - highScores: List<int>
+        + AddScore(amount: int)
+        + SaveHighScore()
+        + LoadHighScores(): List<int>
+        + GetHighScores(): List<int>
+    }
+
+    enum GameState {
+        MENU
+        CLASS_SELECTION
+        PLAYING
+        PAUSED
+        GAME_OVER
+        VICTORY
+    }
+}
+
+package "Efectos de Tiles" {
+    class TileEffect
+}
+
+package "Eventos" {
+    class PersistentEventSystem {
+        - {static} instance: PersistentEventSystem
+        + {static} GetInstance(): PersistentEventSystem
+        + OnEnemyDeath(enemy: Enemy)
+        + OnPlayerDeath()
+        + OnRoomCleared()
+        + OnBossDefeated()
+    }
+}
+
+Enemy --> EnemyData
+Enemy --> EnemyTileEffectReceiver
+BossController --|> Enemy
+EnemyManager --> Enemy
+EnemyProjectileSpawner --> EnemyProjectile
+
+GameManager --> Room
+GameManager --> RoomFlowController
+GameManager --> GameState
+RoomFlowController --> BossController
+
+PersistentEventSystem --> Enemy
+PersistentEventSystem --> PlayerController
+PersistentEventSystem --> BossController
+
+@enduml
