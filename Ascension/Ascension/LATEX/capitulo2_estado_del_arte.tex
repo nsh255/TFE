@@ -11,11 +11,13 @@ Este capítulo contextualiza el desarrollo de \textit{Ascension} mediante cuatro
 
 El término \textit{roguelike} tiene su origen en el videojuego \textit{Rogue}, desarrollado originalmente para sistemas Unix por Michael C. Toy, Glenn Wichman y Ken Arnold \cite{FREEBSD_ROGUE_MANPAGE}. Este juego introducía dos mecánicas que resultarían fundacionales para todo un subgénero: la generación procedural de niveles (de modo que cada partida presentaba una disposición espacial diferente) y la muerte permanente (\textit{permadeath}), que obligaba al jugador a reiniciar la partida desde el principio al perder todos los puntos de vida.
 
+La Figura \ref{fig:ea-rogue} muestra una captura de pantalla del videojuego original \textit{Rogue} y su interfaz basada en caracteres ASCII.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_3.png}
 \caption{Captura de pantalla del videojuego original \textit{Rogue} (1980), mostrando la interfaz basada en caracteres ASCII y la disposición procedural de las salas. \textit{Fuente: captura histórica del juego.}}
-\label{fig:placeholder-1}
+\label{fig:ea-rogue}
 \end{center}
 \end{figure}
 
@@ -51,11 +53,13 @@ La relevancia del género se manifiesta en varios indicadores:
 \item \textbf{Accesibilidad para desarrolladores independientes.} La generación procedural de contenido reduce la necesidad de diseño manual de niveles, lo que permite a equipos pequeños o desarrolladores individuales crear productos con una cantidad de contenido que, de otro modo, requeriría recursos significativamente mayores. Esta característica convierte al subgénero en un dominio adecuado para proyectos académicos como el presente Trabajo de Fin de Grado.
 \end{itemize}
 
+La Figura \ref{fig:ea-steamdb-roguelike} muestra la evolución del número de títulos \textit{roguelike} publicados en Steam por año.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_4.png}
 \caption{Gráfico que muestra la evolución del número de títulos \textit{roguelike} publicados en Steam por año (2006–2026). \textit{Fuente: SteamDB}}
-\label{fig:placeholder-2}
+\label{fig:ea-steamdb-roguelike}
 \end{center}
 \end{figure}
 
@@ -207,11 +211,13 @@ El diseño y desarrollo de \textit{Ascension} se ha llevado a cabo tomando como 
 \item \textbf{Sistema de jefes periódicos.} Al final de cada piso, el jugador se enfrenta a un enemigo jefe con estadísticas superiores y mecánicas de ataque propias. \textit{Ascension} implementa un sistema análogo con jefes cada cinco salas.
 \end{itemize}
 
+La Figura \ref{fig:ea-isaac} muestra un ejemplo de perspectiva cenital y estructura de salas en \textit{The Binding of Isaac}.
+
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_5.png}
 \caption{Captura de pantalla de \textit{The Binding of Isaac: Rebirth} en la que se observa la perspectiva cenital, la estructura de sala cerrada con puertas y la interfaz de vida mediante corazones en la esquina superior izquierda. \textit{Fuente: captura del juego en Steam.}}
-\label{fig:placeholder-3}
+\label{fig:ea-isaac}
 \end{center}
 \end{figure}
 
@@ -228,11 +234,13 @@ El diseño y desarrollo de \textit{Ascension} se ha llevado a cabo tomando como 
 \item \textbf{Generación procedural con estructura por pisos.} El juego genera cada piso de la mazmorra de forma procedural. \textit{Ascension} adopta una estructura en la que se genera proceduralmente el contenido de la sala.
 \end{itemize}
 
+La Figura \ref{fig:ea-gungeon} muestra la mecánica de esquiva (\textit{dodge roll}) durante el combate y la variedad de proyectiles en pantalla.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_6.png}
 \caption{Captura de pantalla de \textit{Enter the Gungeon} en la que se muestra la mecánica de esquiva (\textit{dodge roll}) durante el combate y la variedad de proyectiles en pantalla. \textit{Fuente: captura del juego en Steam.}}
-\label{fig:placeholder-4}
+\label{fig:ea-gungeon}
 \end{center}
 \end{figure}
 
@@ -250,11 +258,13 @@ El diseño y desarrollo de \textit{Ascension} se ha llevado a cabo tomando como 
 \item \textbf{Retroalimentación visual del combate.} \textit{Hades} destaca por la retroalimentación visual que proporciona al jugador. \textit{Ascension} incorpora mecanismos análogos como el parpadeo en blanco del jugador al recibir daño y un parpadeo rojo rápido tanto en enemigos como en el jugador justo antes de morir.
 \end{itemize}
 
+La Figura \ref{fig:ea-hades} muestra el combate en tiempo real, la presencia simultánea de enemigos y la interfaz de estado del personaje en \textit{Hades}.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_7.png}
 \caption{Captura de pantalla de \textit{Hades} en la que se aprecia el sistema de combate en tiempo real con arma cuerpo a cuerpo, la variedad de enemigos simultáneos y la interfaz de estado del personaje. \textit{Fuente: captura del juego en Steam.}}
-\label{fig:placeholder-5}
+\label{fig:ea-hades}
 \end{center}
 \end{figure}
 
@@ -273,11 +283,13 @@ El diseño y desarrollo de \textit{Ascension} se ha llevado a cabo tomando como 
 
 En este contexto, el término \textit{cooldown} se refiere al \textbf{tiempo mínimo de espera entre dos ejecuciones de una misma acción} (por ejemplo, entre dos ataques consecutivos), y se utiliza como mecanismo de equilibrado para evitar acciones excesivamente frecuentes.
 
+La Figura \ref{fig:ea-deadcells} muestra el combate lateral característico de \textit{Dead Cells}.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_8.png}
 \caption{Captura de pantalla de \textit{Dead Cells} en la que se observa el combate lateral con armas cuerpo a cuerpo. \textit{Fuente: captura del juego en Steam.}}
-\label{fig:placeholder-6}
+\label{fig:ea-deadcells}
 \end{center}
 \end{figure}
 
@@ -315,20 +327,24 @@ A partir del análisis comparativo anterior, es posible identificar los elemento
 \item \textbf{Arquitectura orientada a la extensibilidad.} Se adoptó la separación entre datos configurables (\textit{ScriptableObjects}) y lógica de juego como principio arquitectónico deliberado. Esta decisión responde a una necesidad práctica del desarrollo: los parámetros de configuración se modificaron en numerosas ocasiones. Con \textit{ScriptableObjects}, cada ajuste se realiza editando un campo numérico en el inspector, con efecto inmediato y sin recompilación. La implicación arquitectónica es que el sistema cumple el principio de apertura-cierre (\textit{Open-Closed Principle}) de los principios SOLID.
 \end{enumerate}
 
+La Figura \ref{fig:ea-ascension-combate} muestra una partida de \textit{Ascension} donde se aprecia la perspectiva cenital, los tiles especiales y la interfaz de corazones.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/Jefe.png}
 \caption{Captura de pantalla de \textit{Ascension} durante una partida, mostrando la perspectiva cenital, la sala generada proceduralmente con tiles especiales visibles (hielo, lodo), enemigos activos y la interfaz de corazones. \textit{Elaboración propia.}}
-\label{fig:placeholder-7}
+\label{fig:ea-ascension-combate}
 \end{center}
 \end{figure}
 
+
+La Figura \ref{fig:ea-ascension-clase} muestra la pantalla de selección de clase de \textit{Ascension}.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_1.png}
 \caption{Captura de pantalla de \textit{Ascension} mostrando la pantalla de selección de clase. \textit{Elaboración propia.}}
-\label{fig:placeholder-8}
+\label{fig:ea-ascension-clase}
 \end{center}
 \end{figure}
 
@@ -505,11 +521,13 @@ Se seleccionó LibreSprite frente a Aseprite y Figma por dos razones concretas. 
 
 Desde el punto de vista de integración con el motor, el flujo de trabajo consiste en exportar los recursos desde LibreSprite en formato PNG (como sprites individuales o \textit{spritesheets}) e importarlos en Unity configurando parámetros de \textit{pixel art}: \texttt{Pixels Per Unit} coherente con el tamaño de tile (16), filtrado sin suavizado (\textit{Point}) y compresión desactivada para preservar la nitidez.
 
+La Figura \ref{fig:ea-libresprite} muestra la interfaz de LibreSprite durante la edición de un \textit{sprite}.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_2.png}
 \caption{Captura de la interfaz de LibreSprite durante la edición de un \textit{sprite} del juego \textit{Ascension}, mostrando la paleta de colores y el lienzo de edición. \textit{Elaboración propia.}}
-\label{fig:placeholder-9}
+\label{fig:ea-libresprite}
 \end{center}
 \end{figure}
 

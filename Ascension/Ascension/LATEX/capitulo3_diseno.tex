@@ -166,6 +166,8 @@ La estructura resultante se organiza en dos capas diferenciadas:
 
 La comunicación entre ambas capas se realiza principalmente mediante el patrón \textit{Observer}: los gestores centrales (\textit{managers}) exponen eventos C\# (definidos mediante delegados con nombre) a los que los componentes de presentación se suscriben durante su inicialización. Por ejemplo, cuando el \texttt{GameManager} cambia su estado a \texttt{Paused}, emite el evento \texttt{OnGameStateChanged}; el \texttt{PauseMenu}, suscrito a este evento, activa su panel de interfaz y la escala de tiempo del juego se detiene. Para actualizaciones de interfaz muy concretas y de baja complejidad (como la visualización de corazones) se emplea una referencia directa (\texttt{PlayerHealth} -> \texttt{HeartDisplay}) por simplicidad, evitando introducir infraestructura de eventos adicional para un caso puntual.
 
+La Figura \ref{fig:diseno-arquitectura-componentes} resume los componentes principales de la arquitectura y su relación.
+
 \clearpage
 \begin{sidewaysfigure}
 \centering
@@ -173,7 +175,7 @@ La comunicación entre ambas capas se realiza principalmente mediante el patrón
 \caption{
 Diagrama de componentes de la arquitectura general del sistema. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-1}
+\label{fig:diseno-arquitectura-componentes}
 \end{sidewaysfigure}
 \clearpage
 
@@ -189,13 +191,15 @@ El proyecto se estructura en tres escenas de Unity que representan las fases del
 \item \textbf{GameScene.} Escena principal del juego, donde se desarrolla toda la acción. La generación procedural de salas se realiza dentro de esta misma escena, regenerando el contenido del \textit{tilemap} sin necesidad de cargar escenas adicionales.
 \end{enumerate}
 
+La Figura \ref{fig:diseno-flujo-escenas} muestra el flujo de escenas del proyecto.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/flujo_escenas_simple.png}
 \caption{
 Diagrama del flujo de escenas. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-2}
+\label{fig:diseno-flujo-escenas}
 \end{center}
 \end{figure}
 
@@ -225,6 +229,8 @@ Gestor & Responsabilidad \\ \hline
 
 La estructura de dependencias entre los módulos principales del sistema se organiza de la siguiente forma. El diagrama muestra la relación jerárquica entre componentes: cada nodo depende de los nodos situados debajo de él en la jerarquía. Las flechas indican dependencias de creación, referencia directa o suscripción a eventos. Los nodos marcados con \textit{(ScriptableObject)} representan activos de datos configurables desde el inspector de Unity.
 
+La Figura \ref{fig:diseno-dependencias-modulos} muestra las dependencias entre los módulos principales del sistema.
+
 \clearpage
 \begin{sidewaysfigure}
 \centering
@@ -232,7 +238,7 @@ La estructura de dependencias entre los módulos principales del sistema se orga
 \caption{
 Diagrama de dependencias entre los módulos del sistema. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-4}
+\label{fig:diseno-dependencias-modulos}
 \end{sidewaysfigure}
 \clearpage
 
@@ -254,11 +260,13 @@ Los activos gráficos del proyecto se crearon en LibreSprite como \textit{pixel 
 \item \textbf{Modo de \textit{sprite}:} para personajes y enemigos con múltiples fotogramas de animación, se utiliza el modo \textit{Multiple}, que permite particionar una hoja de \textit{sprites} (\textit{spritesheet}) en fotogramas individuales mediante el editor de \textit{sprites} de Unity.
 \end{itemize}
 
+La Figura \ref{fig:diseno-importacion-sprites} muestra la configuración de importación de \textit{sprites} en Unity.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_9.png}
 \caption{Configuración de importación de un \textit{sprite} en el inspector de Unity, mostrando los parámetros PPU, filtrado y compresión. \textit{Elaboración propia.}}
-\label{fig:placeholder-6}
+\label{fig:diseno-importacion-sprites}
 \end{center}
 \end{figure}
 
@@ -278,11 +286,13 @@ Cada entidad del juego se construye como un \textit{GameObject} de Unity al que 
 \item \texttt{Animator}: controla las transiciones entre estados de animación (reposo, movimiento, esquiva, daño).
 \end{itemize}
 
+La Figura \ref{fig:diseno-componentes-jugador} muestra los componentes del \textit{GameObject} del jugador en el inspector de Unity.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_10.png}
 \caption{Vista del inspector de Unity mostrando los componentes configurados en el \textit{GameObject} del jugador: \textit{SpriteRenderer}, \textit{Rigidbody2D}, \textit{CircleCollider2D}, scripts y \textit{Animator}. \textit{Elaboración propia.}}
-\label{fig:placeholder-7}
+\label{fig:diseno-componentes-jugador}
 \end{center}
 \end{figure}
 
@@ -296,11 +306,13 @@ Cada entidad del juego se construye como un \textit{GameObject} de Unity al que 
 \item \texttt{Animator}: gestiona las animaciones de movimiento, ataque y muerte.
 \end{itemize}
 
+La Figura \ref{fig:diseno-componentes-enemigo} muestra los componentes de un enemigo en el inspector de Unity.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_11.png}
 \caption{Vista del inspector de Unity mostrando los componentes de un enemigo \textit{Slime Verde}, con detalle del \textit{CircleCollider2D} y sus dimensiones. \textit{Elaboración propia.}}
-\label{fig:placeholder-8}
+\label{fig:diseno-componentes-enemigo}
 \end{center}
 \end{figure}
 
@@ -329,11 +341,13 @@ El sistema de niveles se construye sobre dos \textit{tilemaps} de Unity superpue
 
 Cada tile se configura como un activo de tipo \texttt{VariantTile} (clase derivada de \texttt{TileBase} de Unity) que almacena múltiples variantes visuales del mismo tipo de tile. Al colocar un tile, el sistema selecciona una variante de forma determinista según la posición, lo que produce variabilidad visual sin aleatorización explícita.
 
+La Figura \ref{fig:diseno-editor-tilemaps} muestra el editor de \textit{tilemaps} con las capas de muros y suelo.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_12.png}
 \caption{Editor de \textit{tilemaps} de Unity mostrando las dos capas (muros y suelo). \textit{Elaboración propia.}}
-\label{fig:placeholder-10}
+\label{fig:diseno-editor-tilemaps}
 \end{center}
 \end{figure}
 
@@ -352,11 +366,13 @@ Para el jugador, los estados de animación incluyen:
 
 Para los enemigos, los estados de animación incluyen reposo, movimiento y muerte, con transiciones controladas por parámetros del \textit{Animator} que los scripts de IA actualizan en cada fotograma.
 
+La Figura \ref{fig:diseno-animator-controller} muestra el controlador de animación del jugador y sus transiciones principales.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_13.png}
 \caption{Controlador de animación (\textit{Animator Controller}) del jugador en Unity, mostrando los estados y las transiciones entre animaciones de reposo, movimiento y esquiva. \textit{Elaboración propia.}}
-\label{fig:placeholder-11}
+\label{fig:diseno-animator-controller}
 \end{center}
 \end{figure}
 
@@ -500,13 +516,15 @@ Además de los patrones clásicos, el análisis del estado del arte introdujo la
 
 \textbf{Aplicación en el proyecto:} Toda la arquitectura del juego se fundamenta en la composición de componentes proporcionada por Unity.
 
+La Figura \ref{fig:diseno-composicion-jugador} resume la composición del jugador basada en componentes.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth]{Figuras/composicion_jugador.png}
 \caption{
 Diagrama de la composición del jugador. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-14}
+\label{fig:diseno-composicion-jugador}
 \end{center}
 \end{figure}
 
@@ -524,13 +542,15 @@ Como se introdujo en el análisis del estado del arte, el \texttt{GameManager} i
 
 \textbf{Aplicación en el proyecto:} Control del flujo global del juego en \texttt{GameManager}.
 
+La Figura \ref{fig:diseno-estados-juego} muestra la máquina de estados del juego y sus transiciones.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/estados_juego.png}
 \caption{
 Diagrama de los estados del juego. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-15}
+\label{fig:diseno-estados-juego}
 \end{center}
 \end{figure}
 

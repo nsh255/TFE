@@ -65,13 +65,15 @@ Línea por línea:
 \item \texttt{OnGameStateChanged?.Invoke(newState)}: emite el evento del patrón \textit{Observer}. El operador \texttt{?.} evita una excepción si ningún componente está suscrito al evento. Los componentes de UI (\texttt{PauseMenu}, \texttt{GameOverScreen}) se suscriben a este evento en su método \texttt{Start()} y reaccionan automáticamente al cambio de estado.
 \end{itemize}
 
+La Figura \ref{fig:desarrollo-gamemanager-estados} muestra el diagrama de estados UML del \texttt{GameManager}.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/figura4_1_gamemanager_estados.png}
 \caption{
 Diagrama de estados UML del \texttt{GameManager}. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-1}
+\label{fig:desarrollo-gamemanager-estados}
 \end{center}
 \end{figure}
 
@@ -132,7 +134,7 @@ public void StartNewRun() {
 
 La secuencia de reinicio sigue un orden específico: primero se reinician los datos del \texttt{GameManager}, después los de cada gestor dependiente y, finalmente, se cambia el estado a \texttt{Playing}. Este orden garantiza que los subsistemas estén en un estado limpio \textit{antes} de que la transición de estado notifique a los suscriptores del evento \texttt{OnGameStateChanged}, incluida la interfaz de usuario, que al recibir la notificación de estado \texttt{Playing} consulta los contadores, que ya deben estar a cero. Si el cambio de estado se realizase antes de los reinicios, los componentes de UI mostrarían brevemente los datos de la partida anterior.
 
-El siguiente diagrama resume la cadena de coordinación entre gestores al iniciar una nueva partida:
+La Figura \ref{fig:desarrollo-coordinacion-startnewrun} resume la cadena de coordinación entre gestores al iniciar una nueva partida.
 
 \begin{figure}[H]
 \begin{center}
@@ -140,7 +142,7 @@ El siguiente diagrama resume la cadena de coordinación entre gestores al inicia
 \caption{
 Diagrama de la coordinación entre gestores al iniciar una nueva partida. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-2}
+\label{fig:desarrollo-coordinacion-startnewrun}
 \end{center}
 \end{figure}
 
@@ -164,7 +166,7 @@ public void NotifyEnemyKilled(int scoreValue = 10) {
 \end{lstlisting}
 
 
-El flujo completo de una sala (desde la aparición de enemigos hasta la transición a la siguiente sala) involucra la siguiente cadena de invocaciones entre gestores:
+La Figura \ref{fig:desarrollo-flujo-completar-sala} muestra el flujo completo de una sala (desde la aparición de enemigos hasta la transición a la siguiente sala) y la cadena de invocaciones entre gestores.
 
 \begin{figure}[H]
 \begin{center}
@@ -172,16 +174,18 @@ El flujo completo de una sala (desde la aparición de enemigos hasta la transici
 \caption{
 Diagrama del flujo de completar una sala. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-3}
+\label{fig:desarrollo-flujo-completar-sala}
 \end{center}
 \end{figure}
 
+
+La Figura \ref{fig:desarrollo-menu-principal} muestra el menú principal del videojuego.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/Main_Menu.png}
 \caption{Captura de pantalla del menú principal de \textit{Ascension}, mostrando las opciones de nueva partida, tabla de puntuaciones y salir. \textit{Elaboración propia.}}
-\label{fig:placeholder-4}
+\label{fig:desarrollo-menu-principal}
 \end{center}
 \end{figure}
 
@@ -189,7 +193,7 @@ Diagrama del flujo de completar una sala. \textit{Elaboración propia.}
 \subsection{RoomFlowController: control de progresión de salas}
 
 
-El \texttt{RoomFlowController} gestiona el bucle central de generación y progresión de salas. Su ciclo de funcionamiento se describe mediante el siguiente diagrama:
+El \texttt{RoomFlowController} gestiona el bucle central de generación y progresión de salas. La Figura \ref{fig:desarrollo-roomflow-estados} describe su ciclo de funcionamiento.
 
 \begin{figure}[H]
 \begin{center}
@@ -197,7 +201,7 @@ El \texttt{RoomFlowController} gestiona el bucle central de generación y progre
 \caption{
 Diagrama del ciclo de funcionamiento de generación de salas. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-5}
+\label{fig:desarrollo-roomflow-estados}
 \end{center}
 \end{figure}
 
@@ -297,13 +301,15 @@ Este diseño permite añadir nuevas clases de personaje sin modificar el código
 
 \textbf{Sistema de esquiva (\textit{roll}).} La mecánica de esquiva se implementa mediante una corutina que aplica un multiplicador de velocidad temporal, activa la invulnerabilidad del jugador y desactiva las colisiones con enemigos y proyectiles durante un periodo configurable. Al finalizar la esquiva, el sistema restaura los valores originales de velocidad, vulnerabilidad y colisiones:
 
+La Figura \ref{fig:desarrollo-mecanica-esquiva} resume el funcionamiento de la mecánica de esquiva.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/mecanica_esquiva.png}
 \caption{
 Diagrama del funcionamiento de la esquiva. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-6}
+\label{fig:desarrollo-mecanica-esquiva}
 \end{center}
 \end{figure}
 
@@ -419,13 +425,15 @@ El cambio de color y visibilidad se aplica a todos los \texttt{SpriteRenderer} d
 
 El ciclo de vida del jugador integra los subsistemas de movimiento (\texttt{PlayerController}), vida (\texttt{PlayerHealth}) y esquiva, atravesando los siguientes estados durante una partida:
 
+La Figura \ref{fig:desarrollo-ciclo-vida-jugador} muestra el ciclo de vida del jugador y los estados por los que transita.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/ciclo_vida_jugador.png}
 \caption{
 Ciclo de vida del jugador. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-7}
+\label{fig:desarrollo-ciclo-vida-jugador}
 \end{center}
 \end{figure}
 
@@ -618,7 +626,7 @@ Su inteligencia artificial sigue un patrón de \textbf{máquina de estados finit
 \caption{Estados, transiciones y acciones de la FSM del SlimeGreen.}
 \end{table}
 
-El siguiente diagrama de estados formaliza las transiciones entre los tres estados:
+La Figura \ref{fig:desarrollo-fsm-slimegreen} formaliza las transiciones entre los tres estados del SlimeGreen.
 
 \begin{figure}[H]
 \begin{center}
@@ -626,7 +634,7 @@ El siguiente diagrama de estados formaliza las transiciones entre los tres estad
 \caption{
 Diagrama de la FSM del SlimeGreen. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-8}
+\label{fig:desarrollo-fsm-slimegreen}
 \end{center}
 \end{figure}
 
@@ -829,13 +837,15 @@ El \texttt{SlimeBlue} implementa un comportamiento basado en saltos rápidos (de
 \caption{Estados y transiciones de la FSM del SlimeBlue.}
 \end{table}
 
+La Figura \ref{fig:desarrollo-fsm-slimeblue} muestra el diagrama de estados de la FSM del SlimeBlue.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.525\textwidth,height=0.21\textheight,keepaspectratio]{Figuras/fsm_slimeblue.png}
 \caption{
 Diagrama de la FSM del SlimeBlue. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-9}
+\label{fig:desarrollo-fsm-slimeblue}
 \end{center}
 \end{figure}
 
@@ -901,11 +911,13 @@ La separación \texttt{Update()} / \texttt{FixedUpdate()} es una decisión arqui
 
 La dirección del salto se calcula en el momento de su inicio (\texttt{StartDash()}) y permanece fija durante toda la duración del desplazamiento. Esto permite al jugador anticipar la trayectoria del salto y esquivarlo, introduciendo una componente táctica en el enfrentamiento contra este tipo de enemigo. Los parámetros del salto son: velocidad de doce unidades por segundo, duración de 0,4 segundos y tiempo de espera de dos segundos entre saltos consecutivos.
 
+La Figura \ref{fig:desarrollo-enemigo-jefe} muestra un encuentro con un enemigo jefe, destacando el incremento visual de tamaño respecto a los enemigos estándar.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/Jefe.png}
 \caption{Captura de pantalla de \textit{Ascension} durante un encuentro con un enemigo jefe, mostrando el incremento visual de tamaño respecto a los enemigos estándar y los proyectiles de mayor escala. \textit{Elaboración propia.}}
-\label{fig:placeholder-10}
+\label{fig:desarrollo-enemigo-jefe}
 \end{center}
 \end{figure}
 
@@ -1069,7 +1081,7 @@ La diversidad de estos tres arquetipos, combinada con el sistema de presupuesto 
 \subsection{Diagrama de flujo de decisión de la IA por tipo de enemigo}
 
 
-El siguiente diagrama de flujo unificado muestra la lógica de decisión completa que ejecuta cada tipo de enemigo en cada fotograma, incluyendo la lógica heredada de la clase base \texttt{Enemy} (común a los tres) y la lógica específica de cada subclase:
+La Figura \ref{fig:desarrollo-flujo-decision-ia} muestra la lógica de decisión completa que ejecuta cada tipo de enemigo en cada fotograma, incluyendo la lógica heredada de la clase base \texttt{Enemy} (común a los tres) y la lógica específica de cada subclase.
 
 \begin{figure}[H]
 \begin{center}
@@ -1077,12 +1089,14 @@ El siguiente diagrama de flujo unificado muestra la lógica de decisión complet
 \caption{
 Diagrama de flujo de decisión de la IA por tipo de enemigo. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-12}
+\label{fig:desarrollo-flujo-decision-ia}
 \end{center}
 \end{figure}
 
 
 Este diagrama evidencia una propiedad del diseño: la lógica heredada de la clase base \texttt{Enemy} (verificaciones de muerte, gracia y tiles) se ejecuta siempre \textit{antes} que la lógica específica de cada subclase, garantizando que las comprobaciones de seguridad son comunes e inmutables --un ejemplo concreto del contrato impuesto por el patrón \textit{Template Method}.
+
+La Figura \ref{fig:desarrollo-clases-enemigos} muestra el diagrama de clases UML de la jerarquía de enemigos.
 
 \begin{figure}[H]
 \begin{center}
@@ -1090,10 +1104,12 @@ Este diagrama evidencia una propiedad del diseño: la lógica heredada de la cla
 \caption{
 Diagrama de clases UML de la jerarquía de enemigos. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-13}
+\label{fig:desarrollo-clases-enemigos}
 \end{center}
 \end{figure}
 
+
+La Figura \ref{fig:desarrollo-secuencia-combate} muestra el diagrama de secuencia UML del flujo de combate.
 
 \clearpage
 \begin{sidewaysfigure}
@@ -1102,7 +1118,7 @@ Diagrama de clases UML de la jerarquía de enemigos. \textit{Elaboración propia
 \caption{
 Diagrama de secuencia UML del flujo de combate. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-14}
+\label{fig:desarrollo-secuencia-combate}
 \end{sidewaysfigure}
 \clearpage
 
@@ -1313,7 +1329,7 @@ Línea por línea:
 \subsection{Flujo completo de daño: del ataque a la puntuación}
 
 
-El sistema de combate involucra a cinco componentes distribuidos en tres subsistemas (armas, enemigos y gestión central). El siguiente diagrama describe la cadena completa de invocaciones que se produce cuando el jugador ataca a un enemigo, desde la entrada del jugador hasta la actualización de la puntuación:
+El sistema de combate involucra a cinco componentes distribuidos en tres subsistemas (armas, enemigos y gestión central). La Figura \ref{fig:desarrollo-flujo-dano} describe la cadena completa de invocaciones que se produce cuando el jugador ataca a un enemigo, desde la entrada del jugador hasta la actualización de la puntuación:
 \vspace{-0.5em}
 \begin{figure}[H]
 \begin{center}
@@ -1321,20 +1337,22 @@ El sistema de combate involucra a cinco componentes distribuidos en tres subsist
 \caption{
 Diagrama de flujo del sistema de daño. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-16}
+\label{fig:desarrollo-flujo-dano}
 \end{center}
 \end{figure}
 \vspace{-0.5em}
 
 Este flujo evidencia la separación de responsabilidades aplicada: cada componente ejecuta exclusivamente su tarea (el arma ataca, el enemigo recibe daño, el gestor contabiliza) y la comunicación entre capas se realiza mediante invocaciones directas tipadas y eventos del patrón \textit{Observer}. La alternativa (que el arma calculase ella misma la puntuación, o que el enemigo accediese directamente al marcador de la UI) habría introducido dependencias transversales entre subsistemas que no comparten responsabilidad.
 \vspace{-0.5em}
+La Figura \ref{fig:desarrollo-clases-armas} muestra el diagrama de clases UML del sistema de armas.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/figura4_8_clases_armas.png}
 \caption{
 Diagrama de clases UML del sistema de armas. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-17}
+\label{fig:desarrollo-clases-armas}
 \end{center}
 \end{figure}
 
@@ -1468,7 +1486,7 @@ El algoritmo comienza seleccionando una posición aleatoria como centro del \tex
 
 Este \textit{pipeline} se ejecuta también (con una variante) cuando el jugador avanza a la siguiente sala dentro de la misma escena: \texttt{RegenerateFloorKeepWalls()} omite los pasos 4 y 5 (los muros perimetrales no cambian) y únicamente regenera el suelo, los tiles especiales y las escaleras, reduciendo el coste computacional de la transición.
 
-\textbf{Probabilidades de aparición de tiles especiales:}
+\textbf{Probabilidades de aparición de tiles especiales:} La Tabla \ref{tab:probabilidades-tiles} resume las probabilidades, el formato de distribución y la cantidad por sala.
 \vspace{-0.5em}
 \begin{table}[H]
 \centering
@@ -1487,13 +1505,15 @@ Potenciación (\textit{PowerUp}) & 18 \% & Tile individual & 1-2 \\ \hline
 \end{table}
 \vspace{-0.5em}
 
+La Figura \ref{fig:desarrollo-secuencia-generacion-sala} muestra el diagrama de secuencia UML de la generación procedural de una sala.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.95\textwidth,height=0.72\textheight,keepaspectratio]{Figuras/figura4_9_secuencia_generacion_sala.png}
 \caption{
 Diagrama de secuencia UML de la generación procedural de una sala. \textit{Elaboración propia.}
 }
-\label{fig:placeholder-19}
+\label{fig:desarrollo-secuencia-generacion-sala}
 \end{center}
 \end{figure}
 
@@ -1696,6 +1716,8 @@ void OnTriggerEnter2D(Collider2D other) {
 
 Al detectar la entrada del jugador mediante el sistema de \textit{triggers} de Unity, el controlador bloquea las escaleras de la sala y activa la aparición de enemigos. Las escaleras permanecen bloqueadas hasta que todos los enemigos han sido eliminados, momento en el cual se habilitan automáticamente para permitir la progresión.
 
+La Figura \ref{fig:desarrollo-secuencia-progresion-salas} muestra el diagrama de secuencia UML del ciclo de progresión entre salas.
+
 \clearpage
 \begin{sidewaysfigure}
     \begin{center}
@@ -1703,7 +1725,7 @@ Al detectar la entrada del jugador mediante el sistema de \textit{triggers} de U
     \caption{
     Diagrama de secuencia UML del ciclo de progresión entre salas. \textit{Elaboración propia.}
     }
-    \label{fig:placeholder-21}
+    \label{fig:desarrollo-secuencia-progresion-salas}
     \end{center}
 \end{sidewaysfigure}
 \clearpage
@@ -1827,12 +1849,14 @@ public void Show() {
 
 Ambas pantallas muestran un texto que representa el final de la partida y redirigen al menú principal tras un tiempo.
 
+La Figura \ref{fig:desarrollo-menu-pausa} muestra el menú de pausa de \textit{Ascension}.
+
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{Figuras/captura_14.png}
 \caption{Captura de pantalla del menú de pausa de \textit{Ascension}, mostrando las opciones de reanudar y menú principal. \textit{Elaboración propia.}}
-\label{fig:placeholder-23}
+\label{fig:desarrollo-menu-pausa}
 \end{center}
 \end{figure}
 
