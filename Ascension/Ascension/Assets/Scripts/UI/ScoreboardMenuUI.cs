@@ -233,6 +233,12 @@ public class ScoreboardMenuUI : MonoBehaviour
         {
             ScoreManager.Instance.ClearHistory();
         }
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetRunResultRecorded();
+        }
+
         Refresh();
     }
 
@@ -500,7 +506,7 @@ public class ScoreboardMenuUI : MonoBehaviour
             fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            listText.enableWordWrapping = false;
+            listText.textWrappingMode = TextWrappingModes.NoWrap;
             listText.alignment = TextAlignmentOptions.TopLeft;
             listText.overflowMode = TextOverflowModes.Overflow;
             listText.raycastTarget = false;
@@ -599,7 +605,6 @@ public class ScoreboardMenuUI : MonoBehaviour
         listText.fontSizeMin = 10f;
         listText.fontSizeMax = 14f;
         listText.fontSize = 12f;
-        listText.enableWordWrapping = true;
         listText.textWrappingMode = TextWrappingModes.Normal;
         listText.alignment = TextAlignmentOptions.TopLeft;
         listText.overflowMode = TextOverflowModes.Overflow;

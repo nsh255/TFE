@@ -353,9 +353,12 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void StartNewRun()
     {
+        // Reinicia los contadores básicos de progresión
         currentLevel = 1;
         roomsCleared = 0;
         enemiesKilled = 0;
+
+        ResetRunResultRecorded();
 
         if (RoomFlowController.Instance != null)
         {
@@ -567,6 +570,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene(gameScene);
         StartNewRun();
+    }
+
+    /// <summary>
+    /// Permite que el resultado de la partida actual vuelva a registrarse.
+    /// </summary>
+    public void ResetRunResultRecorded()
+    {
+        runResultRecorded = false;
     }
 
     #endregion
